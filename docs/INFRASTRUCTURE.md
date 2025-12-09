@@ -85,7 +85,7 @@ graph TB
 ## Core Components
 
 ### 1. Google Cloud Run
-- **Service**: `blog` 
+- **Service**: `blog`
 - **Region**: `{YOUR_GCP_REGION}`
 - **URL**: `https://blog-{SERVICE_HASH}-{REGION_CODE}.a.run.app`
 - **Configuration**:
@@ -111,7 +111,7 @@ graph TB
 
 ### 4. APIs Enabled
 - Cloud Run API (`run.googleapis.com`)
-- Artifact Registry API (`artifactregistry.googleapis.com`) 
+- Artifact Registry API (`artifactregistry.googleapis.com`)
 - Cloud DNS API (`dns.googleapis.com`)
 - IAM Service Account Credentials API (`iamcredentials.googleapis.com`)
 - IAM API (`iam.googleapis.com`)
@@ -181,7 +181,7 @@ graph TD
     AR --> CR
 
     classDef foundation fill:#f9ab00,stroke:#e37400,stroke-width:2px,color:#fff
-    classDef identity fill:#34a853,stroke:#137333,stroke-width:2px,color:#fff  
+    classDef identity fill:#34a853,stroke:#137333,stroke-width:2px,color:#fff
     classDef infra fill:#4285f4,stroke:#1a73e8,stroke-width:2px,color:#fff
 
     class APIS,ORG foundation
@@ -240,7 +240,7 @@ graph LR
 
     subgraph "Google Cloud"
         REDIR[Google Redirect IPs<br/>216.239.*.21]
-        CR[Cloud Run Service\n{CLOUD_RUN_SERVICE_URL}]
+        CR[Cloud Run Service]
     end
 
     SQ -->|Points to| NS
@@ -264,7 +264,7 @@ graph LR
 ```bash
 # Nameservers (set in Squarespace)
 ns-cloud-e1.googledomains.com
-ns-cloud-e2.googledomains.com  
+ns-cloud-e2.googledomains.com
 ns-cloud-e3.googledomains.com
 ns-cloud-e4.googledomains.com
 
@@ -272,7 +272,7 @@ ns-cloud-e4.googledomains.com
 www.boneleve.blog.  300  CNAME  {CLOUD_RUN_SERVICE_URL}.
 boneleve.blog.      300  A      216.239.32.21
 boneleve.blog.      300  A      216.239.34.21
-boneleve.blog.      300  A      216.239.36.21  
+boneleve.blog.      300  A      216.239.36.21
 boneleve.blog.      300  A      216.239.38.21
 ```
 
@@ -361,7 +361,7 @@ gcloud resource-manager org-policies set-policy policy.yaml \
   --organization={ORGANIZATION_ID} \
   --impersonate-service-account=infrastructure-admin@{PROJECT_ID}.iam.gserviceaccount.com
 
-# DNS management  
+# DNS management
 gcloud dns record-sets transaction start \
   --zone=boneleve-blog \
   --project={PROJECT_ID} \
@@ -394,7 +394,7 @@ See [SECURITY.md](SECURITY.md) for detailed security architecture and best pract
 graph TB
     subgraph "Observability"
         LOGS[Cloud Logging]
-        METRICS[Cloud Monitoring] 
+        METRICS[Cloud Monitoring]
         TRACE[Cloud Trace]
     end
 
