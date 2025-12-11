@@ -9,13 +9,22 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone)]
-struct Empty {}
+struct FrontMatter {
+    title: String,
+    slug: String,
+}
+
+struct Post {
+    title: String,
+    slug: String,
+}
 
 struct AppState {
     banner_html: String,
     layout_html: String,
     home_html: String,
     not_found_html: String, // supports {{slug}} placeholder
+    posts: Vec<Post>,
 }
 
 fn render_with_layout(layout: &str, banner: &str, content: &str) -> String {
@@ -25,7 +34,19 @@ fn render_with_layout(layout: &str, banner: &str, content: &str) -> String {
 }
 
 async fn homepage(State(state): State<Arc<AppState>>) -> Html<String> {
-    let page = render_with_layout(&state.layout_html, &state.banner_html, &state.home_html);
+    let mut list_items = String::new();
+    for post in &state.posts {
+        list_items.push_str(&format!(
+            "<li><a href=\"/posts/{}\" class=\"text-blue no-underline\">{}</a></li>",
+            post.slug, post.title
+        ));
+    }
+
+    let home_html_with_posts = state
+        .home_html
+        .replace("{{posts}}", &list_items);
+
+    let page = render_with_layout(&state.layout_html, &state.banner_html, &home_html_with_posts);
     Html(page)
 }
 
@@ -41,8 +62,18 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     };
 
     let matter = Matter::<YAML>::new();
-    let result = matter.parse::<Empty>(&file_content);
+    let result = matter.parse::<FrontMatter>(&file_content);
 
+    let front_matter = match result {
+        Ok(ref parsed) => parsed.data.clone(),
+        Err(ref e) => {
+            tracing::error!("Failed to parse front matter: {}", e);
+            Some(FrontMatter {
+                title: "Error".to_string(),
+                slug: "Error".to_string(),
+            })
+        }
+    };
     let markdown_body = result.unwrap().content;
 
     let mut options = Options::empty();
@@ -53,7 +84,11 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     let mut html_out = String::new();
     html::push_html(&mut html_out, parser);
 
-    let page = render_with_layout(&state.layout_html, &state.banner_html, &html_out);
+    let body = match front_matter {
+        Some(fm) => format!("<h1>{}</h1>{}", fm.title, html_out),
+        None => format!("<h1>Error: No Front Matter</h1>{}", html_out),
+    };
+    let page = render_with_layout(&state.layout_html, &state.banner_html, &body);
     Html(page)
 }
 
@@ -84,11 +119,40 @@ async fn main() {
         .await
         .expect("Missing content/not_found.html");
 
+    let mut posts: Vec<Post> = Vec::new();
+    let mut entries = fs::read_dir("content/posts").await.unwrap();
+
+    while let Some(entry) = entries.next_entry().await.unwrap() {
+        let path = entry.path();
+        if path.extension().map_or(false, |ext| ext == "md") {
+            let file_content = fs::read_to_string(&path).await.unwrap();
+            let matter = Matter::<YAML>::new();
+            let result = matter.parse::<FrontMatter>(&file_content);
+
+            let front_matter = match result {
+                Ok(parsed) => parsed.data,
+                Err(e) => {
+                    tracing::error!("Failed to parse front matter: {}", e);
+                    Some(FrontMatter {
+                        title: "Error".to_string(),
+                        slug: "Error".to_string(),
+                    })
+                }
+            };
+
+            posts.push(Post {
+                title: front_matter.clone().map(|fm| fm.title).unwrap_or("Error".to_string()),
+                slug: front_matter.clone().map(|fm| fm.slug).unwrap_or("error".to_string()),
+            });
+        }
+    }
+
     let state = Arc::new(AppState {
         banner_html,
         layout_html,
         home_html,
         not_found_html,
+        posts,
     });
 
     let static_dir = ServeDir::new("content/static");
