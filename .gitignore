@@ -32,3 +32,9 @@ infra/*.auto.tfvars
 
 # Logs
 *.log
+
+# AI droppings
+.aider*
+
+# Node
+node_modules/
