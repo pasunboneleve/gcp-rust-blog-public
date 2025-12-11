@@ -1,3 +1,5 @@
+[![GCP Rust Blog CI/CD](https://github.com/pasunboneleve/gcp-rust-blog-public/actions/workflows/deploy.yml/badge.svg)](https://github.com/pasunboneleve/gcp-rust-blog-public/actions/workflows/deploy.yml)
+
 # GCP Rust Blog
 
 A minimal Rust web application built with Axum, designed for deployment on
