@@ -11,6 +11,7 @@ use serde::Deserialize;
 #[derive(Deserialize, Debug, Clone)]
 struct FrontMatter {
     title: String,
+    date: String,
     slug: String,
 }
 
@@ -67,6 +68,7 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
             tracing::error!("Failed to parse front matter: {}", e);
             Some(FrontMatter {
                 title: "Error".to_string(),
+                date: "Error".to_string(),
                 slug: "Error".to_string(),
             })
         }
@@ -82,7 +84,7 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     html::push_html(&mut html_out, parser);
 
     let body = match front_matter {
-        Some(fm) => format!("<h1>{}</h1>{}", fm.title, html_out),
+        Some(fm) => format!("<h1>{}</h1><p style=\"font-size: smaller; color: #888;\">{}</p>{}", fm.title, fm.date, html_out),
         None => format!("<h1>Error: No Front Matter</h1>{}", html_out),
     };
     let page = render_with_layout(&state.layout_html, &state.banner_html, &body, &state.posts);
@@ -134,6 +136,7 @@ async fn main() {
                         tracing::error!("Failed to parse front matter: {}", e);
                         Some(FrontMatter {
                             title: "Error".to_string(),
+                            date: "Error".to_string(),
                             slug: "Error".to_string(),
                         })
                     }
