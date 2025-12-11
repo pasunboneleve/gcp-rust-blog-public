@@ -12,4 +12,4 @@ tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 pulldown-cmark = "0.13"
 tower-http = { version = "0.6", features = ["fs"] }
 gray_matter = "0.3.2"
-serde = "1.0.228"
+serde = { version = "1.0.228", features = ["derive"] }

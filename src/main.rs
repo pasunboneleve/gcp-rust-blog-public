@@ -1,10 +1,15 @@
 use std::{net::SocketAddr, sync::Arc};
 
 use axum::{extract::Path, extract::State, response::Html, routing::get, Router};
-use tower_http::services::{ServeDir, ServeFile};
+use gray_matter::{Matter, engine::YAML};
 use pulldown_cmark::{html, Options, Parser};
 use tokio::{fs, net::TcpListener};
+use tower_http::services::{ServeDir, ServeFile};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use serde::Deserialize;
+
+#[derive(Deserialize, Debug, Clone)]
+struct Empty {}
 
 struct AppState {
     banner_html: String,
@@ -26,7 +31,7 @@ async fn homepage(State(state): State<Arc<AppState>>) -> Html<String> {
 
 async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>>) -> Html<String> {
     let path = format!("content/posts/{}.md", slug);
-    let md = match fs::read_to_string(&path).await {
+    let file_content = match fs::read_to_string(&path).await {
         Ok(c) => c,
         Err(_) => {
             let body = state.not_found_html.replace("{{slug}}", &slug);
@@ -35,11 +40,16 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
         }
     };
 
+    let matter = Matter::<YAML>::new();
+    let result = matter.parse::<Empty>(&file_content);
+
+    let markdown_body = result.unwrap().content;
+
     let mut options = Options::empty();
     options.insert(Options::ENABLE_STRIKETHROUGH);
     options.insert(Options::ENABLE_TABLES);
 
-    let parser = Parser::new_ext(&md, options);
+    let parser = Parser::new_ext(&markdown_body, options);
     let mut html_out = String::new();
     html::push_html(&mut html_out, parser);
 
