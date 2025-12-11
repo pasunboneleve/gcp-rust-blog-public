@@ -10,8 +10,28 @@
     <title>GCP Rust Blog</title>
     <link rel="stylesheet" href="/static/tailwind.css">
   </head>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png?v=1" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png?v=1" />
+    <link rel="icon" href="/favicon.ico?v=1" type="image/x-icon" />
+    <link rel="shortcut icon" href="/favicon.ico?v=1" type="image/x-icon" />
+    <title>GCP Rust Blog</title>
+    <link rel="stylesheet" href="/static/tailwind.css">
+  </head>
   <body class="bg-base03 text-base0 font-sans m-0">
     {{ banner }}
-    <main class="max-w-4xl mx-auto px-4 prose dark:invert">{{ content }}</main>
+    <div class="flex">
+      <main class="max-w-4xl mx-auto my-16 px-4 prose dark:invert">{{ content }}</main>
+      <aside class="w-64 bg-base02 p-4">
+        <h3 class="mt-4">Posts</h3>
+        <ul>
+          {{ posts }}
+        </ul>
+      </aside>
+    </div>
   </body>
 </html>
