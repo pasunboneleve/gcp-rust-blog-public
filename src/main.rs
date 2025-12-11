@@ -87,7 +87,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(homepage))
-        .route("/posts/:slug", get(render_post))
+        .route("/posts/{slug}", get(render_post))
         .nest_service("/static", static_dir)
         .route_service("/favicon.ico", favicon_ico)
         .route_service("/favicon.png", favicon_png)
