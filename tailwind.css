@@ -5,14 +5,14 @@
     --color-mint-500: oklch(0.72 0.11 178);
     --breakpoint-3xl: 120rem;
     /* ... other custom variables */
-    --color-base03: #002b36;
-    --color-base02: #073642;
-    --color-base01: #586e75;
-    --color-base00: #657b83;
     --color-base0: #839496;
     --color-base1: #93a1a1;
     --color-base2: #eee8d5;
     --color-base3: #fdf6e3;
+    --color-base00: #657b83;
+    --color-base01: #586e75;
+    --color-base02: #073642;
+    --color-base03: #002b36;
     --color-yellow: #b58900;
     --color-orange: #cb4b16;
     --color-red: #dc322f;
