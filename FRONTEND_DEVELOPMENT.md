@@ -7,6 +7,12 @@ Quickstart
 In one terminal
 
 ```sh
+direnv allow
+```
+
+then
+
+```sh
 bacon run
 ```
 
@@ -34,3 +40,7 @@ npm install -g @tailwindcss/cli
 ```
 
 Although you really should use [bun](https://bun.com/) instead of [npm](https://docs.npmjs.com/cli/).
+
+And finally, I like using [direnv](https://direnv.net/) to
+automagically run Bash and add environment variables when we change
+into a directory.
