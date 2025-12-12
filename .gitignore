@@ -26,6 +26,7 @@ infra/*.auto.tfvars
 .idea/
 *.swp
 *.swo
+**/.\#*
 
 # macOS
 .DS_Store

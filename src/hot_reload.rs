@@ -46,14 +46,28 @@ pub fn start_content_watcher(tx: RefreshBroadcaster, app_state: Arc<AppState>) {
         let mut debouncer = new_debouncer(Duration::from_millis(200), None, move |res: Result<Vec<DebouncedEvent>, Vec<NotifyError>>| {
             if let Ok(events) = res {
                 // Filter out events that are just metadata changes or temporary files
-                let relevant_change = events.iter().any(|event| {
-                    event.kind.is_modify()
+                let relevant_events: Vec<&DebouncedEvent> = events.iter().filter(|event| {
+                    // Check if the event type is relevant (modify, create, remove)
+                    let is_relevant_kind = event.kind.is_modify()
                         || event.kind.is_create()
-                        || event.kind.is_remove()
-                });
+                        || event.kind.is_remove();
 
-                if relevant_change {
-                    debug!("Relevant file change detected: {:?}", events.iter().flat_map(|e| &e.event.paths).map(|p| p.display()).collect::<Vec<_>>());
+                    if !is_relevant_kind {
+                        return false;
+                    }
+
+                    // Check paths for temporary files (Emacs: .#*, ~ backups)
+                    let is_temp_file = event.event.paths.iter().any(|path| {
+                        path.file_name()
+                            .and_then(|name| name.to_str())
+                            .map_or(false, |s| s.starts_with(".#") || s.ends_with('~'))
+                    });
+
+                    !is_temp_file
+                }).collect();
+
+                if !relevant_events.is_empty() {
+                    debug!("Relevant file change detected: {:?}", relevant_events.iter().flat_map(|e| &e.event.paths).map(|p| p.display()).collect::<Vec<_>>());
                     if let Err(e) = watcher_tx.blocking_send(()) {
                         error!("Failed to send watcher event: {}", e);
                     }
