@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.8"
+axum = { version = "0.8", features = ["ws"] }
 tokio = { version = "1", features = ["full"] }
 tower = "0.5"
 tracing = "0.1"
@@ -13,3 +13,5 @@ pulldown-cmark = "0.13"
 tower-http = { version = "0.6", features = ["fs"] }
 gray_matter = "0.3.2"
 serde = { version = "1.0.228", features = ["derive"] }
+notify-debouncer-full = "0.3.1"
+futures = "0.3"
