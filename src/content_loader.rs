@@ -1,5 +1,6 @@
 use tokio::fs;
 use gray_matter::{engine::YAML, Matter};
+use pulldown_cmark::{html, Options, Parser};
 use tracing::{error, info};
 
 use crate::models::{FrontMatter, Post};
@@ -10,9 +11,26 @@ const CONTENT_DIR: &str = "content";
 pub async fn load_content() -> Result<(String, String, String, String, Vec<Post>), std::io::Error> {
     let banner_html = fs::read_to_string(format!("{}/banner.html", CONTENT_DIR)).await?;
     let layout_html = fs::read_to_string(format!("{}/layout.html", CONTENT_DIR)).await?;
-    let home_html = fs::read_to_string(format!("{}/home.html", CONTENT_DIR)).await?;
     let not_found_html = fs::read_to_string(format!("{}/not_found.html", CONTENT_DIR)).await?;
 
+    // 1. Load home content as Markdown
+    let home_md_content = fs::read_to_string(format!("{}/home.md", CONTENT_DIR)).await?;
+    
+    let matter = Matter::<YAML>::new();
+    let result = matter.parse::<FrontMatter>(&home_md_content);
+    
+    let markdown_body = result.unwrap().content;
+
+    // 2. Render Markdown to HTML
+    let mut options = Options::empty();
+    options.insert(Options::ENABLE_STRIKETHROUGH);
+    options.insert(Options::ENABLE_TABLES);
+
+    let parser = Parser::new_ext(&markdown_body, options);
+    let mut home_html = String::new();
+    html::push_html(&mut home_html, parser);
+
+    // 3. Load posts metadata
     let mut posts: Vec<Post> = Vec::new();
     let mut entries = fs::read_dir(format!("{}/posts", CONTENT_DIR)).await?;
 
