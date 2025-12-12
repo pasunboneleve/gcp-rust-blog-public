@@ -7,6 +7,9 @@
       "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
+    --color-orange-500: oklch(70.5% 0.213 47.604);
+    --color-green-500: oklch(72.3% 0.219 149.579);
+    --color-blue-500: oklch(62.3% 0.214 259.815);
     --spacing: 0.25rem;
     --container-4xl: 56rem;
     --text-sm: 0.875rem;
@@ -17,8 +20,13 @@
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
     --color-base0: #839496;
+    --color-base1: #93a1a1;
+    --color-base01: #586e75;
     --color-base02: #073642;
     --color-base03: #002b36;
+    --color-yellow: #b58900;
+    --color-orange: #cb4b16;
+    --color-red: #dc322f;
     --color-blue: #268bd2;
     --color-cyan: #2aa198;
   }
@@ -632,6 +640,9 @@
   .flex {
     display: flex;
   }
+  .table {
+    display: table;
+  }
   .h-16 {
     height: calc(var(--spacing) * 16);
   }
@@ -646,6 +657,12 @@
   }
   .max-w-4xl {
     max-width: var(--container-4xl);
+  }
+  .border-collapse {
+    border-collapse: collapse;
+  }
+  .resize {
+    resize: both;
   }
   .list-none {
     list-style-type: none;
@@ -665,6 +682,10 @@
   .rounded-md {
     border-radius: var(--radius-md);
   }
+  .border {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+  }
   .border-b-4 {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 4px;
@@ -677,6 +698,21 @@
   }
   .bg-base03 {
     background-color: var(--color-base03);
+  }
+  .fill-base0 {
+    fill: var(--color-base0);
+  }
+  .fill-current {
+    fill: currentcolor;
+  }
+  .fill-inherit {
+    fill: inherit;
+  }
+  .fill-orange {
+    fill: var(--color-orange);
+  }
+  .fill-red {
+    fill: var(--color-red);
   }
   .object-cover {
     object-fit: cover;
@@ -704,14 +740,51 @@
   .text-base0 {
     color: var(--color-base0);
   }
+  .text-base01 {
+    color: var(--color-base01);
+  }
+  .text-base1 {
+    color: var(--color-base1);
+  }
+  .text-base02 {
+    color: var(--color-base02);
+  }
   .text-blue {
     color: var(--color-blue);
+  }
+  .text-blue-500 {
+    color: var(--color-blue-500);
+  }
+  .text-green-500 {
+    color: var(--color-green-500);
+  }
+  .text-orange {
+    color: var(--color-orange);
+  }
+  .text-orange-500 {
+    color: var(--color-orange-500);
+  }
+  .text-red {
+    color: var(--color-red);
+  }
+  .text-yellow {
+    color: var(--color-yellow);
   }
   .no-underline {
     text-decoration-line: none;
   }
+  .underline {
+    text-decoration-line: underline;
+  }
   .opacity-90 {
     opacity: 90%;
+  }
+  .outline {
+    outline-style: var(--tw-outline-style);
+    outline-width: 1px;
+  }
+  .filter {
+    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
   }
   .dark\:invert {
     @media (prefers-color-scheme: dark) {
@@ -721,6 +794,11 @@
   }
 }
 @property --tw-border-style {
+  syntax: "*";
+  inherits: false;
+  initial-value: solid;
+}
+@property --tw-outline-style {
   syntax: "*";
   inherits: false;
   initial-value: solid;
@@ -782,6 +860,7 @@
   @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
       --tw-border-style: solid;
+      --tw-outline-style: solid;
       --tw-blur: initial;
       --tw-brightness: initial;
       --tw-contrast: initial;
