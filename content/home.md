@@ -13,7 +13,7 @@ So what's different? Well, I wrote the whole infrastructure implementation. The 
 
 Why didn't I just use GitHub? Well, this way I can both advertise my skills and have the freedom to improve on this solution. For example, I just included **hot reloading** to the backend. Meaning, when I develop in my laptop, as soon as save a change, my browser displays it. That way I can see what it will look like, and if something is wrong, I can pick it up straight away. Noice.
 
-Enjoy yours stay!
+Enjoy your stay!
 
 ### Posts
   <section>
