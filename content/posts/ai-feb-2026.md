@@ -4,9 +4,9 @@ date: 2026-02-19
 slug: ai-feb-2026
 ---
 
-# The stone age
+# The Stone Age
 
-## An AI in the sky.
+## An AI in the Sky
 
 This story starts with me being hired as yet another PhD to work at an
 AI startup. For real! I do not have a background in neural networks,
@@ -19,16 +19,16 @@ systems, really.
 But no surprise. While the startup had impressive code, it was not
 strictly using neural networks. It was a very smart and pragmatic use
 of business rules and pattern matching, with some machine learning
-layered over it. Nice UI, too. I mean, it was impressive
+layered over it. Nice UI, too. I mean, it was an impressive
 technology. But AI it was not. So I developed skepticism towards all
 overblown claims about AI changing the world. I mean, I saw inside it,
 and... it was lots of `if then else` and `loops`.
 
-# The bronze age
+# The Bronze Age
 
-## AI smell
+## AI Smell
 
-Over 2024 my team mates started using **Github Copilot** as a code
+Over 2024 my teammates started using **GitHub Copilot** as a code
 completion aid. From the start it displeased me. It gave them an
 undeniable edge on speed. They could churn out features while I was
 still reading code. However, the avalanche of code they created was
@@ -50,9 +50,9 @@ that their features had to be implemented twice: once as a demo, and
 once as production-grade code, and that was unacceptable. I felt sorry
 for them, but again, that made me wary of using AI.
 
-# The iron age
+# The Iron Age
 
-## AI kills Stack Overflow
+## AI Kills Stack Overflow
 
 In 2025 **Google** started giving AI overviews instead of having
 **Stack Overflow** links as the first search result. Including
@@ -78,14 +78,14 @@ guy was smoking, but I wanted some. And then I was made redundant,
 unsurprisingly.
 
 
-# The atomic age
+# The Atomic Age
 
-## Make straight the way of AI
+## Make Straight the Way of AI
 
 I started applying. Frequently. I basically spent my waking hours
 applying for jobs. I didn't waste time. I had years of resumes on
 file, so I just updated them and asked AI to write draft cover letters
-to address job adverstisements (*copy/paste* 😹). I would then clean
+to address job advertisements (*copy/paste* 😹). I would then clean
 up hallucinated experience and send it through. No time to wait.
 
 I did land some good interviews. And I failed pretty quick at
@@ -98,7 +98,7 @@ tradeoffs, and decided to use [Warp](https://www.warp.dev/) over a
 week for free, to gain experience. This website, all of it, was
 written in that week. I spent two days writing the **CI/CD** logic,
 the [Terraform](https://developer.hashicorp.com/terraform) code and
-the [Rust](https://rust-lang.org/) webserver. And then another two
+the [Rust](https://rust-lang.org/) web server. And then another two
 days polishing it.
 
 That was impressive. There were hiccups: the **Rust** logic relied on
@@ -107,7 +107,7 @@ had to fix that by hand. Still, I had never implemented an end-to-end
 website hosted in the cloud that fast! And mostly mindlessly! The hype
 was real.
 
-## From here to eternity
+## From Here to Eternity
 
 This is where my **AI** knowledge goes hockey-stick-shaped. I experimented
 many different packages for using **AI** in my IDE. I experimented
@@ -120,7 +120,7 @@ powered models under each.
 From that I learned that **models** and **programming languages**
 interact to waste time or make a developer productive.
 
-### Why programming language matter
+### Why Programming Language Matters
 
 The AI model relies on feedback to do its work. We developers do
 too. Currently developers rely on information coming from our IDEs
@@ -145,7 +145,7 @@ API. What do I care, I ask? I'm not writing the code, the AI is! The
 complexity ceased to be a barrier, how fast the AI can compile and get
 feedback is the real barrier. And **Rust** shines here.
 
-### Why models matter
+### Why Models Matter
 
 This is an easy one. Let's pitch GPT-4o against Gemini 2.5 Pro. GPT
 achieved 72.7% success on standard programming tasks, against 69.1% by
