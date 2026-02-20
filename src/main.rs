@@ -37,7 +37,7 @@ fn render_with_layout(
     let mut list_items = String::new();
     for post in posts {
         list_items.push_str(&format!(
-            "<li><a href=\"/posts/{}\" class=\"text-blue no-underline\">{}</a></li>",
+            "<li><a href=\"/posts/{}\" class=\"text-yellow no-underline\">{}</a></li>",
             post.slug, post.title
         ));
     }
