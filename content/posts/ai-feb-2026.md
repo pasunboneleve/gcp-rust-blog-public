@@ -187,3 +187,11 @@ programming workflows. **And we didn't even mention the lost time.**
 > And yes, I wrote the first paragraph of this section and the rest I
 > prompted [Grok](https://grok.com) to write. That's the world we live
 > in!
+
+# Conclusion
+
+Time did not stand still yet! We are all still swimming up the AI
+wave. I am catching speed, so are you. Who will surf down first?
+
+<br>
+<br>
