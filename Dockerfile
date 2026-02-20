@@ -3,6 +3,8 @@ FROM rust:slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    patch \
     pkg-config \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
