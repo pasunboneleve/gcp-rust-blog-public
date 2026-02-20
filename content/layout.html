@@ -13,11 +13,33 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css"
     />
+    <style>
+      .prose {
+        --tw-prose-body: var(--color-base0);
+        --tw-prose-headings: var(--color-base1);
+        --tw-prose-lead: var(--color-base1);
+        --tw-prose-links: var(--color-blue);
+        --tw-prose-bold: var(--color-base1);
+        --tw-prose-counters: var(--color-base1);
+        --tw-prose-bullets: var(--color-base01);
+        --tw-prose-hr: var(--color-base01);
+        --tw-prose-quotes: var(--color-base1);
+        --tw-prose-quote-borders: var(--color-base01);
+        --tw-prose-captions: var(--color-base1);
+        --tw-prose-kbd: var(--color-base1);
+        --tw-prose-kbd-shadows: color-mix(in oklab, var(--color-base1) 10%, transparent);
+        --tw-prose-code: var(--color-cyan);
+        --tw-prose-pre-code: var(--color-base0);
+        --tw-prose-pre-bg: var(--color-base02);
+        --tw-prose-th-borders: var(--color-base01);
+        --tw-prose-td-borders: var(--color-base01);
+      }
+    </style>
   </head>
   <body class="h-full bg-base03 text-base0 font-sans m-0">
     {{ banner }}
     <div class="flex h-full">
-      <main class="max-w-4xl mx-auto my-16 px-4 prose dark:invert">{{ content }}</main>
+      <main class="max-w-4xl mx-auto my-16 px-4 prose">{{ content }}</main>
       <aside class="w-64 bg-gradient-to-b from-base02 to-transparent p-4">
         <h3 class="mt-4">Posts</h3>
         <ul>
