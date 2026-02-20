@@ -10,7 +10,7 @@ use gray_matter::{engine::YAML, Matter};
 use tokio::{fs, net::TcpListener, sync::RwLock};
 use tower_http::services::{ServeDir, ServeFile};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use tracing::info;
+use tracing::{error, info};
 
 mod models;
 mod state;
@@ -113,7 +113,13 @@ async fn render_post(
             })
         }
     };
-    let markdown_body = result.unwrap().content;
+    let markdown_body = match result {
+        Ok(parsed) => parsed.content,
+        Err(e) => {
+            error!("Failed to parse post front matter content for '{}': {}", slug, e);
+            file_content
+        }
+    };
 
     let html_out = render_markdown_to_html(&markdown_body);
 
@@ -155,9 +161,19 @@ async fn initialize_state() -> RouterState {
 
     info!("RUST_ENV is set to development: {}", is_development);
 
-    let (banner_html, layout_html, home_html, not_found_html, posts) = load_content()
-        .await
-        .expect("Failed to load initial content files");
+    let (banner_html, layout_html, home_html, not_found_html, posts) = match load_content().await {
+        Ok(content) => content,
+        Err(e) => {
+            error!("Failed to load initial content files: {}", e);
+            (
+                String::new(),
+                "<!doctype html><html><body>{{ content }}</body></html>".to_string(),
+                "<p>Content loading failed during startup.</p>".to_string(),
+                "<p>Post '{{slug}}' not found.</p>".to_string(),
+                Vec::new(),
+            )
+        }
+    };
 
     let state = Arc::new(AppState {
         banner_html: RwLock::new(banner_html),
@@ -210,6 +226,15 @@ async fn main() {
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
     info!(%addr, "listening");
-    let listener = TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let listener = match TcpListener::bind(addr).await {
+        Ok(listener) => listener,
+        Err(e) => {
+            error!("Failed to bind to {}: {}", addr, e);
+            return;
+        }
+    };
+
+    if let Err(e) = axum::serve(listener, app).await {
+        error!("Server error: {}", e);
+    }
 }

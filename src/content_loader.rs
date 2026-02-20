@@ -18,8 +18,13 @@ pub async fn load_content() -> Result<(String, String, String, String, Vec<Post>
     
     let matter = Matter::<YAML>::new();
     let result = matter.parse::<FrontMatter>(&home_md_content);
-    
-    let markdown_body = result.unwrap().content;
+    let markdown_body = match result {
+        Ok(parsed) => parsed.content,
+        Err(e) => {
+            error!("Failed to parse home front matter: {}", e);
+            home_md_content
+        }
+    };
 
     // 2. Render Markdown to HTML
     let home_html = render_markdown_to_html(&markdown_body);
