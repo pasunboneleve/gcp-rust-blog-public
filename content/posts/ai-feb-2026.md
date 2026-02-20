@@ -154,9 +154,9 @@ would choose Gemini and save a lot of money, right? Not so fast!
 
 Assuming a typical coding project with **100 tasks** and a blended
 token cost (roughly 3:1 input-to-output ratio), **GPT-4o** (via
-ChatGPT) costs about **$4.38 per million tokens** ($2.50 input /
-$10.00 output), while **Gemini 2.5 Pro** is cheaper at around **$3.44
-per million tokens** ($1.25 input / $10.00 output for prompts ≤200k
+ChatGPT) costs about **\$4.38 per million tokens** (\$2.50 input /
+$10.00 output), while **Gemini 2.5 Pro** is cheaper at around **\$3.44
+per million tokens** (\$1.25 input / $10.00 output for prompts ≤200k
 tokens). This gives Gemini an upfront ~20–25% savings per
 token. However, when accounting for iteration-driven errors—where
 Gemini's slightly lower first-try success rate requires ~5 iterations
