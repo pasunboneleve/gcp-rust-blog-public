@@ -7,7 +7,6 @@ use axum::{
     Router,
 };
 use gray_matter::{engine::YAML, Matter};
-use pulldown_cmark::{html, Options, Parser};
 use tokio::{fs, net::TcpListener, sync::RwLock};
 use tower_http::services::{ServeDir, ServeFile};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -17,11 +16,13 @@ mod models;
 mod state;
 mod content_loader;
 mod hot_reload;
+mod markdown;
 
 use models::{Post, FrontMatter};
 use state::{AppState, RouterState};
 use content_loader::load_content;
 use hot_reload::{ws_handler, start_content_watcher};
+use markdown::render_markdown_to_html;
 
 // Load the hot reload script content at compile time
 const HOT_RELOAD_SCRIPT: &str = include_str!("hot_reload.js");
@@ -114,13 +115,7 @@ async fn render_post(
     };
     let markdown_body = result.unwrap().content;
 
-    let mut options = Options::empty();
-    options.insert(Options::ENABLE_STRIKETHROUGH);
-    options.insert(Options::ENABLE_TABLES);
-
-    let parser = Parser::new_ext(&markdown_body, options);
-    let mut html_out = String::new();
-    html::push_html(&mut html_out, parser);
+    let html_out = render_markdown_to_html(&markdown_body);
 
     let body = match front_matter {
         Some(fm) => format!(

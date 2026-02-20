@@ -1,9 +1,9 @@
 use tokio::fs;
 use gray_matter::{engine::YAML, Matter};
-use pulldown_cmark::{html, Options, Parser};
 use tracing::{error, info};
 
 use crate::models::{FrontMatter, Post};
+use crate::markdown::render_markdown_to_html;
 use crate::state::AppState;
 
 const CONTENT_DIR: &str = "content";
@@ -22,13 +22,7 @@ pub async fn load_content() -> Result<(String, String, String, String, Vec<Post>
     let markdown_body = result.unwrap().content;
 
     // 2. Render Markdown to HTML
-    let mut options = Options::empty();
-    options.insert(Options::ENABLE_STRIKETHROUGH);
-    options.insert(Options::ENABLE_TABLES);
-
-    let parser = Parser::new_ext(&markdown_body, options);
-    let mut home_html = String::new();
-    html::push_html(&mut home_html, parser);
+    let home_html = render_markdown_to_html(&markdown_body);
 
     // 3. Load posts metadata
     let mut posts: Vec<Post> = Vec::new();
