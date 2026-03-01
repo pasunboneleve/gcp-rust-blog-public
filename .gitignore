@@ -36,6 +36,7 @@ infra/*.auto.tfvars
 
 # AI droppings
 .aider*
+.beads/
 
 # Node
 node_modules/
