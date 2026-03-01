@@ -1,22 +1,27 @@
-# WARP.md
+# AGENTS.md – Instructions for coding agents
 
-This file provides guidance to WARP (warp.dev) when working with code in this repository.
+## Purpose
+This file defines implementation rules for AI agents working in this
+repository. It exists to keep code reviews consistent and make changes
+small, testable, and Rust-idiomatic.
+
+## Scope and non-scope
+- Scope: code changes for this repository, tests, and docs tied to
+  implementation.
+- Non-scope: product strategy changes and architecture rewrites that
+  conflict with `README.md` and `PLAN.md` without explicit approval.
 
 ## Common Development Commands
 
-### Local Development
-```bash
-# Run the blog locally (default port 8080)
-cargo run
+## Success criteria
+- New logic includes tests.
+- Work is delivered as small, reviewable increments aligned with
+  `PLAN.md` sequential steps.
+- `cargo clippy` and `cargo test` pass before proposing changes.
 
-# Run with custom port
-PORT=3000 cargo run
-
-# Check and format code
-cargo check
-cargo fmt
-cargo clippy
-```
+## Project overview
+Read `README.md` for product goals and `PLAN.md` for staged
+execution.
 
 ### Content Management
 - Blog posts are stored as Markdown files in `content/posts/`
@@ -120,3 +125,21 @@ content/
 - Uses minimal IAM permissions via dedicated service account
 - Secrets managed via environment variables, not baked into images
 - Public blog configured with `--allow-unauthenticated`
+
+## Engineering standards
+- No global state unless there is a clear documented need.
+- No hardcoded configuration. Keep configuration in config files.
+- NEVER vendor software.
+
+**MANDATORY WORKFLOW:**
+
+Use 'bd' for task tracking.
+Use $roborev:review after committing code changes and before rebasing.
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Commit work** - Always commit so roborev can check quality of
+   work; commit --amend until the functionality is implemented
+   correctly as verified by human and roborev.
+3. **Update issue status** - Close finished work, update in-progress items
+4. **Hand off** - Provide context for next session
