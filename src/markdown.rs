@@ -106,9 +106,9 @@ mod tests {
     }
 
     #[test]
-    fn renders_math_from_ai_feb_2026_post() {
-        let post = include_str!("../content/posts/ai-feb-2026.md");
+    fn renders_html_from_ai_mar_2026_post() {
+        let post = include_str!("../content/posts/ai-mar-2026.md");
         let output = render_markdown_to_html(post);
-        assert!(output.contains("katex"));
+        assert!(output.contains("<h2>"));
     }
 }

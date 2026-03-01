@@ -60,7 +60,7 @@ pub fn start_content_watcher(tx: RefreshBroadcaster, app_state: Arc<AppState>) {
                     let is_temp_file = event.event.paths.iter().any(|path| {
                         path.file_name()
                             .and_then(|name| name.to_str())
-                            .map_or(false, |s| s.starts_with(".#") || s.ends_with('~'))
+                            .is_some_and(|s| s.starts_with(".#") || s.ends_with('~'))
                     });
 
                     !is_temp_file

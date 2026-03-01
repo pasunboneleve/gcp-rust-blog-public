@@ -35,11 +35,15 @@
         --tw-prose-th-borders: var(--color-base01);
         --tw-prose-td-borders: var(--color-base01);
       }
+
+      .content-shell {
+        padding-bottom: 24px;
+      }
     </style>
   </head>
   <body class="h-full bg-base03 text-base0 font-sans m-0">
     {{ banner }}
-    <div class="flex h-full">
+    <div class="content-shell flex h-full">
       <main class="max-w-4xl mx-auto my-16 px-4 prose">{{ content }}</main>
       <aside class="w-64 bg-gradient-to-b from-base02 to-transparent p-4">
         <h3 class="mt-4">Posts</h3>

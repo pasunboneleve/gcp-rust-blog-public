@@ -26,12 +26,14 @@ use markdown::render_markdown_to_html;
 
 // Load the hot reload script content at compile time
 const HOT_RELOAD_SCRIPT: &str = include_str!("hot_reload.js");
+const HOT_RELOAD_TAG_START: &str = "<script>";
+const HOT_RELOAD_TAG_END: &str = "</script>";
 
 fn render_with_layout(
     layout: &str,
     banner: &str,
     content: &str,
-    posts: &Vec<Post>,
+    posts: &[Post],
     is_development: bool,
 ) -> String {
     let mut list_items = String::new();
@@ -48,11 +50,23 @@ fn render_with_layout(
         .replace("{{ posts }}", &list_items);
 
     if is_development {
-        // Wrap the JS content in <script> tags for injection
-        page = page.replace("</body>", &format!("<script>{}</script></body>", HOT_RELOAD_SCRIPT));
+        page = inject_hot_reload_script(page);
     }
 
     page
+}
+
+fn inject_hot_reload_script(page: String) -> String {
+    if page.contains(HOT_RELOAD_SCRIPT) {
+        return page;
+    }
+
+    let script_tag = format!("{HOT_RELOAD_TAG_START}{HOT_RELOAD_SCRIPT}{HOT_RELOAD_TAG_END}");
+    if let Some((head, tail)) = page.rsplit_once("</body>") {
+        format!("{head}{script_tag}</body>{tail}")
+    } else {
+        format!("{page}{script_tag}")
+    }
 }
 
 async fn homepage(
@@ -236,5 +250,44 @@ async fn main() {
 
     if let Err(e) = axum::serve(listener, app).await {
         error!("Server error: {}", e);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::render_with_layout;
+    use crate::models::Post;
+
+    fn test_layout() -> &'static str {
+        "<html><body>{{ banner }}<main>{{ content }}</main><ul>{{ posts }}</ul></body></html>"
+    }
+
+    fn test_posts() -> Vec<Post> {
+        vec![Post {
+            title: "First post".to_string(),
+            slug: "first-post".to_string(),
+        }]
+    }
+
+    #[test]
+    fn injects_hot_reload_script_once_in_development() {
+        let page =
+            render_with_layout(test_layout(), "<header>banner</header>", "content", &test_posts(), true);
+        assert_eq!(page.matches("new WebSocket").count(), 1);
+        assert_eq!(page.matches("<script>").count(), 1);
+    }
+
+    #[test]
+    fn injects_script_at_end_when_body_tag_is_missing() {
+        let layout = "<html><div>{{ banner }}</div><main>{{ content }}</main></html>";
+        let page = render_with_layout(layout, "banner", "content", &test_posts(), true);
+        assert!(page.ends_with("</script>"));
+        assert_eq!(page.matches("new WebSocket").count(), 1);
+    }
+
+    #[test]
+    fn does_not_inject_script_in_non_development() {
+        let page = render_with_layout(test_layout(), "banner", "content", &test_posts(), false);
+        assert_eq!(page.matches("new WebSocket").count(), 0);
     }
 }

@@ -35,7 +35,7 @@ pub async fn load_content() -> Result<(String, String, String, String, Vec<Post>
 
     while let Some(entry) = entries.next_entry().await? {
         let path = entry.path();
-        if path.extension().map_or(false, |ext| ext == "md") {
+        if path.extension().is_some_and(|ext| ext == "md") {
             let file_content = fs::read_to_string(&path).await?;
             let matter = Matter::<YAML>::new();
             let result = matter.parse::<FrontMatter>(&file_content);
