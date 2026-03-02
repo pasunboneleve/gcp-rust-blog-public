@@ -1,10 +1,12 @@
 [![GCP Rust Blog CI/CD](https://github.com/pasunboneleve/gcp-rust-blog-public/actions/workflows/deploy.yml/badge.svg)](https://github.com/pasunboneleve/gcp-rust-blog-public/actions/workflows/deploy.yml)
 
-# GCP Rust Blog
+# From Commit to Production, Automatically
 
-A minimal Rust web application built with Axum, designed for deployment on
-Google Cloud Run. This project demonstrates modern cloud-native development
-with Infrastructure as Code, automated CI/CD, and security best practices.
+This repository is a small Rust web application designed so that every change flows from commit to production without manual intervention.
+
+Infrastructure, CI/CD, and security are defined alongside the code and evolve with it as a single system. There are no hidden steps and no out-of-band processes.
+
+The focus is not the technology itself, but the shape of the system: making correct change the path of least resistance.
 
 ## Quick Start
 
@@ -37,7 +39,7 @@ with Infrastructure as Code, automated CI/CD, and security best practices.
    - Select **repo** scope (full control of private repositories)
    - Click **"Generate token"** and copy the token
    - Add the token to your `infra/prod.tfvars` file as `github_token`
-   
+
    ⚠️ **Important**: Store this token securely - GitHub won't show it again!
 
 ### Local Development
@@ -128,13 +130,13 @@ If `:app-base` does not exist yet, the workflow automatically falls back to a fu
 
 ## Key Features
 
-✅ **Infrastructure as Code** - Everything managed with OpenTofu  
-✅ **Secure CI/CD** - GitHub Actions with Workload Identity Federation  
-✅ **Least Privilege** - Dedicated service accounts with minimal permissions  
-✅ **Automated DNS** - Domain management through code  
-✅ **Container Security** - Multi-stage builds, non-root containers  
-✅ **Observability** - Structured logging with `tracing`  
-✅ **Faster content deploys** - Content-only changes reuse a prebuilt app base image  
+✅ **Infrastructure as Code** - Everything managed with OpenTofu
+✅ **Secure CI/CD** - GitHub Actions with Workload Identity Federation
+✅ **Least Privilege** - Dedicated service accounts with minimal permissions
+✅ **Automated DNS** - Domain management through code
+✅ **Container Security** - Multi-stage builds, non-root containers
+✅ **Observability** - Structured logging with `tracing`
+✅ **Faster content deploys** - Content-only changes reuse a prebuilt app base image
 
 ## Environment Configuration
 - `PORT` - Server port (default: 8080, required for Cloud Run)
