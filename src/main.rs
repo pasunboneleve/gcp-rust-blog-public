@@ -29,13 +29,7 @@ const HOT_RELOAD_SCRIPT: &str = include_str!("hot_reload.js");
 const HOT_RELOAD_TAG_START: &str = "<script>";
 const HOT_RELOAD_TAG_END: &str = "</script>";
 
-fn render_with_layout(
-    layout: &str,
-    banner: &str,
-    content: &str,
-    posts: &[Post],
-    is_development: bool,
-) -> String {
+fn render_post_list(posts: &[Post]) -> String {
     let mut list_items = String::new();
     for post in posts {
         list_items.push_str(&format!(
@@ -43,11 +37,22 @@ fn render_with_layout(
             post.slug, post.title
         ));
     }
+    list_items
+}
+
+fn render_with_layout(
+    layout: &str,
+    banner: &str,
+    content: &str,
+    posts: &[Post],
+    is_development: bool,
+) -> String {
+    let list_items = render_post_list(posts);
 
     let mut page = layout
         .replace("{{ banner }}", banner)
-        .replace("{{ content }}", content)
-        .replace("{{ posts }}", &list_items);
+        .replace("{{ posts }}", &list_items)
+        .replace("{{ content }}", content);
 
     if is_development {
         page = inject_hot_reload_script(page);
@@ -289,5 +294,12 @@ mod tests {
     fn does_not_inject_script_in_non_development() {
         let page = render_with_layout(test_layout(), "banner", "content", &test_posts(), false);
         assert_eq!(page.matches("new WebSocket").count(), 0);
+    }
+
+    #[test]
+    fn does_not_replace_posts_placeholder_inside_content() {
+        let content = "<p>literal {{ posts }}</p>";
+        let page = render_with_layout(test_layout(), "banner", content, &test_posts(), false);
+        assert!(page.contains("<p>literal {{ posts }}</p>"));
     }
 }
