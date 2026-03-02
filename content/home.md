@@ -26,10 +26,3 @@ the product.
 - Connect on <a href="https://linkedin.com/in/dmvianna" target="_blank" rel="noopener noreferrer">LinkedIn</a> — the broader context.
 
 Enjoy your stay!
-
-### Posts
-  <section>
-    <ul>
-      {{ posts }}
-    </ul>
-  </section>
