@@ -29,8 +29,8 @@ graph TB
 
         subgraph "DNS & Networking"
             DNS[Cloud DNS Zone]
-            CNAME[CNAME Record]
             A[A Records]
+            LB[Global HTTPS Load Balancer]
         end
 
         subgraph "APIs"
@@ -63,14 +63,13 @@ graph TB
 
     %% DNS Flow
     SQ -->|Nameservers| DNS
-    DNS --> CNAME
     DNS --> A
-    CNAME -->|Points to| CR
-    A -->|Redirect to| CNAME
+    A -->|Points to| LB
+    LB -->|Routes via serverless NEG| CR
 
     %% User Traffic
-    USERS -->|HTTPS| CNAME
-    CNAME -->|Route| CR
+    USERS -->|HTTPS| LB
+    LB -->|Route| CR
 
     %% Styling
     classDef googleCloud fill:#4285f4,stroke:#1a73e8,stroke-width:2px,color:#fff
@@ -106,8 +105,8 @@ graph TB
 - **Zone**: `boneleve-blog`
 - **Domain**: `boneleve.blog`
 - **Records**:
-  - `www.boneleve.blog` → CNAME → Cloud Run service
-  - `boneleve.blog` → A records → Google redirect service IPs
+  - `www.boneleve.blog` → A record → Global Load Balancer IP
+  - `boneleve.blog` → A record → Global Load Balancer IP
 
 ### 4. APIs Enabled
 - Cloud Run API (`run.googleapis.com`)
@@ -246,11 +245,12 @@ graph LR
 
     subgraph "DNS Records"
         APEX[boneleve.blog<br/>A Records]
-        WWW[www.boneleve.blog<br/>CNAME]
+        WWW[www.boneleve.blog<br/>A Record]
     end
 
     subgraph "Google Cloud"
-        REDIR[Google Redirect IPs<br/>216.239.*.21]
+        LBIP[Global Load Balancer IP]
+        LB[Global HTTPS Load Balancer]
         CR[Cloud Run Service]
     end
 
@@ -258,9 +258,10 @@ graph LR
     NS --> ZONE
     ZONE --> APEX
     ZONE --> WWW
-    APEX --> REDIR
-    WWW --> CR
-    REDIR -.->|Redirects to| WWW
+    APEX --> LBIP
+    WWW --> LBIP
+    LBIP --> LB
+    LB --> CR
 
     classDef external fill:#ea4335,stroke:#d33b2c,stroke-width:2px,color:#fff
     classDef dns fill:#f9ab00,stroke:#e37400,stroke-width:2px,color:#fff
@@ -268,7 +269,7 @@ graph LR
 
     class SQ external
     class NS,ZONE,APEX,WWW dns
-    class REDIR,CR gcp
+    class LBIP,LB,CR gcp
 ```
 
 ### Current DNS Setup
@@ -280,11 +281,8 @@ ns-cloud-e3.googledomains.com
 ns-cloud-e4.googledomains.com
 
 # DNS Records (managed by OpenTofu)
-www.boneleve.blog.  300  CNAME  {CLOUD_RUN_SERVICE_URL}.
-boneleve.blog.      300  A      216.239.32.21
-boneleve.blog.      300  A      216.239.34.21
-boneleve.blog.      300  A      216.239.36.21
-boneleve.blog.      300  A      216.239.38.21
+www.boneleve.blog.  300  A      {LOAD_BALANCER_GLOBAL_IP}
+boneleve.blog.      300  A      {LOAD_BALANCER_GLOBAL_IP}
 ```
 
 ### SSL/TLS Configuration

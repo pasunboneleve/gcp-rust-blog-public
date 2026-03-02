@@ -15,6 +15,7 @@ The project implements a **least-privilege, multi-service-account architecture**
   - `roles/iam.serviceAccountUser` - Use service accounts
   - `roles/artifactregistry.writer` - Push container images
   - `roles/serviceusage.serviceUsageAdmin` - Enable required APIs
+  - `roles/compute.loadBalancerAdmin` - Manage load balancer resources
 
 ### 2. Administrative Service Account
 - **Email**: `infrastructure-admin@{PROJECT_ID}.iam.gserviceaccount.com`
@@ -43,13 +44,13 @@ GitHub OIDC Token → Google STS → Service Account Impersonation → GCP Resou
 ✅ **No stored secrets** - No service account keys in GitHub
 ✅ **Short-lived tokens** - GitHub OIDC tokens expire quickly
 ✅ **Repository-scoped** - Only specific GitHub repo can authenticate
-✅ **Attribute conditions** - Restricted to specific repository and ref patterns
+✅ **Attribute conditions** - Restricted to a specific repository (`owner/repo`)
 
 ### Configuration
 - **Workload Identity Pool**: `projects/{PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool`
 - **Provider**: GitHub OIDC (`https://token.actions.githubusercontent.com`)
 - **Audience**: `sts.googleapis.com`
-- **Condition**: `attribute.repository == <github_owner>/gcp-rust-blog'`
+- **Condition**: `attribute.repository == '{github_owner}/{github_repo}'`
 
 ## Organization Policies
 
@@ -97,7 +98,7 @@ FROM debian:bookworm-slim
 - **Managed DNS Zone**: Google Cloud DNS with OpenTofu management
 - **Domain Validation**: Required before DNS management transfer
 - **SSL/TLS**: Automatic certificate provisioning and renewal
-- **CNAME Configuration**: `www.boneleve.blog` → Cloud Run service
+- **DNS Record Strategy**: `A` records for apex and `www` both point to the global HTTPS load balancer IP
 
 ## Secrets Management
 
