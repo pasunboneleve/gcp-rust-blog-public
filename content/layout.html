@@ -19,7 +19,7 @@
         --tw-prose-body: var(--color-base2);
         --tw-prose-headings: var(--color-base2);
         --tw-prose-lead: var(--color-base1);
-        --tw-prose-links: var(--color-blue);
+        --tw-prose-links: var(--color-cyan);
         --tw-prose-bold: var(--color-base2);
         --tw-prose-counters: var(--color-base1);
         --tw-prose-bullets: var(--color-base01);
@@ -34,6 +34,19 @@
         --tw-prose-pre-bg: var(--color-base02);
         --tw-prose-th-borders: var(--color-base01);
         --tw-prose-td-borders: var(--color-base01);
+      }
+
+      .prose a {
+        text-decoration-color: color-mix(in oklab, var(--color-cyan) 45%, transparent);
+      }
+
+      .prose a:hover {
+        color: var(--color-base1);
+        text-decoration-color: color-mix(in oklab, var(--color-base1) 60%, transparent);
+      }
+
+      .prose figure > a {
+        color: var(--color-cyan);
       }
 
       .page-layout {
