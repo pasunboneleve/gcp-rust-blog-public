@@ -22,6 +22,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Google Auth
       id: auth
@@ -40,11 +42,76 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Build and push container image
+    - name: Detect content-only change
+      id: change_scope
+      run: |
+        set -euo pipefail
+        BEFORE="${{ github.event.before }}"
+        CURRENT="${{ github.sha }}"
+
+        if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+          echo "content_only=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        CHANGED="$(git diff --name-only "$BEFORE" "$CURRENT")"
+        if [ -z "$CHANGED" ]; then
+          echo "content_only=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        CONTENT_ONLY=true
+        while IFS= read -r file; do
+          case "$file" in
+            content/*) ;;
+            *) CONTENT_ONLY=false; break ;;
+          esac
+        done <<< "$CHANGED"
+
+        echo "content_only=$CONTENT_ONLY" >> "$GITHUB_OUTPUT"
+
+    - name: Check for app-base image
+      id: app_base
+      if: steps.change_scope.outputs.content_only == 'true'
+      run: |
+        set -euo pipefail
+        APP_BASE_IMAGE="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_REPO }}/${{ env.GCP_SERVICE_NAME }}:app-base"
+        if docker pull "$APP_BASE_IMAGE" >/dev/null 2>&1; then
+          echo "available=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "available=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Build and push app-base image
+      if: steps.change_scope.outputs.content_only != 'true' || steps.app_base.outputs.available != 'true'
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        target: runtime-base
+        push: true
+        tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_REPO }}/${{ env.GCP_SERVICE_NAME }}:app-base
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build and push full container image
+      if: steps.change_scope.outputs.content_only != 'true' || steps.app_base.outputs.available != 'true'
       uses: docker/build-push-action@v5
       with:
         context: .
         push: true
+        tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_REPO }}/${{ env.GCP_SERVICE_NAME }}:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build and push content-only container image
+      if: steps.change_scope.outputs.content_only == 'true' && steps.app_base.outputs.available == 'true'
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: .github/docker/content-overlay.Dockerfile
+        push: true
+        build-args: |
+          BASE_IMAGE=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_REPO }}/${{ env.GCP_SERVICE_NAME }}:app-base
         tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_REPO }}/${{ env.GCP_SERVICE_NAME }}:${{ github.sha }}
         cache-from: type=gha
         cache-to: type=gha,mode=max

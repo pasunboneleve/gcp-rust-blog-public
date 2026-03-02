@@ -18,8 +18,8 @@ COPY . .
 # Build the application
 RUN cargo build --release
 
-# Runtime stage
-FROM debian:bookworm-slim
+# Runtime base stage (binary only)
+FROM debian:bookworm-slim AS runtime-base
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
@@ -35,9 +35,6 @@ WORKDIR /app
 # Copy the binary from builder stage
 COPY --from=builder /app/target/release/gcp-rust-blog /app/gcp-rust-blog
 
-# Copy content directory
-COPY --from=builder /app/content /app/content
-
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app
 
@@ -49,3 +46,9 @@ EXPOSE 8080
 
 # Run the binary
 CMD ["./gcp-rust-blog"]
+
+# Runtime stage (binary + content)
+FROM runtime-base
+
+# Copy content directory
+COPY --from=builder --chown=appuser:appuser /app/content /app/content
