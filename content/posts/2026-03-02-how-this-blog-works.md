@@ -26,11 +26,11 @@ To minimise the cost of change.
 ```mermaid
 flowchart TD
 
-  USER["Reader's browser<br/>(person visiting the blog)"]
-  INTERNET["Internet + DNS + TLS"]
-  CLOUDRUN["Cloud Run service<br/>(container running Axum app)"]
-  APP["Rust application<br/>(Axum router + handlers)"]
-  CONTENT["content/*<br/>(Markdown + layout fragments)"]
+  USER["👤 Reader"]
+  INTERNET["🌐 Internet + DNS + TLS"]
+  CLOUDRUN["☁️ Cloud Run service<br/>(container running Axum app)"]
+  APP["🦀 Rust application<br/>(Axum router + handlers)"]
+  CONTENT["📝 content/*<br/>(Markdown + layout fragments)"]
 
   USER --> INTERNET --> CLOUDRUN --> APP --> CONTENT
 ```
@@ -52,11 +52,11 @@ Everything else exists to support that moment.
 ```mermaid
 flowchart TD
 
-  EDIT["Edit src/* or content/*"]
-  RUN["cargo run<br/>(RUST_ENV=development)"]
-  WATCH["File watcher"]
-  WS["Websocket reload signal"]
-  BROWSER["Local browser refresh"]
+  EDIT["✍️ Edit src/* or content/*"]
+  RUN["🦀 cargo run<br/>(RUST_ENV=development)"]
+  WATCH["👀 File watcher"]
+  WS["🔌 Websocket reload signal"]
+  BROWSER["💻 Local browser refresh"]
 
   EDIT --> RUN
   RUN --> WATCH
@@ -128,13 +128,13 @@ Constraint keeps surface area small.
 ```mermaid
 flowchart TD
 
-  PUSH["git push to main"]
-  GHA["GitHub Actions"]
-  AUTH["OIDC → Workload Identity Federation"]
-  BUILD["Docker build"]
-  AR["Artifact Registry"]
-  DEPLOY["Cloud Run deploy"]
-  USERS["Readers receive new version"]
+  PUSH["📤 git push to main"]
+  GHA["⚙️ GitHub Actions"]
+  AUTH["🔐 OIDC → Workload Identity Federation"]
+  BUILD["🐳 Docker build"]
+  AR["📦 Artifact Registry"]
+  DEPLOY["🚀 Cloud Run deploy"]
+  USERS["👥 Readers receive new version"]
 
   PUSH --> GHA
   GHA --> AUTH
