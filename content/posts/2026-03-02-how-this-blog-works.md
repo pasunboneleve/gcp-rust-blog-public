@@ -13,7 +13,7 @@ Until you take the entire path seriously.
 - DNS → TLS → request routing
 - content change → release artifact
 
-This post describes the system as it exists **today**, and why each piece is there.
+This post describes <a href="https://github.com/pasunboneleve/gcp-rust-blog-public" target="_blank" rel="noopener noreferrer">the system as it exists <strong>today</strong></a>, and why each piece is there.
 
 Not to run a blog.
 

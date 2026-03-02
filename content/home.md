@@ -22,7 +22,7 @@ The code is public.  The infrastructure is declared.  The process is
 the product.
 
 - Read the posts — the thinking behind the decisions.
-- Explore the [GitHub repository](https://github.com/pasunboneleve/gcp-rust-blog-public) — the system itself.
+- Explore the <a href="https://github.com/pasunboneleve/gcp-rust-blog-public" target="_blank" rel="noopener noreferrer">gcp-rust-blog-public repository</a> — the system itself.
 - Connect on <a href="https://linkedin.com/in/dmvianna" target="_blank" rel="noopener noreferrer">LinkedIn</a> — the broader context.
 
 Enjoy your stay!
