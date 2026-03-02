@@ -36,15 +36,21 @@
         --tw-prose-td-borders: var(--color-base01);
       }
 
-      .content-shell {
-        padding-bottom: 24px;
+      .page-layout {
+        align-items: flex-start;
       }
+
+      .content-main {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
     </style>
   </head>
   <body class="h-full bg-base03 text-base0 font-sans m-0">
     {{ banner }}
-    <div class="content-shell flex h-full">
-      <main class="max-w-4xl mx-auto my-16 px-4 prose">{{ content }}</main>
+    <div class="page-layout flex">
+      <main class="content-main max-w-4xl mx-auto my-16 px-4 prose">{{ content }}</main>
       <aside class="w-64 bg-gradient-to-b from-base02 to-transparent p-4">
         <h3 class="mt-4">Posts</h3>
         <ul>
