@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     fn renders_html_from_ai_mar_2026_post() {
-        let post = include_str!("../content/posts/ai-mar-2026.md");
+        let post = include_str!("../content/posts/2026-03-02-strangelove-ai-systems.md");
         let output = render_markdown_to_html(post);
         assert!(output.contains("<h2>"));
     }
