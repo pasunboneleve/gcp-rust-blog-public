@@ -105,6 +105,20 @@ To deploy your own instance:
    - Provisions infrastructure components
 4. **Deploy**: Push to main branch triggers automatic deployment
 
+### CI/CD Build Modes
+
+The deploy workflow uses two build modes:
+
+- **Full build**: Runs when application/infrastructure code changes. Builds and pushes:
+  - `:${GITHUB_SHA}` (deploy image)
+  - `:app-base` (binary/runtime base image)
+- **Content-only build**: Runs when all changed files are under `content/`.
+  - Reuses `:app-base`
+  - Builds a lightweight overlay image that only updates `/app/content`
+  - Pushes `:${GITHUB_SHA}` and deploys it
+
+If `:app-base` does not exist yet, the workflow automatically falls back to a full build and publishes it for future content-only deployments.
+
 ## Documentation
 
 - **[Security Architecture](docs/SECURITY.md)** - Service accounts, IAM, and
@@ -120,6 +134,7 @@ To deploy your own instance:
 ✅ **Automated DNS** - Domain management through code  
 ✅ **Container Security** - Multi-stage builds, non-root containers  
 ✅ **Observability** - Structured logging with `tracing`  
+✅ **Faster content deploys** - Content-only changes reuse a prebuilt app base image  
 
 ## Environment Configuration
 - `PORT` - Server port (default: 8080, required for Cloud Run)

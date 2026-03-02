@@ -204,19 +204,30 @@ sequenceDiagram
     Dev->>GH: git push main
     GH->>GHA: Trigger workflow
     GHA->>GCP: Authenticate (OIDC + WIF)
-    GHA->>GHA: Build Docker image
-    GHA->>GCP: Push to Artifact Registry
+    GHA->>GHA: Detect changed paths
+    alt content/** only + app-base exists
+        GHA->>GHA: Build content overlay image
+    else app/base or code changed
+        GHA->>GHA: Build app-base image
+        GHA->>GHA: Build full runtime image
+    end
+    GHA->>GCP: Push image(s) to Artifact Registry
     GHA->>CR: Deploy new revision
     CR->>CR: Health checks pass
     CR->>GHA: Deployment success
 ```
 
 ### Build Process
-1. **Multi-stage Docker build** in GitHub Actions runners
-2. **Rust compilation** in builder stage with dependency caching
-3. **Runtime image** with minimal Debian base and application binary
-4. **Image push** to Artifact Registry with commit SHA tag
-5. **Cloud Run deployment** with new image and service configuration
+1. **Change scope detection** determines whether a push is content-only (`content/**`) or includes code/infrastructure.
+2. **Full build path** (code/infrastructure changes, or missing base image):
+   - Build `runtime-base` image (`:app-base`) with runtime dependencies and compiled binary.
+   - Build full runtime image with `/app/content`.
+3. **Content-only path** (only `content/**` changed and `:app-base` exists):
+   - Build overlay image from `:app-base`.
+   - Copy only `content/` into `/app/content`.
+4. **Image push** to Artifact Registry with commit SHA tag (`:${GITHUB_SHA}`).
+5. **Cloud Run deployment** with the new commit-tagged image.
+6. **Bootstrap fallback**: if `:app-base` does not exist yet, workflow automatically runs the full build path and publishes it for future content-only deploys.
 
 ## DNS Configuration
 
