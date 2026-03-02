@@ -4,6 +4,14 @@ date: 2026-03-02
 slug: ai-mar-2026
 ---
 
+<figure>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/8/85/Dr._Strangelove_-_The_War_Room.png" alt="The War Room scene from Dr. Strangelove" loading="lazy" />
+  <figcaption>
+    <strong>Figure 1.</strong> The War Room in <em>Dr. Strangelove</em>, a visual metaphor for systemic risk and escalation.
+    Source: <a href="https://commons.wikimedia.org/wiki/File:Dr._Strangelove_-_The_War_Room.png" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain).
+  </figcaption>
+</figure>
+
 When I joined an AI startup in 2021, I expected to find lots of
 machine learning. It was the flavour of the month. Every company was
 “AI-powered.” I assumed I would walk into a codebase dense with
@@ -29,7 +37,7 @@ That was my first shift in perspective.
 ## The First Stage: Acceleration
 
 A few years later, the next wave arrived: AI-assisted coding. Tools
-like Copilot began generating entire functions, tests, even small
+like <a href="https://github.com/features/copilot" target="_blank" rel="noopener noreferrer">Copilot</a> began generating entire functions, tests, even small
 modules. The effect was immediate. This is the first stage of AI
 adoption:
 
@@ -116,11 +124,23 @@ becomes scarce. And coherence is a human responsibility.
 
 ## The Strangelove Moment
 
-In *Dr Strangelove*, the danger wasn’t the machine itself. It was the
-system built around it. AI is similar. Used naively, it increases
+In <a href="https://www.imdb.com/title/tt0057012/" target="_blank" rel="noopener noreferrer">Dr Strangelove</a>, the danger wasn’t the machine itself. It was the
+system built around it.
+
+AI is similar. Used naively, it increases
 entropy faster than we can contain it. Used deliberately, it
 compresses feedback loops and expands the space of ideas we can
-explore. I no longer worry about AI. I pay attention to how we
+explore. I no longer worry about AI.
+
+<figure>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/b/bb/Dr._Strangelove.png" alt="Dr. Strangelove close-up (Peter Sellers)" loading="lazy" style="display:block;margin:0 auto;" />
+  <figcaption>
+    <strong>Figure 2.</strong> Dr. Strangelove (Peter Sellers): “It’s simple to understand. And completely credible and convincing.”
+    Source: <a href="https://commons.wikimedia.org/wiki/File:Dr._Strangelove.png" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain). Quote reference: <a href="https://en.wikiquote.org/wiki/Dr_Strangelove" target="_blank" rel="noopener noreferrer">Wikiquote</a>.
+  </figcaption>
+</figure>
+
+I pay attention to how we
 choose to use it. Because the future of engineering will not be
 determined by how fast we can generate code. It will be determined by
 how intentionally we shape systems.
