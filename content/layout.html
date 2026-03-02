@@ -45,6 +45,26 @@
         min-width: 0;
       }
 
+      .mermaid-block {
+        margin: 1.5rem 0;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        background: transparent;
+      }
+
+      .mermaid {
+        padding: 0;
+        border-radius: 0.4rem;
+        background: transparent;
+      }
+
+      .mermaid svg {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto;
+      }
+
     </style>
   </head>
   <body class="h-full bg-base03 text-base0 font-sans m-0">
@@ -58,5 +78,49 @@
         </ul>
       </aside>
     </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"
+      integrity="sha384-jFhLSLFn4m565eRAS0CDMWubMqOtfZWWbE8kqgGdU+VHbJ3B2G/4X8u+0BM8MtdU"
+      crossorigin="anonymous">
+    </script>
+    <script>
+      const mermaidBlocks = document.querySelectorAll("pre > code.language-mermaid");
+      if (mermaidBlocks.length > 0 && typeof mermaid !== "undefined") {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: "base",
+          flowchart: { useMaxWidth: true, htmlLabels: true },
+          themeVariables: {
+            fontSize: "18px",
+            lineColor: "#93a1a1",
+            primaryBorderColor: "#2aa198",
+            primaryTextColor: "#eee8d5",
+            primaryColor: "#073642",
+            clusterBorder: "#2aa198",
+            edgeLabelBackground: "#002b36",
+          },
+        });
+
+        for (const block of mermaidBlocks) {
+          const wrapper = document.createElement("figure");
+          wrapper.className = "mermaid-block";
+
+          const container = document.createElement("div");
+          container.className = "mermaid";
+          container.textContent = block.textContent ?? "";
+
+          wrapper.appendChild(container);
+
+          const pre = block.closest("pre");
+          if (pre) {
+            pre.before(wrapper);
+            pre.hidden = true;
+          }
+        }
+        mermaid.run({ querySelector: ".mermaid" }).catch((err) => {
+          console.error("Mermaid render failed", err);
+        });
+      }
+    </script>
   </body>
 </html>
