@@ -151,7 +151,7 @@ That is the release process.
 
 GitHub Actions:
 
-1. Authenticates to GCP using OIDC
+1. Authenticates to <a href="https://cloud.google.com/" target="_blank" rel="noopener noreferrer">Google Cloud (GCP)</a> using <a href="https://openid.net/connect/" target="_blank" rel="noopener noreferrer">OIDC</a>
 (no stored service account keys)
 
 2. Detects change type:
@@ -204,13 +204,13 @@ If it is not declared, it does not exist.
 
 - No long-lived credentials in CI
 
-- OIDC federation between GitHub and GCP
+- <a href="https://openid.net/connect/" target="_blank" rel="noopener noreferrer">OIDC</a> federation between GitHub and <a href="https://cloud.google.com/" target="_blank" rel="noopener noreferrer">GCP</a>
 
 - Runtime container runs as non-root
 
 - Multi-stage build to minimise attack surface
 
-- Runtime does not require GCP API access
+- Runtime does not require <a href="https://cloud.google.com/apis" target="_blank" rel="noopener noreferrer">GCP API</a> access
 
 The container can serve traffic.
 
