@@ -182,15 +182,15 @@ It should not pay the full rebuild tax.
 
 ## Infrastructure
 
-Infrastructure is declared in OpenTofu.
+Infrastructure is declared in <a href="https://opentofu.org/" target="_blank" rel="noopener noreferrer">OpenTofu</a>.
 
 It provisions:
 
-- Artifact Registry
-- Cloud Run service
-- Workload Identity Federation
-- IAM bindings (least privilege)
-- DNS records
+- <a href="https://cloud.google.com/artifact-registry/docs" target="_blank" rel="noopener noreferrer">Artifact Registry</a>
+- <a href="https://cloud.google.com/run/docs" target="_blank" rel="noopener noreferrer">Cloud Run service</a>
+- <a href="https://cloud.google.com/iam/docs/workload-identity-federation" target="_blank" rel="noopener noreferrer">Workload Identity Federation</a>
+- <a href="https://cloud.google.com/iam/docs/overview" target="_blank" rel="noopener noreferrer">IAM bindings</a> (least privilege)
+- <a href="https://cloud.google.com/dns/docs" target="_blank" rel="noopener noreferrer">DNS records</a>
 
 There are no manual console steps in steady state.
 
