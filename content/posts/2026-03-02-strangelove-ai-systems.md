@@ -12,8 +12,8 @@ slug: 2026-03-02-strangelove-ai-systems
   </figcaption>
 </figure>
 
-When I joined an AI startup in 2021, I expected to find lots of
-machine learning. It was the flavour of the month. Every company was
+When I joined an startup in 2021, I expected to find lots of machine
+learning. It was the flavour of the month. Every company was
 “AI-powered.” I assumed I would walk into a codebase dense with
 models, training pipelines, feature engineering, and statistical
 nuance.
@@ -59,8 +59,8 @@ The cost isn’t writing code. The cost is evolving it.
 
 ## The Second Stage: Friction
 
-But after a few cycles, a different pattern emerges. Time to *write*
-a feature decreases. Time to *integrate* a feature increases. Builds
+After a few cycles, a different pattern emerges. Time to *write* a
+feature decreases. Time to *integrate* a feature increases. Builds
 grow slower. More files are touched per change. Code reviews take
 longer because reviewers must reconstruct intent from generated
 structure. Seemingly local changes trigger failures in distant parts
