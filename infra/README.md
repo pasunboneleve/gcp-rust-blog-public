@@ -34,8 +34,11 @@ terraform apply \
   -var="pool_id=github-pool" \
   -var="provider_id=github-provider" \
   -var="github_owner=<GITHUB_OWNER>" \
-  -var="github_repo=<GITHUB_REPO>"
-# Note: service_account_email is automatically constructed from project_id
+  -var="github_repo=<GITHUB_REPO>" \
+  -var="service_name=blog" \
+  -var="domain_name=<DOMAIN_NAME>" \
+  -var="dns_zone_name=<DNS_ZONE_NAME>" \
+  -var="admin_user_email=<ADMIN_USER_EMAIL>"
 ```
 
 Outputs will include the WIF resource names.

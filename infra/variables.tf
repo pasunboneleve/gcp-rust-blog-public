@@ -33,8 +33,28 @@ variable "github_repo" {
   type        = string
 }
 
+variable "service_name" {
+  description = "Cloud Run service name"
+  type        = string
+}
+
+variable "domain_name" {
+  description = "Primary domain name (without trailing dot), e.g. example.com"
+  type        = string
+}
+
+variable "dns_zone_name" {
+  description = "Cloud DNS managed zone resource name"
+  type        = string
+}
+
 variable "organization_id" {
   description = "Google Cloud Organization ID (for org-level policies)"
+  type        = string
+}
+
+variable "admin_user_email" {
+  description = "Email allowed to impersonate the admin service account"
   type        = string
 }
 

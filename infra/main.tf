@@ -119,9 +119,9 @@ resource "google_project_iam_member" "sa_roles" {
 # DNS Zone for boneleve.blog
 resource "google_dns_managed_zone" "boneleve_blog" {
   project     = var.project_id
-  name        = "boneleve-blog"
-  dns_name    = "boneleve.blog."
-  description = "DNS zone for boneleve.blog"
+  name        = var.dns_zone_name
+  dns_name    = "${var.domain_name}."
+  description = "DNS zone for ${var.domain_name}"
 
   depends_on = [google_project_service.apis]
 }
@@ -130,7 +130,7 @@ resource "google_dns_managed_zone" "boneleve_blog" {
 resource "google_dns_record_set" "blog_www_a_record" {
   project      = var.project_id
   managed_zone = google_dns_managed_zone.boneleve_blog.name
-  name         = "www.boneleve.blog."
+  name         = "www.${var.domain_name}."
   type         = "A"
   ttl          = 300
   rrdatas      = [google_compute_global_address.blog_ip.address]
@@ -142,7 +142,7 @@ resource "google_dns_record_set" "blog_www_a_record" {
 resource "google_cloud_run_service_iam_member" "public_access" {
   location = var.region
   project  = var.project_id
-  service  = "blog"
+  service  = var.service_name
   role     = "roles/run.invoker"
   member   = "allUsers"
 
@@ -173,7 +173,7 @@ resource "google_service_account_iam_binding" "admin_impersonation" {
   service_account_id = google_service_account.admin.id
   role               = "roles/iam.serviceAccountTokenCreator"
   members = [
-    "user:admin@boneleve.blog"
+    "user:${var.admin_user_email}"
   ]
 }
 
@@ -181,7 +181,7 @@ resource "google_service_account_iam_binding" "admin_user" {
   service_account_id = google_service_account.admin.id
   role               = "roles/iam.serviceAccountUser"
   members = [
-    "user:admin@boneleve.blog"
+    "user:${var.admin_user_email}"
   ]
 }
 
@@ -189,7 +189,7 @@ resource "google_service_account_iam_binding" "admin_user" {
 resource "google_dns_record_set" "blog_apex_a_record" {
   project      = var.project_id
   managed_zone = google_dns_managed_zone.boneleve_blog.name
-  name         = "boneleve.blog."
+  name         = "${var.domain_name}."
   type         = "A"
   ttl          = 300
   rrdatas      = [google_compute_global_address.blog_ip.address]

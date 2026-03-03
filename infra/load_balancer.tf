@@ -17,8 +17,8 @@ resource "google_compute_managed_ssl_certificate" "blog_ssl" {
 
   managed {
     domains = [
-      "boneleve.blog",
-      "www.boneleve.blog"
+      var.domain_name,
+      "www.${var.domain_name}"
     ]
   }
 
@@ -33,7 +33,7 @@ resource "google_compute_region_network_endpoint_group" "blog_neg" {
   region                = var.region
 
   cloud_run {
-    service = "blog"
+    service = var.service_name
   }
 
   depends_on = [google_project_service.apis]
