@@ -64,6 +64,10 @@ pub async fn load_content() -> Result<(String, String, String, String, Vec<Post>
             });
         }
     }
+
+    // Keep listing stable across environments and fs implementations.
+    posts.sort_by(|a, b| b.slug.cmp(&a.slug));
+
     Ok((banner_html, layout_html, home_html, not_found_html, posts))
 }
 

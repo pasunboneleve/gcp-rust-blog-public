@@ -73,6 +73,20 @@ jobs:
 
         echo "content_only=$CONTENT_ONLY" >> "$GITHUB_OUTPUT"
 
+    - name: Set up Rust toolchain
+      if: steps.change_scope.outputs.content_only != 'true'
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy
+
+    - name: Run tests
+      if: steps.change_scope.outputs.content_only != 'true'
+      run: cargo test --all-targets
+
+    - name: Run clippy
+      if: steps.change_scope.outputs.content_only != 'true'
+      run: cargo clippy --all-targets --all-features -- -D warnings
+
     - name: Check for app-base image
       id: app_base
       if: steps.change_scope.outputs.content_only == 'true'

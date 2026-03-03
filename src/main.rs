@@ -2,7 +2,8 @@ use std::{net::SocketAddr, sync::Arc};
 
 use axum::{
     extract::{Path, State},
-    response::Html,
+    http::StatusCode,
+    response::{Html, IntoResponse, Response},
     routing::{get, get_service},
     Router,
 };
@@ -95,27 +96,15 @@ async fn homepage(
 async fn render_post(
     Path(slug): Path<String>,
     State(state): State<Arc<AppState>>,
-) -> Html<String> {
+) -> Response {
+    if !is_valid_post_slug(&slug) {
+        return render_not_found_response(&state, &slug).await;
+    }
+
     let path = format!("content/posts/{}.md", slug);
     let file_content = match fs::read_to_string(&path).await {
         Ok(c) => c,
-        Err(_) => {
-            let not_found_html = state.not_found_html.read().await;
-            let body = not_found_html.replace("{{slug}}", &slug);
-            
-            let layout = state.layout_html.read().await;
-            let banner = state.banner_html.read().await;
-            let posts = state.posts.read().await;
-
-            let page = render_with_layout(
-                &layout,
-                &banner,
-                &body,
-                &posts,
-                state.is_development,
-            );
-            return Html(page);
-        }
+        Err(_) => return render_not_found_response(&state, &slug).await,
     };
 
     let matter = Matter::<YAML>::new();
@@ -161,7 +150,26 @@ async fn render_post(
         &posts,
         state.is_development,
     );
-    Html(page)
+    Html(page).into_response()
+}
+
+fn is_valid_post_slug(slug: &str) -> bool {
+    !slug.is_empty()
+        && slug
+            .chars()
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+}
+
+async fn render_not_found_response(state: &Arc<AppState>, slug: &str) -> Response {
+    let not_found_html = state.not_found_html.read().await;
+    let body = not_found_html.replace("{{slug}}", slug);
+
+    let layout = state.layout_html.read().await;
+    let banner = state.banner_html.read().await;
+    let posts = state.posts.read().await;
+    let page = render_with_layout(&layout, &banner, &body, &posts, state.is_development);
+
+    (StatusCode::NOT_FOUND, Html(page)).into_response()
 }
 
 fn setup_logging() {
@@ -260,7 +268,7 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::render_with_layout;
+    use super::{is_valid_post_slug, render_with_layout};
     use crate::models::Post;
 
     fn test_layout() -> &'static str {
@@ -301,5 +309,14 @@ mod tests {
         let content = "<p>literal {{ posts }}</p>";
         let page = render_with_layout(test_layout(), "banner", content, &test_posts(), false);
         assert!(page.contains("<p>literal {{ posts }}</p>"));
+    }
+
+    #[test]
+    fn validates_slug_characters_for_post_paths() {
+        assert!(is_valid_post_slug("2026-03-03-optimise-for-the-cheapest-change"));
+        assert!(!is_valid_post_slug("../secrets"));
+        assert!(!is_valid_post_slug("post/with/slash"));
+        assert!(!is_valid_post_slug("UPPERCASE"));
+        assert!(!is_valid_post_slug("bad_slug"));
     }
 }
