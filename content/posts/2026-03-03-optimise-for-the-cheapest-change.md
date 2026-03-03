@@ -10,16 +10,25 @@ Where teams still get stuck is what happens next. The first system works, but re
 
 ## The hidden failure mode
 
-A common sequence is straightforward:
-
-1. Avoid premature abstraction.
-2. Build a simple system.
-3. Ship it.
-4. Discover that further change is expensive.
-
-That does not always happen because the original design was wrong. It often happens because the *process* of change is costly: feedback loops are long, deployment is fragile, boundaries are fuzzy, and local edits trigger non-local consequences.
-
-The practical failure is not “we built something simple.” It is “we built something expensive to modify.”
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start;">
+  <div style="min-width: 0; text-align: justify; text-justify: inter-word;">
+    <p>A common sequence is straightforward:</p>
+    <ol>
+      <li>Avoid premature abstraction.</li>
+      <li>Build a simple system.</li>
+      <li>Ship it.</li>
+      <li>Discover that further change is expensive.</li>
+    </ol>
+    <p>That does not always happen because the original design was wrong. It often happens because the <em>process</em> of change is costly: feedback loops are long, deployment is fragile, boundaries are fuzzy, and local edits trigger non-local consequences.</p>
+    <p>The practical failure is not “we built something simple.” It is “we built something expensive to modify.”</p>
+  </div>
+  <figure style="margin: 0;">
+    <img src="/static/changing-a-simple-system.png" alt="Changing a simple system can still be costly when process and dependencies are tangled" loading="lazy" style="display: block; width: 80%; height: auto; margin: 0 auto;" />
+    <figcaption style="width: 80%; margin: 0.5rem auto 0; text-align: center;">
+      <strong>Figure 1.</strong> Changing a simple system can still be costly.
+    </figcaption>
+  </figure>
+</div>
 
 ## Shift the optimisation target
 
@@ -47,7 +56,7 @@ This blog is intentionally shaped for local, low-risk edits.
 <figure>
   <img src="/static/cheapest-change-feedback-loop.svg" alt="Diagram of a cheap change loop from edit to preview to commit to deploy and back" loading="lazy" />
   <figcaption>
-    <strong>Figure 1.</strong> Cheap change is mostly loop design: small edits, fast feedback, routine deploys.
+    <strong>Figure 2.</strong> Cheap change is mostly loop design: small edits, fast feedback, routine deploys.
   </figcaption>
 </figure>
 
