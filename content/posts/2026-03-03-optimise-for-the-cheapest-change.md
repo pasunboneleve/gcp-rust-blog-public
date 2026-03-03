@@ -10,7 +10,7 @@ Where teams still get stuck is what happens next. The first system works, but re
 
 ## The hidden failure mode
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1.25rem; align-items: start;">
   <div style="min-width: 0; text-align: justify; text-justify: inter-word;">
     <p>A common sequence is straightforward:</p>
     <ol>
@@ -25,7 +25,7 @@ Where teams still get stuck is what happens next. The first system works, but re
   <figure style="margin: 0;">
     <img src="/static/changing-a-simple-system.png" alt="Changing a simple system can still be costly when process and dependencies are tangled" loading="lazy" style="display: block; width: 80%; height: auto; margin: 0 auto;" />
     <figcaption style="width: 80%; margin: 0.5rem auto 0; text-align: center;">
-      <strong>Figure 1.</strong> Changing a simple system can still be costly.
+      <strong>Figure 1.</strong> Changing a simple system can still be costly. Source: author's photo. &copy; Daniel Vianna, 2026.
     </figcaption>
   </figure>
 </div>
