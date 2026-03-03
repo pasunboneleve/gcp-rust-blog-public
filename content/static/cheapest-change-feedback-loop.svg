@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="460" viewBox="0 0 1200 460" role="img" aria-labelledby="title desc">
+  <title id="title">Cheapest change loop</title>
+  <desc id="desc">A loop from edit to preview to commit to deploy, with a return path showing continuous iteration.</desc>
+
+  <defs>
+    <style>
+      .bg { fill: #002b36; }
+      .text { fill: #eee8d5; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; }
+      .muted { fill: #93a1a1; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; }
+      .card { fill: #073642; stroke-width: 3; }
+      .arrow { stroke: #93a1a1; stroke-width: 6; fill: none; stroke-linecap: round; }
+    </style>
+    <marker id="arrowhead" markerUnits="userSpaceOnUse" markerWidth="18" markerHeight="18" refX="15" refY="9" orient="auto">
+      <path d="M0,0 L18,9 L0,18 z" fill="#93a1a1" />
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1200" height="460" rx="20" />
+
+  <rect class="card" x="70" y="85" width="230" height="120" rx="16" stroke="#2aa198" />
+  <text class="text" x="185" y="138" text-anchor="middle" font-size="44">Edit</text>
+  <text class="muted" x="185" y="176" text-anchor="middle" font-size="28">single file</text>
+
+  <rect class="card" x="350" y="85" width="230" height="120" rx="16" stroke="#2b7a2b" />
+  <text class="text" x="465" y="138" text-anchor="middle" font-size="44">Preview</text>
+  <text class="muted" x="465" y="176" text-anchor="middle" font-size="28">hot reload</text>
+
+  <rect class="card" x="630" y="85" width="230" height="120" rx="16" stroke="#b58900" />
+  <text class="text" x="745" y="138" text-anchor="middle" font-size="44">Commit</text>
+  <text class="muted" x="745" y="176" text-anchor="middle" font-size="28">small diff</text>
+
+  <rect class="card" x="910" y="85" width="220" height="120" rx="16" stroke="#dc322f" />
+  <text class="text" x="1020" y="138" text-anchor="middle" font-size="44">Deploy</text>
+  <text class="muted" x="1020" y="176" text-anchor="middle" font-size="28">automated</text>
+
+  <line class="arrow" x1="305" y1="145" x2="345" y2="145" marker-end="url(#arrowhead)" />
+  <line class="arrow" x1="585" y1="145" x2="625" y2="145" marker-end="url(#arrowhead)" />
+  <line class="arrow" x1="865" y1="145" x2="905" y2="145" marker-end="url(#arrowhead)" />
+
+  <path class="arrow" d="M1020 210 C1020 415, 120 400, 180 212 C120 206, 128 204" marker-end="url(#arrowhead)" />
+</svg>
