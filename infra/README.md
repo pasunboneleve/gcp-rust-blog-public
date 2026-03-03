@@ -41,4 +41,9 @@ terraform apply \
   -var="admin_user_email=<ADMIN_USER_EMAIL>"
 ```
 
+Notes:
+- `domain_name` is the public domain (e.g., `boneleve.blog`).
+- `dns_zone_name` is the GCP managed-zone identifier (e.g., `boneleve-blog`) and must not contain dots.
+- The DNS managed zone is protected with `prevent_destroy` to avoid accidental production DNS deletion.
+
 Outputs will include the WIF resource names.

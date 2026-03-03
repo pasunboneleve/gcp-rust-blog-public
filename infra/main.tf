@@ -123,6 +123,10 @@ resource "google_dns_managed_zone" "boneleve_blog" {
   dns_name    = "${var.domain_name}."
   description = "DNS zone for ${var.domain_name}"
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   depends_on = [google_project_service.apis]
 }
 

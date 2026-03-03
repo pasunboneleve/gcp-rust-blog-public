@@ -41,11 +41,21 @@ variable "service_name" {
 variable "domain_name" {
   description = "Primary domain name (without trailing dot), e.g. example.com"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$", var.domain_name))
+    error_message = "domain_name must be a valid domain without trailing dot, e.g. boneleve.blog."
+  }
 }
 
 variable "dns_zone_name" {
   description = "Cloud DNS managed zone resource name"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-z]([-a-z0-9]*[a-z0-9])?$", var.dns_zone_name)) && length(var.dns_zone_name) <= 63
+    error_message = "dns_zone_name must use letters, numbers, and hyphens only (no dots), start with a letter, and be at most 63 chars."
+  }
 }
 
 variable "organization_id" {
