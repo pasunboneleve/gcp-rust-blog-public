@@ -7,6 +7,8 @@ on:
     paths-ignore:
       - "*.md"
       - "docs/**/*.md"
+      - "infra/**"
+      - "scripts/**"
 
 env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
