@@ -18,3 +18,8 @@ output "load_balancer_ip" {
   description = "Global IP address of the load balancer"
   value       = google_compute_global_address.blog_ip.address
 }
+
+output "cloud_run_url" {
+  description = "Configured Cloud Run hostname used for GitHub secret CLOUD_RUN_SERVICE_URL"
+  value       = var.cloud_run_url
+}
