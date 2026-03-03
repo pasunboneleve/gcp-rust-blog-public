@@ -12,7 +12,7 @@ slug: 2026-03-02-strangelove-ai-systems
   </figcaption>
 </figure>
 
-When I joined an startup in 2021, I expected to find lots of machine
+When I joined a startup in 2021, I expected to find lots of machine
 learning. It was the flavour of the month. Every company was
 “AI-powered.” I assumed I would walk into a codebase dense with
 models, training pipelines, feature engineering, and statistical
@@ -77,7 +77,7 @@ friction:
 
 - Longer CI times.
 - Broader dependency graphs.
-- More brittle tests.
+- Brittler tests.
 - Bugs that are not confined to the feature location, but systemic.
 - Reviews that focus on deciphering structure rather than evaluating
   behaviour.
