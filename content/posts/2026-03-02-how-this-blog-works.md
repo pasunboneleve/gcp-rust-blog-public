@@ -21,7 +21,7 @@ To minimise the cost of change.
 
 ---
 
-## Architecture at a Glance
+## Architecture at a glance
 
 ```mermaid
 flowchart TD
@@ -47,7 +47,7 @@ Everything else exists to support that moment.
 
 ---
 
-## Developer Loop (Local)
+## Developer loop (local)
 
 ```mermaid
 flowchart TD
@@ -71,7 +71,7 @@ In development mode:
 - A WebSocket broadcasts `"reload"`
 - The browser refreshes automatically
 
-Edit. Save. See change.
+Edit. Save. See the change.
 
 No manual restart.
 No rebuild for content tweaks.
@@ -80,7 +80,7 @@ Feedback loops stay short.
 
 ---
 
-## Runtime Responsibilities
+## Runtime responsibilities
 
 At startup, the application:
 
@@ -123,7 +123,7 @@ Constraint keeps surface area small.
 
 ---
 
-## Development Loop (Production)
+## Development loop (production)
 
 ```mermaid
 flowchart TD
@@ -200,7 +200,7 @@ If it is not declared, it does not exist.
 
 ---
 
-## Security Posture
+## Security posture
 
 - No long-lived credentials in CI
 
@@ -208,7 +208,7 @@ If it is not declared, it does not exist.
 
 - Runtime container runs as non-root
 
-- Multistage build to minimise attack surface
+- Multi-stage build to minimise attack surface
 
 - Runtime does not require <a href="https://cloud.google.com/apis" target="_blank" rel="noopener noreferrer">GCP API</a> access
 
@@ -220,7 +220,7 @@ Boundaries matter.
 
 ---
 
-## Why This Design?
+## Why this design?
 
 Most blogs optimise for features.
 
@@ -245,7 +245,7 @@ This system demonstrates:
 
 ---
 
-## What This Actually Signals
+## What this actually signals
 
 The blog itself is not the point.
 

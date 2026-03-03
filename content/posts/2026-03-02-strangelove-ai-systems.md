@@ -34,7 +34,7 @@ That was my first shift in perspective.
 
 ---
 
-## The First Stage: Acceleration
+## The first stage: acceleration
 
 A few years later, the next wave arrived: AI-assisted coding. Tools
 like <a href="https://github.com/features/copilot" target="_blank" rel="noopener noreferrer">Copilot</a> began generating entire functions, tests, even small
@@ -57,7 +57,7 @@ The cost isn’t writing code. The cost is evolving it.
 
 ---
 
-## The Second Stage: Friction
+## The second stage: friction
 
 After a few cycles, a different pattern emerges. Time to *write* a
 feature decreases. Time to *integrate* a feature increases. Builds
@@ -84,7 +84,7 @@ friction:
 
 ---
 
-## The Third Stage: Amplification
+## The third stage: amplification
 
 The real shift happens when AI stops being a typing assistant and
 becomes a thinking tool. Instead of asking:
@@ -106,7 +106,7 @@ does not replace engineering judgment. It sharpens it.
 
 ---
 
-## What Changed for Me
+## What changed for me
 
 I stopped worrying about AI replacing engineers. Because typing speed
 was never the constraint. The constraint was always:
@@ -122,7 +122,7 @@ becomes scarce. And coherence is a human responsibility.
 
 ---
 
-## The Strangelove Moment
+## The strangelove moment
 
 In <a href="https://www.imdb.com/title/tt0057012/" target="_blank" rel="noopener noreferrer">Dr Strangelove</a>, the danger wasn’t the machine itself. It was the
 system built around it.
