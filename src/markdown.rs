@@ -10,11 +10,16 @@ fn markdown_options() -> Options {
 
 pub fn render_markdown_to_html(markdown: &str) -> String {
     let normalized_markdown = normalize_latex_delimiters(markdown);
-    let parser = Parser::new_ext(&normalized_markdown, markdown_options()).map(|event| match event {
-        Event::InlineMath(math) => Event::Html(CowStr::Boxed(render_math_html(&math, false).into_boxed_str())),
-        Event::DisplayMath(math) => Event::Html(CowStr::Boxed(render_math_html(&math, true).into_boxed_str())),
-        other => other,
-    });
+    let parser =
+        Parser::new_ext(&normalized_markdown, markdown_options()).map(|event| match event {
+            Event::InlineMath(math) => Event::Html(CowStr::Boxed(
+                render_math_html(&math, false).into_boxed_str(),
+            )),
+            Event::DisplayMath(math) => Event::Html(CowStr::Boxed(
+                render_math_html(&math, true).into_boxed_str(),
+            )),
+            other => other,
+        });
 
     let mut html_out = String::new();
     html::push_html(&mut html_out, parser);
@@ -83,7 +88,11 @@ fn render_math_html(source: &str, display_mode: bool) -> String {
 }
 
 fn fallback_math_html(source: &str, display_mode: bool) -> String {
-    let class_name = if display_mode { "math math-display" } else { "math math-inline" };
+    let class_name = if display_mode {
+        "math math-display"
+    } else {
+        "math math-inline"
+    };
     format!("<span class=\"{class_name}\">{source}</span>")
 }
 

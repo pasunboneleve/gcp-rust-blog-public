@@ -1,9 +1,9 @@
-use tokio::fs;
 use gray_matter::{engine::YAML, Matter};
+use tokio::fs;
 use tracing::{error, info};
 
-use crate::models::{FrontMatter, Post};
 use crate::markdown::render_markdown_to_html;
+use crate::models::{FrontMatter, Post};
 use crate::state::AppState;
 
 const CONTENT_DIR: &str = "content";
@@ -15,7 +15,7 @@ pub async fn load_content() -> Result<(String, String, String, String, Vec<Post>
 
     // 1. Load home content as Markdown
     let home_md_content = fs::read_to_string(format!("{}/home.md", CONTENT_DIR)).await?;
-    
+
     let matter = Matter::<YAML>::new();
     let result = matter.parse::<FrontMatter>(&home_md_content);
     let markdown_body = match result {
@@ -40,27 +40,39 @@ pub async fn load_content() -> Result<(String, String, String, String, Vec<Post>
             let matter = Matter::<YAML>::new();
             let result = matter.parse::<FrontMatter>(&file_content);
 
-            let front_matter = match result {
-                Ok(parsed) => parsed.data,
+            let (front_matter, markdown_body) = match result {
+                Ok(parsed) => (parsed.data, parsed.content),
                 Err(e) => {
                     error!("Failed to parse front matter: {}", e);
-                    Some(FrontMatter {
-                        title: "Error".to_string(),
-                        date: "Error".to_string(),
-                        slug: "Error".to_string(),
-                    })
+                    (
+                        Some(FrontMatter {
+                            title: "Error".to_string(),
+                            date: "Error".to_string(),
+                            slug: "Error".to_string(),
+                            description: None,
+                            image: None,
+                        }),
+                        file_content,
+                    )
                 }
             };
 
             posts.push(Post {
                 title: front_matter
-                    .clone()
-                    .map(|fm| fm.title)
-                    .unwrap_or("Error".to_string()),
+                    .as_ref()
+                    .map(|fm| fm.title.clone())
+                    .unwrap_or_else(|| "Error".to_string()),
                 slug: front_matter
-                    .clone()
-                    .map(|fm| fm.slug)
-                    .unwrap_or("error".to_string()),
+                    .as_ref()
+                    .map(|fm| fm.slug.clone())
+                    .unwrap_or_else(|| "error".to_string()),
+                date: front_matter
+                    .as_ref()
+                    .map(|fm| fm.date.clone())
+                    .unwrap_or_else(|| "Error".to_string()),
+                description: front_matter.as_ref().and_then(|fm| fm.description.clone()),
+                image: front_matter.as_ref().and_then(|fm| fm.image.clone()),
+                markdown_body,
             });
         }
     }

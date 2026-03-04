@@ -7,23 +7,26 @@ use axum::{
     routing::{get, get_service},
     Router,
 };
-use gray_matter::{engine::YAML, Matter};
-use tokio::{fs, net::TcpListener, sync::RwLock};
+use tokio::{net::TcpListener, sync::RwLock};
 use tower_http::services::{ServeDir, ServeFile};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tracing::{error, info};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod models;
-mod state;
 mod content_loader;
 mod hot_reload;
 mod markdown;
+mod models;
+mod page_meta;
+mod state;
 
-use models::{Post, FrontMatter};
-use state::{AppState, RouterState};
 use content_loader::load_content;
-use hot_reload::{ws_handler, start_content_watcher};
+use hot_reload::{start_content_watcher, ws_handler};
 use markdown::render_markdown_to_html;
+use models::Post;
+use page_meta::{
+    build_post_meta, default_home_meta, default_not_found_meta, escape_html, PageMeta,
+};
+use state::{AppState, RouterState};
 
 // Load the hot reload script content at compile time
 const HOT_RELOAD_SCRIPT: &str = include_str!("hot_reload.js");
@@ -46,13 +49,22 @@ fn render_with_layout(
     banner: &str,
     content: &str,
     posts: &[Post],
+    meta: &PageMeta,
     is_development: bool,
 ) -> String {
     let list_items = render_post_list(posts);
+    let escaped_title = escape_html(&meta.title);
+    let escaped_description = escape_html(&meta.description);
+    let escaped_url = escape_html(&meta.url);
+    let escaped_image = escape_html(&meta.image);
 
     let mut page = layout
         .replace("{{ banner }}", banner)
         .replace("{{ posts }}", &list_items)
+        .replace("{{ page_title }}", &escaped_title)
+        .replace("{{ page_description }}", &escaped_description)
+        .replace("{{ page_url }}", &escaped_url)
+        .replace("{{ page_image }}", &escaped_image)
         .replace("{{ content }}", content);
 
     if is_development {
@@ -75,81 +87,49 @@ fn inject_hot_reload_script(page: String) -> String {
     }
 }
 
-async fn homepage(
-    State(state): State<Arc<AppState>>,
-) -> Html<String> {
+async fn homepage(State(state): State<Arc<AppState>>) -> Html<String> {
     let banner = state.banner_html.read().await;
     let layout = state.layout_html.read().await;
     let home = state.home_html.read().await;
     let posts = state.posts.read().await;
+    let meta = default_home_meta();
 
-    let page = render_with_layout(
-        &layout,
-        &banner,
-        &home,
-        &posts,
-        state.is_development,
-    );
+    let page = render_with_layout(&layout, &banner, &home, &posts, &meta, state.is_development);
     Html(page)
 }
 
-async fn render_post(
-    Path(slug): Path<String>,
-    State(state): State<Arc<AppState>>,
-) -> Response {
+async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>>) -> Response {
     if !is_valid_post_slug(&slug) {
         return render_not_found_response(&state, &slug).await;
     }
 
-    let path = format!("content/posts/{}.md", slug);
-    let file_content = match fs::read_to_string(&path).await {
-        Ok(c) => c,
-        Err(_) => return render_not_found_response(&state, &slug).await,
+    let maybe_post = {
+        let posts = state.posts.read().await;
+        posts.iter().find(|post| post.slug == slug).cloned()
+    };
+    let post = match maybe_post {
+        Some(post) => post,
+        None => return render_not_found_response(&state, &slug).await,
     };
 
-    let matter = Matter::<YAML>::new();
-    let result = matter.parse::<FrontMatter>(&file_content);
+    let html_out = render_markdown_to_html(&post.markdown_body);
+    let body = format!(
+        "<h1>{}</h1><p style=\"font-size: smaller; color: #888;\">{}</p>{}",
+        post.title, post.date, html_out
+    );
+    let meta = build_post_meta(
+        &post.slug,
+        Some(&post.title),
+        post.description.as_deref(),
+        post.image.as_deref(),
+        &post.markdown_body,
+    );
 
-    let front_matter = match result {
-        Ok(ref parsed) => parsed.data.clone(),
-        Err(ref e) => {
-            tracing::error!("Failed to parse front matter: {}", e);
-            Some(FrontMatter {
-                title: "Error".to_string(),
-                date: "Error".to_string(),
-                slug: "Error".to_string(),
-            })
-        }
-    };
-    let markdown_body = match result {
-        Ok(parsed) => parsed.content,
-        Err(e) => {
-            error!("Failed to parse post front matter content for '{}': {}", slug, e);
-            file_content
-        }
-    };
-
-    let html_out = render_markdown_to_html(&markdown_body);
-
-    let body = match front_matter {
-        Some(fm) => format!(
-            "<h1>{}</h1><p style=\"font-size: smaller; color: #888;\">{}</p>{}",
-            fm.title, fm.date, html_out
-        ),
-        None => format!("<h1>Error: No Front Matter</h1>{}", html_out),
-    };
-    
     let layout = state.layout_html.read().await;
     let banner = state.banner_html.read().await;
     let posts = state.posts.read().await;
 
-    let page = render_with_layout(
-        &layout,
-        &banner,
-        &body,
-        &posts,
-        state.is_development,
-    );
+    let page = render_with_layout(&layout, &banner, &body, &posts, &meta, state.is_development);
     Html(page).into_response()
 }
 
@@ -167,7 +147,8 @@ async fn render_not_found_response(state: &Arc<AppState>, slug: &str) -> Respons
     let layout = state.layout_html.read().await;
     let banner = state.banner_html.read().await;
     let posts = state.posts.read().await;
-    let page = render_with_layout(&layout, &banner, &body, &posts, state.is_development);
+    let meta = default_not_found_meta(slug);
+    let page = render_with_layout(&layout, &banner, &body, &posts, &meta, state.is_development);
 
     (StatusCode::NOT_FOUND, Html(page)).into_response()
 }
@@ -242,7 +223,7 @@ fn setup_router(router_state: RouterState) -> Router {
 #[tokio::main]
 async fn main() {
     setup_logging();
-    
+
     let router_state = initialize_state().await;
     let app = setup_router(router_state);
 
@@ -270,22 +251,42 @@ async fn main() {
 mod tests {
     use super::{is_valid_post_slug, render_with_layout};
     use crate::models::Post;
+    use crate::page_meta::PageMeta;
 
     fn test_layout() -> &'static str {
-        "<html><body>{{ banner }}<main>{{ content }}</main><ul>{{ posts }}</ul></body></html>"
+        "<html><head><title>{{ page_title }}</title><meta name=\"description\" content=\"{{ page_description }}\" /><meta property=\"og:title\" content=\"{{ page_title }}\" /><meta property=\"og:description\" content=\"{{ page_description }}\" /><meta property=\"og:url\" content=\"{{ page_url }}\" /><meta property=\"og:image\" content=\"{{ page_image }}\" /><meta name=\"twitter:title\" content=\"{{ page_title }}\" /><meta name=\"twitter:description\" content=\"{{ page_description }}\" /><meta name=\"twitter:image\" content=\"{{ page_image }}\" /></head><body>{{ banner }}<main>{{ content }}</main><ul>{{ posts }}</ul></body></html>"
     }
 
     fn test_posts() -> Vec<Post> {
         vec![Post {
             title: "First post".to_string(),
             slug: "first-post".to_string(),
+            date: "2026-03-04".to_string(),
+            description: None,
+            image: None,
+            markdown_body: "Body".to_string(),
         }]
+    }
+
+    fn test_meta() -> PageMeta {
+        PageMeta {
+            title: "Test title".to_string(),
+            description: "Test description".to_string(),
+            url: "https://example.com/posts/test".to_string(),
+            image: "https://example.com/static/test.png".to_string(),
+        }
     }
 
     #[test]
     fn injects_hot_reload_script_once_in_development() {
-        let page =
-            render_with_layout(test_layout(), "<header>banner</header>", "content", &test_posts(), true);
+        let page = render_with_layout(
+            test_layout(),
+            "<header>banner</header>",
+            "content",
+            &test_posts(),
+            &test_meta(),
+            true,
+        );
         assert_eq!(page.matches("new WebSocket").count(), 1);
         assert_eq!(page.matches("<script>").count(), 1);
     }
@@ -293,27 +294,73 @@ mod tests {
     #[test]
     fn injects_script_at_end_when_body_tag_is_missing() {
         let layout = "<html><div>{{ banner }}</div><main>{{ content }}</main></html>";
-        let page = render_with_layout(layout, "banner", "content", &test_posts(), true);
+        let page = render_with_layout(
+            layout,
+            "banner",
+            "content",
+            &test_posts(),
+            &test_meta(),
+            true,
+        );
         assert!(page.ends_with("</script>"));
         assert_eq!(page.matches("new WebSocket").count(), 1);
     }
 
     #[test]
     fn does_not_inject_script_in_non_development() {
-        let page = render_with_layout(test_layout(), "banner", "content", &test_posts(), false);
+        let page = render_with_layout(
+            test_layout(),
+            "banner",
+            "content",
+            &test_posts(),
+            &test_meta(),
+            false,
+        );
         assert_eq!(page.matches("new WebSocket").count(), 0);
     }
 
     #[test]
     fn does_not_replace_posts_placeholder_inside_content() {
         let content = "<p>literal {{ posts }}</p>";
-        let page = render_with_layout(test_layout(), "banner", content, &test_posts(), false);
+        let page = render_with_layout(
+            test_layout(),
+            "banner",
+            content,
+            &test_posts(),
+            &test_meta(),
+            false,
+        );
         assert!(page.contains("<p>literal {{ posts }}</p>"));
     }
 
     #[test]
+    fn renders_page_meta_tags_from_meta_input() {
+        let meta = test_meta();
+        let page = render_with_layout(
+            test_layout(),
+            "banner",
+            "content",
+            &test_posts(),
+            &meta,
+            false,
+        );
+
+        assert!(page.contains("<title>Test title</title>"));
+        assert!(page.contains("<meta property=\"og:title\" content=\"Test title\" />"));
+        assert!(page.contains("<meta property=\"og:description\" content=\"Test description\" />"));
+        assert!(page
+            .contains("<meta property=\"og:url\" content=\"https://example.com/posts/test\" />"));
+        assert!(page.contains(
+            "<meta property=\"og:image\" content=\"https://example.com/static/test.png\" />"
+        ));
+        assert!(page.contains("<meta name=\"twitter:title\" content=\"Test title\" />"));
+    }
+
+    #[test]
     fn validates_slug_characters_for_post_paths() {
-        assert!(is_valid_post_slug("2026-03-03-optimise-for-the-cheapest-change"));
+        assert!(is_valid_post_slug(
+            "2026-03-03-optimise-for-the-cheapest-change"
+        ));
         assert!(!is_valid_post_slug("../secrets"));
         assert!(!is_valid_post_slug("post/with/slash"));
         assert!(!is_valid_post_slug("UPPERCASE"));
