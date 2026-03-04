@@ -272,6 +272,6 @@ And principles scale.
   </a>
   <figcaption>
     <strong>Figure.</strong> Collection image from Li Tang's "Whispering Pines in Myriad Valleys" (宋李唐萬壑松風圖　軸).
-    Source: <a href="https://commons.wikimedia.org/wiki/File:Li_Tang_-_Wind_in_Pines_Among_a_Myriad_Valleys.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>.
+    Source: <a href="https://commons.wikimedia.org/wiki/File:Li_Tang_-_Wind_in_Pines_Among_a_Myriad_Valleys.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain).
   </figcaption>
 </figure>

@@ -285,7 +285,7 @@ cheapest to operate, but the ones that are cheapest to reshape.
     <img src="https://upload.wikimedia.org/wikipedia/commons/c/c2/Ma_Yuan_Walking_on_Path_in_Spring.jpg" alt="Walking on Path in Spring, by Ma Yuan" loading="lazy" style="display:block; margin:0 auto; max-width:460px; width:100%; height:auto;" />
   </a>
 </p>
-<p style="font-size: smaller; color: #93a1a1; text-align: center;"><strong>Figure 3.</strong> <em>Walking on Path in Spring</em>, Ma Yuan (Wikimedia Commons).</p>
+<p style="font-size: smaller; color: #93a1a1; text-align: center;"><strong>Figure 3.</strong> <em>Walking on Path in Spring</em>, Ma Yuan. Source: <a href="https://commons.wikimedia.org/wiki/File:Ma_Yuan_Walking_on_Path_in_Spring.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain).</p>
 
 ---
 
