@@ -267,8 +267,8 @@ Small systems reveal principles clearly.
 And principles scale.
 
 <figure>
-  <a href="https://commons.wikimedia.org/wiki/File:Li_Tang_-_Wind_in_Pines_Among_a_Myriad_Valleys.jpg" target="_blank" rel="noopener noreferrer">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Li_Tang_-_Wind_in_Pines_Among_a_Myriad_Valleys.jpg" alt="Whispering Pines in Myriad Valleys (宋李唐萬壑松風圖 軸), Li Tang" loading="lazy" style="display:block;margin:0.5rem auto;max-width:720px;width:100%;height:400px;object-fit:cover;object-position:50% 12%;outline:1px solid currentColor;outline-offset:2px;background:transparent;" />
+  <a href="https://commons.wikimedia.org/wiki/File:Li_Tang_-_Wind_in_Pines_Among_a_Myriad_Valleys.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Li_Tang_-_Wind_in_Pines_Among_a_Myriad_Valleys.jpg" alt="Whispering Pines in Myriad Valleys (宋李唐萬壑松風圖 軸), Li Tang" loading="lazy" style="display:block;margin:0.5rem auto;max-width:720px;width:100%;height:400px;object-fit:cover;object-position:50% 12%;background:transparent;" />
   </a>
   <figcaption>
     <strong>Figure.</strong> Collection image from Li Tang's "Whispering Pines in Myriad Valleys" (宋李唐萬壑松風圖　軸).
