@@ -87,7 +87,7 @@ Build the best simple system for now, then shape it so replacing it later is che
 <figure>
   <a href="https://commons.wikimedia.org/wiki/File:Yang_Chengfu_Form.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;display:block;max-width:720px;width:100%;margin:0.5rem auto;">
     <span style="position:relative;display:block;width:100%;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/5/50/Yang_Chengfu_Form.jpg" alt="Yang Chengfu demonstrating Tai Chi form" loading="lazy" style="display:block;width:100%;height:362px;object-fit:cover;object-position:50% 0%;background:transparent;opacity:1;" />
+      <img src="/static/Yang_Chengfu_Form.jpg" alt="Yang Chengfu demonstrating Tai Chi form" loading="lazy" style="display:block;width:100%;height:auto;background:transparent;opacity:1;" />
       <span style="position:absolute;inset:0;background:rgb(128, 106, 56);opacity:0.40;pointer-events:none;"></span>
     </span>
   </a>
