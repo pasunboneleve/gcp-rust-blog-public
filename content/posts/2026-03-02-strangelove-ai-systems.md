@@ -2,6 +2,7 @@
 title: "Dr Strangelove or: How I learned to stop worrying and love AI"
 date: 2026-03-02
 slug: 2026-03-02-strangelove-ai-systems
+image: "https://upload.wikimedia.org/wikipedia/commons/b/bb/Dr._Strangelove.png"
 ---
 
 <figure>

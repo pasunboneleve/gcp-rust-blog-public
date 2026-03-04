@@ -2,6 +2,7 @@
 title: "Optimise for the cheapest change"
 date: 2026-03-03
 slug: 2026-03-03-optimise-for-the-cheapest-change
+image: "/static/cheapest-change-feedback-loop.svg"
 ---
 
 Most engineers already agree with Dan North’s idea of building the <a href="https://dannorth.net/blog/best-simple-system-for-now/" target="_blank" rel="noopener noreferrer">best simple system for now</a>. It is solid advice: avoid speculative architecture, ship the thing you need, and keep today’s constraints visible.
