@@ -2,7 +2,7 @@
 title: "Optimise for the cheapest change"
 date: 2026-03-03
 slug: 2026-03-03-optimise-for-the-cheapest-change
-image: "/static/cheapest-change-feedback-loop.svg"
+image: "https://upload.wikimedia.org/wikipedia/commons/5/50/Yang_Chengfu_Form.jpg"
 ---
 
 Most engineers already agree with Dan North’s idea of building the <a href="https://dannorth.net/blog/best-simple-system-for-now/" target="_blank" rel="noopener noreferrer">best simple system for now</a>. It is solid advice: avoid speculative architecture, ship the thing you need, and keep today’s constraints visible.
@@ -54,13 +54,6 @@ This blog is intentionally shaped for local, low-risk edits.
 - Hot reload makes local feedback immediate.
 - Push to `master` deploys automatically, typically in about 90 seconds.
 
-<figure>
-  <img src="/static/cheapest-change-feedback-loop.svg" alt="Diagram of a cheap change loop from edit to preview to commit to deploy and back" loading="lazy" />
-  <figcaption>
-    <strong>Figure 2.</strong> Cheap change is mostly loop design: small edits, fast feedback, routine deploys.
-  </figcaption>
-</figure>
-
 The product of this system is published writing, and AI helpers are part of that workflow. The point is not that AI exists; the point is that the system gives AI a safe operating surface. When artifacts are local and readable, changes are easy to verify and easy to review.
 
 AI tends to amplify systems that are already coherent. In tangled systems, it tends to amplify the tangle.
@@ -88,3 +81,18 @@ Systems evolve, requirements move, and tools get replaced. None of that is surpr
 The useful design question is how painful those transitions are.
 
 Build the best simple system for now, then shape it so replacing it later is cheap.
+
+---
+
+<figure>
+  <a href="https://commons.wikimedia.org/wiki/File:Yang_Chengfu_Form.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;display:block;max-width:720px;width:100%;margin:0.5rem auto;">
+    <span style="position:relative;display:block;width:100%;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/50/Yang_Chengfu_Form.jpg" alt="Yang Chengfu demonstrating Tai Chi form" loading="lazy" style="display:block;width:100%;height:362px;object-fit:cover;object-position:50% 0%;background:transparent;opacity:1;" />
+      <span style="position:absolute;inset:0;background:rgb(128, 106, 56);opacity:0.40;pointer-events:none;"></span>
+    </span>
+  </a>
+  <figcaption>
+    <strong>Figure 2.</strong> Yang Chengfu demonstrating Tai Chi form.
+    Source: <a href="https://commons.wikimedia.org/wiki/File:Yang_Chengfu_Form.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain).
+  </figcaption>
+</figure>
