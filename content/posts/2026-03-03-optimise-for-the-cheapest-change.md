@@ -1,5 +1,5 @@
 ---
-title: "Optimise for the Cheapest Change"
+title: "Optimise for the cheapest change"
 date: 2026-03-03
 slug: 2026-03-03-optimise-for-the-cheapest-change
 ---
