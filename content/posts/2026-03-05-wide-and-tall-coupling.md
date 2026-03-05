@@ -5,29 +5,24 @@ slug: 2026-03-05-wide-and-tall-coupling
 image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/348Sandbild_im_Sera_Kloster.jpg/320px-348Sandbild_im_Sera_Kloster.jpg"
 ---
 
-Today I read a post by Charity Majors that captured something many
-engineering teams experience but rarely name:
+Fast development often backfires. Engineering cultures that only value
+rapid delivery can produce systems that work well today but become
+expensive to change. When this happens, coupling tends to grow in two
+directions:
+
+- **wide coupling** — spreading across components
+- **tall coupling** — growing inside a component
+
+## Individual speed vs organisational speed
+
+Before going further, it helps to clarify what we mean by
+*velocity*. This tension has been noted by Charity Majors:
 
 > The fact that individual productivity does not necessarily translate
 > into organizational velocity — can in fact impede organizational
 > velocity — is real and under-addressed.
 
-Most engineers have seen this play out. The faster one engineer moves,
-the harder the system sometimes becomes to change. When that happens,
-coupling tends to grow in two directions: sideways across components,
-or upward inside a component.
-
-I think of these as:
-
-- **wide coupling**
-- **tall coupling**
-
-Coupling spreads like glue.
-
-## Individual speed vs organisational speed
-
-Before going further, it helps to clarify what we mean by
-*velocity*. For an individual engineer, velocity usually means output:
+For an individual engineer, velocity usually means output:
 
 - implementing functionality
 - fixing bugs
