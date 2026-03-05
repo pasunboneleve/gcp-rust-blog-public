@@ -71,18 +71,15 @@ If you care about throughput over time, high-leverage platform work is reducing 
 
 ## Not the same as premature abstraction
 
-Premature abstraction asks, “What flexibility might we need?”
-
+Premature abstraction asks, “What flexibility might we need?”\
 Cheapest-change thinking asks, “What change will definitely come, and how do we make that change safe and fast?”
 
 The second question is easier to reason about because it is tied to observable flow, not speculation.
 
 ## Closing
 
-Systems evolve, requirements move, and tools get replaced. None of that is surprising.
-
-The useful design question is how painful those transitions are.
-
+Systems evolve, requirements move, and tools get replaced. None of that is surprising.\
+The useful design question is how painful those transitions are.\
 Build the best simple system for now, then shape it so replacing it later is cheap.
 
 ---
