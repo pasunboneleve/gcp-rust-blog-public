@@ -49,6 +49,13 @@ These goals are not always aligned.
 
 ## Wide coupling
 
+<p style="text-align: center;">
+  <a href="https://upload.wikimedia.org/wikipedia/commons/e/e5/1845_Logerot_Jigsaw_Puzzle_Atlas_of_the_World_-_Geographicus_-_Atlas-logerot-1845.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;">
+    <img src="/static/longerot-1845-geographical-puzzle-mid-yellow.jpg" alt="1845 Logerot jigsaw puzzle atlas of the world" loading="lazy" style="display:block;margin:0.5rem auto;max-width:720px;width:100%;height:auto;background:transparent;" />
+  </a>
+</p>
+<p style="font-size: smaller; color: #93a1a1; text-align: center;"><strong>Figure 1.</strong> 1845 Logerot jigsaw puzzle atlas of the world. Source: <a href="https://upload.wikimedia.org/wikipedia/commons/e/e5/1845_Logerot_Jigsaw_Puzzle_Atlas_of_the_World_-_Geographicus_-_Atlas-logerot-1845.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain).</p>
+
 Wide coupling is the more familiar form. The [Unix
 philosophy](http://www.catb.org/~esr/writings/taoup/html/ch01s06.html)
 captures the opposite ideal well:
@@ -101,6 +108,19 @@ point it may be deeply useful and deeply risky at the same time.
 Change slows down.\
 The component did not grow sideways.\
 It grew **tall**.
+
+```mermaid
+flowchart TB
+
+A[Interface]
+B[Layer 1]
+C[Layer 2]
+D[Layer 3]
+E[Layer 4]
+F[Core Logic]
+
+A --> B --> C --> D --> E --> F
+```
 
 ## Why this matters
 
