@@ -109,18 +109,15 @@ Change slows down.\
 The component did not grow sideways.\
 It grew **tall**.
 
-```mermaid
-flowchart TB
-
-A[Interface]
-B[Layer 1]
-C[Layer 2]
-D[Layer 3]
-E[Layer 4]
-F[Core Logic]
-
-A --> B --> C --> D --> E --> F
-```
+<p style="text-align: center;">
+  <a href="https://commons.wikimedia.org/wiki/File:Flatiron_Building_under_construction_II,_New_York_City,_1902.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;">
+    <span style="position:relative;display:block;max-width:504px;width:100%;margin:0.5rem auto;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Flatiron_Building_under_construction_II%2C_New_York_City%2C_1902.jpg" alt="Flatiron Building under construction II, New York City, 1902" loading="lazy" style="display:block;width:100%;height:auto;background:transparent;opacity:1;" />
+      <span style="position:absolute;inset:0;background:rgb(128, 106, 56);opacity:0.40;pointer-events:none;"></span>
+    </span>
+  </a>
+</p>
+<p style="font-size: smaller; color: #93a1a1; text-align: center;"><strong>Figure 2.</strong> Flatiron Building under construction II, New York City, 1902. Source: <a href="https://commons.wikimedia.org/wiki/File:Flatiron_Building_under_construction_II,_New_York_City,_1902.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain).</p>
 
 ## Why this matters
 
