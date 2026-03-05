@@ -2,7 +2,7 @@
 title: "Wide and tall coupling"
 date: 2026-03-05
 slug: 2026-03-05-wide-and-tall-coupling
-image: ""
+image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/348Sandbild_im_Sera_Kloster.jpg/320px-348Sandbild_im_Sera_Kloster.jpg"
 ---
 
 Today I read a post by Charity Majors that captured something many
@@ -195,6 +195,13 @@ Both slow the organisation down.
 Because organisational velocity is not measured by how fast we write
 code. It is measured by how quickly we can reshape the system when reality
 changes.
+
+<p style="text-align: center;">
+  <a href="https://commons.wikimedia.org/wiki/File:348Sandbild_im_Sera_Kloster.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/74/348Sandbild_im_Sera_Kloster.jpg" alt="Sand mandala at Sera Monastery" loading="lazy" style="display:block;margin:0.5rem auto;max-width:432px;width:100%;height:auto;background:transparent;" />
+  </a>
+</p>
+<p style="font-size: smaller; color: #93a1a1; text-align: center;"><strong>Figure 3.</strong> Sand mandala at Sera Monastery. Sand mandalas are made with extreme precision, then ceremonially dismantled and dispersed, often into water. The practice teaches impermanence: even the most beautiful, complex structures are temporary. It is both construction and release, demanding care in creation and non-attachment in letting go. Source: <a href="https://commons.wikimedia.org/wiki/File:348Sandbild_im_Sera_Kloster.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (CC BY 3.0).</p>
 
 ---
 
