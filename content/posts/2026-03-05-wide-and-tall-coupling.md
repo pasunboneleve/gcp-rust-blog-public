@@ -49,12 +49,20 @@ These goals are not always aligned.
 
 ## Wide coupling
 
-<p style="text-align: center;">
-  <a href="https://upload.wikimedia.org/wikipedia/commons/e/e5/1845_Logerot_Jigsaw_Puzzle_Atlas_of_the_World_-_Geographicus_-_Atlas-logerot-1845.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;">
-    <img src="/static/longerot-1845-geographical-puzzle-mid-yellow.jpg" alt="1845 Logerot jigsaw puzzle atlas of the world" loading="lazy" style="display:block;margin:0.5rem auto;max-width:720px;width:100%;height:auto;background:transparent;" />
-  </a>
-</p>
-<p style="font-size: smaller; color: #93a1a1; text-align: center;"><strong>Figure 1.</strong> 1845 Logerot jigsaw puzzle atlas of the world. Source: <a href="https://upload.wikimedia.org/wikipedia/commons/e/e5/1845_Logerot_Jigsaw_Puzzle_Atlas_of_the_World_-_Geographicus_-_Atlas-logerot-1845.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain).</p>
+<p style="text-align: center;"> <a
+  href="https://upload.wikimedia.org/wikipedia/commons/e/e5/1845_Logerot_Jigsaw_Puzzle_Atlas_of_the_World_-_Geographicus_-_Atlas-logerot-1845.jpg"
+  target="_blank" rel="noopener noreferrer"
+  style="text-decoration:none;border:0;"> <img
+  src="/static/longerot-1845-geographical-puzzle-mid-yellow.jpg"
+  alt="1845 Logerot jigsaw puzzle atlas of the world" loading="lazy"
+  style="display:block;margin:0.5rem
+  auto;max-width:720px;width:100%;height:auto;background:transparent;"
+  /> </a> </p> <p style="font-size: smaller; color: #93a1a1;
+  text-align: center;"><strong>Figure 1.</strong> 1845 Logerot jigsaw
+  puzzle atlas of the world. Source: <a
+  href="https://upload.wikimedia.org/wikipedia/commons/e/e5/1845_Logerot_Jigsaw_Puzzle_Atlas_of_the_World_-_Geographicus_-_Atlas-logerot-1845.jpg"
+  target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>
+  (public domain).</p>
 
 Wide coupling is the more familiar form. The [Unix
 philosophy](http://www.catb.org/~esr/writings/taoup/html/ch01s06.html)
@@ -97,27 +105,34 @@ accumulate. More formats are supported. More behaviour is
 embedded. Eventually only a few people understand the component well
 enough to modify it safely.
 
-Replacing it would require enormous effort.\
-So nobody touches it.
+Replacing it would require enormous effort.\ So nobody touches it.
 
 Imagine writing a replacement for `grep`. It starts as text search,
 then grows to handle JSON, YAML, and Parquet, and eventually becomes
 the universal query engine for the organisation’s Lakehouse. At that
 point it may be deeply useful and deeply risky at the same time.
 
-Change slows down.\
-The component did not grow sideways.\
-It grew **tall**.
+Change slows down.\ The component did not grow sideways.\ It grew
+**tall**.
 
-<p style="text-align: center;">
-  <a href="https://commons.wikimedia.org/wiki/File:Flatiron_Building_under_construction_II,_New_York_City,_1902.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;">
-    <span style="position:relative;display:block;max-width:504px;width:100%;margin:0.5rem auto;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Flatiron_Building_under_construction_II%2C_New_York_City%2C_1902.jpg" alt="Flatiron Building under construction II, New York City, 1902" loading="lazy" style="display:block;width:100%;height:auto;background:transparent;opacity:1;" />
-      <span style="position:absolute;inset:0;background:rgb(128, 106, 56);opacity:0.40;pointer-events:none;"></span>
-    </span>
-  </a>
-</p>
-<p style="font-size: smaller; color: #93a1a1; text-align: center;"><strong>Figure 2.</strong> Flatiron Building under construction II, New York City, 1902. Source: <a href="https://commons.wikimedia.org/wiki/File:Flatiron_Building_under_construction_II,_New_York_City,_1902.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain).</p>
+<p style="text-align: center;"> <a
+  href="https://commons.wikimedia.org/wiki/File:Flatiron_Building_under_construction_II,_New_York_City,_1902.jpg"
+  target="_blank" rel="noopener noreferrer"
+  style="text-decoration:none;border:0;"> <span
+  style="position:relative;display:block;max-width:504px;width:100%;margin:0.5rem
+  auto;"> <img
+  src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Flatiron_Building_under_construction_II%2C_New_York_City%2C_1902.jpg"
+  alt="Flatiron Building under construction II, New York City, 1902"
+  loading="lazy"
+  style="display:block;width:100%;height:auto;background:transparent;opacity:1;"
+  /> <span style="position:absolute;inset:0;background:rgb(128, 106,
+  56);opacity:0.40;pointer-events:none;"></span> </span> </a> </p> <p
+  style="font-size: smaller; color: #93a1a1; text-align:
+  center;"><strong>Figure 2.</strong> Flatiron Building under
+  construction II, New York City, 1902. Source: <a
+  href="https://commons.wikimedia.org/wiki/File:Flatiron_Building_under_construction_II,_New_York_City,_1902.jpg"
+  target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>
+  (public domain).</p>
 
 ## Why this matters
 
@@ -165,8 +180,8 @@ Work starts with conceptual clarity:
 - responsibilities should be visible
 - components should be replaceable
 
-Shallow components resist tall coupling.\
-Narrow interfaces resist wide coupling.
+Shallow components resist tall coupling.\ Narrow interfaces resist
+wide coupling.
 
 APIs should also be easy to test. Mocking is a simple boundary health
 check: if mocking an API is painful, the interface is probably doing
@@ -180,29 +195,46 @@ external ones. That is true. Still, decomposition has one useful side
 effect: it makes complexity visible. Once visible, teams can ask
 better questions.
 
-Do we actually need this complexity?\
-Is this boundary meaningful?\
+Do we actually need this complexity?\ Is this boundary meaningful?\
 Can this component be replaced?
 
 These conversations are harder when dependencies remain buried in one
 codebase. Ultimately, architecture style matters less than one
 property: **how cheap it is to change the system.**
 
-Wide coupling spreads change across the system.\
-Tall coupling buries change inside complexity.\
-Both slow the organisation down.
+Wide coupling spreads change across the system.\ Tall coupling buries
+change inside complexity.\ Both slow the organisation down.
 
 Because organisational velocity is not measured by how fast we write
-code. It is measured by how quickly we can reshape the system when reality
-changes.
+code. It is measured by how quickly we can reshape the system when
+reality changes.
 
-<p style="text-align: center;">
-  <a href="https://commons.wikimedia.org/wiki/File:348Sandbild_im_Sera_Kloster.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/7/74/348Sandbild_im_Sera_Kloster.jpg" alt="Sand mandala at Sera Monastery" loading="lazy" style="display:block;margin:0.5rem auto;max-width:432px;width:100%;height:auto;background:transparent;" />
-  </a>
-</p>
-<p style="font-size: smaller; color: #93a1a1; text-align: center;"><strong>Figure 3.</strong> Sand mandala at Sera Monastery. Sand mandalas are made with extreme precision, then ceremonially dismantled and dispersed, often into water. The practice teaches impermanence: even the most beautiful, complex structures are temporary. It is both construction and release, demanding care in creation and non-attachment in letting go. Source: <a href="https://commons.wikimedia.org/wiki/File:348Sandbild_im_Sera_Kloster.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (CC BY 3.0).</p>
+<p style="text-align: center;"> <a
+  href="https://commons.wikimedia.org/wiki/File:348Sandbild_im_Sera_Kloster.jpg"
+  target="_blank" rel="noopener noreferrer"
+  style="text-decoration:none;border:0;"> <span
+  style="position:relative;display:block;max-width:432px;width:100%;margin:0.5rem
+  auto;"> <img
+  src="https://upload.wikimedia.org/wikipedia/commons/7/74/348Sandbild_im_Sera_Kloster.jpg"
+  alt="Sand mandala at Sera Monastery" loading="lazy"
+  style="display:block;width:100%;height:auto;background:transparent;opacity:1;"
+  /> <span style="position:absolute;inset:0;background:rgb(128, 106,
+  56);opacity:0.20;pointer-events:none;"></span> </span> </a> </p> <p
+  style="font-size: smaller; color: #93a1a1; text-align:
+  center;"><strong>Figure 3.</strong> Sand mandala at Sera
+  Monastery. Sand mandalas are made with extreme precision, then
+  ceremonially dismantled and dispersed, often into water. The
+  practice teaches impermanence: even the most beautiful, complex
+  structures are temporary. It is both construction and release,
+  demanding care in creation and non-attachment in letting go. Source:
+  <a
+  href="https://commons.wikimedia.org/wiki/File:348Sandbild_im_Sera_Kloster.jpg"
+  target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (CC
+  BY 3.0).</p>
 
 ---
 
-<p style="font-size: smaller; color: #93a1a1; line-height: 1.5;"><sup>Note.</sup> I explored this idea previously when discussing the <a href="/posts/2026-03-04-cost-of-change">cost of change in a data platform</a>.</p>
+<p style="font-size: smaller; color: #93a1a1; line-height:
+1.5;"><sup>Note.</sup> I explored this idea previously when discussing
+the <a href="/posts/2026-03-04-cost-of-change">cost of change in a
+data platform</a>.</p>
