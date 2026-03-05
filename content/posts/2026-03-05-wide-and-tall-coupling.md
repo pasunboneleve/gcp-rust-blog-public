@@ -2,7 +2,7 @@
 title: "Wide and tall coupling"
 date: 2026-03-05
 slug: 2026-03-05-wide-and-tall-coupling
-image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/348Sandbild_im_Sera_Kloster.jpg/320px-348Sandbild_im_Sera_Kloster.jpg"
+image: "/static/wide-tall-coupling-social.jpg"
 ---
 
 Fast development often backfires. Engineering cultures that only value
