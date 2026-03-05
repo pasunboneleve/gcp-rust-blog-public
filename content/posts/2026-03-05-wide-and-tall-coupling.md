@@ -100,15 +100,17 @@ accumulate. More formats are supported. More behaviour is
 embedded. Eventually only a few people understand the component well
 enough to modify it safely.
 
-Replacing it would require enormous effort.\ So nobody touches it.
+Replacing it would require enormous effort.\
+So nobody touches it.
 
 Imagine writing a replacement for `grep`. It starts as text search,
 then grows to handle JSON, YAML, and Parquet, and eventually becomes
 the universal query engine for the organisation’s Lakehouse. At that
 point it may be deeply useful and deeply risky at the same time.
 
-Change slows down.\ The component did not grow sideways.\ It grew
-**tall**.
+Change slows down.\
+The component did not grow sideways.\
+It grew **tall**.
 
 <p style="text-align: center;"> <a
   href="https://commons.wikimedia.org/wiki/File:Flatiron_Building_under_construction_II,_New_York_City,_1902.jpg"
@@ -175,8 +177,8 @@ Work starts with conceptual clarity:
 - responsibilities should be visible
 - components should be replaceable
 
-Shallow components resist tall coupling.\ Narrow interfaces resist
-wide coupling.
+Shallow components resist tall coupling.\
+Narrow interfaces resist wide coupling.
 
 APIs should also be easy to test. Mocking is a simple boundary health
 check: if mocking an API is painful, the interface is probably doing
@@ -190,15 +192,18 @@ external ones. That is true. Still, decomposition has one useful side
 effect: it makes complexity visible. Once visible, teams can ask
 better questions.
 
-Do we actually need this complexity?\ Is this boundary meaningful?\
+Do we actually need this complexity?\
+Is this boundary meaningful?\
 Can this component be replaced?
 
 These conversations are harder when dependencies remain buried in one
 codebase. Ultimately, architecture style matters less than one
 property: **how cheap it is to change the system.**
 
-Wide coupling spreads change across the system.\ Tall coupling buries
-change inside complexity.\ Both slow the organisation down.
+Wide coupling spreads change across the system.\
+Tall coupling buries
+change inside complexity.\
+Both slow the organisation down.
 
 Because organisational velocity is not measured by how fast we write
 code. It is measured by how quickly we can reshape the system when
