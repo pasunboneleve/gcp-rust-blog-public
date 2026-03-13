@@ -153,10 +153,11 @@ missing mechanism in the system itself.
 When confronted with an impossible request, the tempting response is
 to build a workaround that solves the immediate problem. But the more
 valuable response is often different: identify the capability the
-system lacks and introduce it as a reusable component.
+system lacks and introduce it as a reusable
+component.
 
 The first approach satisfies the request.\
-The second approach **evolves the system**.
+The second approach makes it [**easy to change**](/posts/2026-03-03-optimise-for-the-cheapest-change).
 
 ---
 
