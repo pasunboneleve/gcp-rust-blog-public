@@ -121,8 +121,12 @@ outputs, and tools could be chained together to perform complex
 tasks. A privacy filter for sensitive datasets could follow the same
 principle:
 
-```
-sensitive-data | privacy-filter | analytics
+```mermaid
+%%{init: {'flowchart': {'htmlLabels': true}, 'themeVariables': {'primaryColor': 'transparent', 'primaryBorderColor': 'transparent'}}}%%
+flowchart TD
+    pipeline["<span style='color: var(--color-yellow); white-space: nowrap; font-size: 1.22em;'>sensitive-data&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;privacy-filter&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;analytics</span>"]
+
+    style pipeline fill:transparent,stroke:transparent
 ```
 
 The tool does not know which analysis will follow. It only guarantees
