@@ -56,7 +56,7 @@ But something more important also happens: the system itself
 evolves. The solution is no longer tied to a single report. Any future
 analysis involving sensitive data could use the same mechanism.
 
-## Solving the Request vs Evolving the System
+## Solving the request vs evolving the system
 
 When systems encounter requests they cannot satisfy, there are usually
 two ways to respond. The first is to solve the request directly:
@@ -92,7 +92,7 @@ one of many possible uses. The problem was not that the analysis was
 impossible. The problem was that the system lacked the capability
 required to make it routine.
 
-## A Familiar Pattern in Software Systems
+## A familiar pattern in software systems
 
 This pattern appears frequently in engineering. Organizations ask for
 outcomes that the system cannot yet produce.
@@ -112,7 +112,7 @@ that would make the request ordinary.
 
 Once the capability exists, the request stops being exceptional.
 
-## The Unix Lesson
+## The Unix lesson
 
 This idea closely mirrors the philosophy behind Unix tools. Early Unix
 systems introduced small programs that performed well-defined
@@ -135,7 +135,7 @@ such components lies in their composability. By introducing a
 well-defined transformation, the system becomes capable of supporting
 new behaviours without requiring new infrastructure each time.
 
-## The Real Role of Infrastructure
+## The real role of infrastructure
 
 Infrastructure is often invisible when it works well. A CI pipeline,
 an observability stack, or a deployment platform does not deliver user
@@ -148,7 +148,7 @@ Sensitive data can be analysed without violating **privacy constraints**.\
 What looked like a difficult organizational problem turns out to be a
 missing mechanism in the system itself.
 
-## From Workarounds to Capabilities
+## From workarounds to capabilities
 
 When confronted with an impossible request, the tempting response is
 to build a workaround that solves the immediate problem. But the more
