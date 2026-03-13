@@ -25,9 +25,9 @@ information that was being protected. The situation looked like this:
 
 ```mermaid
 flowchart LR
-    payroll[Payroll database]
+    payroll[🛢️ Payroll database]
     capability[???]
-    analytics[Analytics]
+    analytics[📊 Analytics]
 
     payroll --> capability --> analytics
 ```
@@ -39,9 +39,9 @@ like this:
 
 ```mermaid
 flowchart TD
-    sensitive[Sensitive payroll data]
-    deid[De-identification layer]
-    safe[Safe analytical dataset]
+    sensitive[🛢️ Sensitive payroll data]
+    deid[🕵️ De-identification layer]
+    safe[📊 Safe analytical dataset]
 
     sensitive --> deid --> safe
 ```
@@ -63,9 +63,9 @@ two ways to respond. The first is to solve the request directly:
 
 ```mermaid
 flowchart LR
-    payroll[Payroll database]
+    payroll[🛢️ Payroll database]
     report[Custom report]
-    gap[Pay gap analysis]
+    gap[📊 Pay gap analysis]
 
     payroll --> report --> gap
 ```
@@ -79,9 +79,9 @@ component:
 
 ```mermaid
 flowchart LR
-    sensitive[Sensitive data]
-    privacy[Privacy filter]
-    tools[Analytics tools]
+    sensitive[🛢️ Sensitive data]
+    privacy[🕵️ Privacy filter]
+    tools[📊 Analytics tools]
 
     sensitive --> privacy --> tools
 ```
