@@ -3,6 +3,7 @@ title: "The responsibility trap"
 date: 2026-03-13
 slug: 2026-03-13-the-responsibility-trap
 description: "Two stories about fast engineers, slow engineers, and what responsibility does to both."
+image: "/static/responsibility-trap-liotard-social.jpg"
 ---
 
 Anyone who has worked in software teams has seen it. One engineer ships
@@ -44,6 +45,16 @@ about.
 Bob left the team not long after.
 
 The changes went ahead.
+
+<figure>
+  <a href="https://commons.wikimedia.org/wiki/File:A_Hungarian_nobleman_and_peasant_Townson_cropped.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;display:block;max-width:720px;width:100%;margin:0.5rem auto;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/A_Hungarian_nobleman_and_peasant_Townson_cropped.jpg" alt="A Hungarian nobleman and peasant" loading="lazy" style="display:block;width:60%;height:auto;margin:0 auto;background:transparent;" />
+  </a>
+  <figcaption style="width:60%;margin:0.5rem auto 0;text-align:center;">
+    <strong>Figure 1.</strong> <em>A Hungarian nobleman and peasant</em>, from Robert Townson.
+    Source: <a href="https://commons.wikimedia.org/wiki/File:A_Hungarian_nobleman_and_peasant_Townson_cropped.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>.
+  </figcaption>
+</figure>
 
 ---
 
@@ -179,3 +190,15 @@ change.
 
 Speed returns — not because the engineers became better, but because
 the system became easier to regulate.
+
+---
+
+<figure>
+  <a href="https://commons.wikimedia.org/wiki/File:Jean-Etienne_Liotard_-_A_Lady_in_Turkish_Dress_and_Her_Servant_-_Google_Art_ProjectFXD.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;display:block;max-width:720px;width:100%;margin:0.5rem auto;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Jean-Etienne_Liotard_-_A_Lady_in_Turkish_Dress_and_Her_Servant_-_Google_Art_ProjectFXD.jpg" alt="A Lady in Turkish Dress and Her Servant, by Jean-Etienne Liotard" loading="lazy" style="display:block;width:60%;height:auto;margin:0 auto;background:transparent;" />
+  </a>
+  <figcaption style="width:60%;margin:0.5rem auto 0;text-align:center;">
+    <strong>Figure 2.</strong> <em>A Lady in Turkish Dress and Her Servant</em>, Jean-Etienne Liotard.
+    Source: <a href="https://commons.wikimedia.org/wiki/File:Jean-Etienne_Liotard_-_A_Lady_in_Turkish_Dress_and_Her_Servant_-_Google_Art_ProjectFXD.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain).
+  </figcaption>
+</figure>
