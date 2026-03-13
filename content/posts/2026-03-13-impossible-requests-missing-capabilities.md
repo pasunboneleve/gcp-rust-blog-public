@@ -95,12 +95,20 @@ required to make it routine.
 ## A Familiar Pattern in Software Systems
 
 This pattern appears frequently in engineering. Organizations ask for
-outcomes that the system cannot yet produce: reliable deployments
-without a CI/CD pipeline, observability from services that emit no
-structured telemetry, or independent team deployments without a safe
-deployment path. In each case, the request seems difficult or
-unrealistic, but the deeper problem is usually the same. The system is
-missing the layer that would make the request ordinary.
+outcomes that the system cannot yet produce.
+
+* **“We want reliable deployments.”**\
+  But there is no CI/CD pipeline.
+
+* **“We want observability.”**\
+  But services emit no structured telemetry.
+
+* **“We want teams to deploy independently.”**\
+  But the infrastructure offers no safe deployment path.
+
+In each case, the request seems difficult or unrealistic, but the
+deeper problem is usually the same. The system is missing the layer
+that would make the request ordinary.
 
 Once the capability exists, the request stops being exceptional.
 
@@ -130,12 +138,9 @@ an observability stack, or a deployment platform does not deliver user
 features directly. Instead, it changes what the system is capable of
 doing.
 
-Reliable deployments become routine.
-
-Debugging production incidents becomes feasible.
-
-Sensitive data can be analysed without violating privacy constraints.
-
+Reliable deployments become routine.\
+Debugging production incidents becomes feasible.\
+Sensitive data can be analysed without violating privacy constraints.\
 What looked like a difficult organizational problem turns out to be a
 missing mechanism in the system itself.
 
@@ -146,8 +151,7 @@ to build a workaround that solves the immediate problem. But the more
 valuable response is often different: identify the capability the
 system lacks and introduce it as a reusable component.
 
-The first approach satisfies the request.
-
+The first approach satisfies the request.\
 The second approach evolves the system.
 
 ---
