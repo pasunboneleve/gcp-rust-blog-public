@@ -143,6 +143,7 @@ content/
 - Reuse the same artwork family at the end of the post as a sourced figure with caption and attribution, even when the front matter points at a cropped social derivative.
 - Convert structural diagrams in posts to Mermaid when they are meant to explain system shape or flow. Keep literal commands or code examples as fenced code.
 - Write posts primarily as prose. Single-sentence paragraphs and stanza-like emphasis are acceptable, but they should be used deliberately to stress key points rather than dominate the structure of the piece.
+- Preserve meaningful bullet lists from the draft when they clarify distinctions, examples, or recurring patterns. Do not flatten them into prose just for uniformity.
 
 **MANDATORY WORKFLOW:**
 
