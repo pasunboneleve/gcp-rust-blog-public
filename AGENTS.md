@@ -131,6 +131,18 @@ content/
 - No hardcoded configuration. Keep configuration in config files.
 - NEVER vendor software.
 
+## Aesthetic rules for adding content
+- Read the recent posts before changing a new one so the new piece matches the established visual and editorial pattern.
+- Track the work in `bd` as small tasks before editing: image selection/preparation first, then post updates, then any documentation follow-up.
+- Prefer public-domain or equivalently reusable images from Wikimedia Commons when adding artwork to posts.
+- Verify that the exact Wikimedia asset exists before committing to it. Open the Commons page, resolve the direct file URL, and confirm the image returns successfully instead of assuming the filename is correct.
+- Choose images that are consonant with the argument of the post, look old or classical, and are recognisable as belonging to a distinct cultural tradition.
+- If the original image is a poor fit for social cards, create a local derivative in `content/static/` and reference that derivative from the post front matter `image:` field.
+- Social-card derivatives should be suitable for X and LinkedIn previews. Use a stable local asset, keep the aspect ratio close to `1200x630`, and crop rather than stretch.
+- When an image has a predominantly white or washed-out background, it is acceptable to add a subtle warm yellow overlay so it reads as aged and remains legible in the site design.
+- Reuse the same artwork family at the end of the post as a sourced figure with caption and attribution, even when the front matter points at a cropped social derivative.
+- Convert structural diagrams in posts to Mermaid when they are meant to explain system shape or flow. Keep literal commands or code examples as fenced code.
+
 **MANDATORY WORKFLOW:**
 
 Use 'bd' for task tracking.

@@ -2,7 +2,8 @@
 title: "Impossible requests, missing capabilities"
 date: 2026-03-13
 slug: 2026-03-13-impossible-requests-missing-capabilities
-image: ""
+description: "Impossible requests usually point to a missing system capability. Add the right layer, and the exceptional becomes routine."
+image: "/static/impossible-requests-watermill-social.jpg"
 ---
 
 From time to time, a business request arrives that seems impossible.
@@ -23,22 +24,26 @@ At that point the project stopped. The data could not be accessed because it was
 
 The situation looked like this:
 
-```
-Payroll database → ??? → Analytics
+```mermaid
+flowchart LR
+    payroll[Payroll database]
+    capability[Missing capability]
+    analytics[Analytics]
+
+    payroll --> capability --> analytics
 ```
 
 The missing step was obvious. To analyse the data safely, the system needed a mechanism that could transform sensitive records into an anonymised dataset suitable for analysis.
 
 A simple example might look like this:
 
-```
-Sensitive payroll data
-        │
-        ▼
-De-identification layer
-        │
-        ▼
-Safe analytical dataset
+```mermaid
+flowchart TD
+    sensitive[Sensitive payroll data]
+    deid[De-identification layer]
+    safe[Safe analytical dataset]
+
+    sensitive --> deid --> safe
 ```
 
 Names and identifiers would be removed or replaced. Pay grade, salary, and gender could remain. The resulting dataset would preserve the statistical properties needed for the analysis without exposing personal information.
@@ -129,3 +134,15 @@ But the more valuable response is often different: identify the capability the s
 The first approach satisfies the request.
 
 The second approach evolves the system.
+
+---
+
+<figure>
+  <a href="https://commons.wikimedia.org/wiki/File:Watermill_at_Onden.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;display:block;max-width:720px;width:100%;margin:0.5rem auto;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3b/Watermill_at_Onden.jpg" alt="Watermill at Onden, by Katsushika Hokusai" loading="lazy" style="display:block;width:100%;height:auto;background:transparent;" />
+  </a>
+  <figcaption>
+    <strong>Figure 1.</strong> <em>Watermill at Onden</em>, Katsushika Hokusai, from the Edo-period ukiyo-e series <em>Thirty-six Views of Mount Fuji</em>.
+    Source: <a href="https://commons.wikimedia.org/wiki/File:Watermill_at_Onden.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain).
+  </figcaption>
+</figure>
