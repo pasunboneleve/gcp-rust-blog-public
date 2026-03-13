@@ -80,8 +80,6 @@ I was made redundant.
 
 ## Looking back
 
-I now realise the two situations had the same structure.
-
 In the first story:
 
 - Bob knew the system deeply
@@ -96,7 +94,7 @@ In the second story:
 - I moved cautiously inside it
 - Alice arrived proposing large changes
 
-The roles had simply reversed.
+The roles had reversed.
 
 ---
 
