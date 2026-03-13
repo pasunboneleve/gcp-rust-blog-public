@@ -16,8 +16,8 @@ request itself was straightforward. Computing the metric would have
 taken only a few queries. So I asked for access to the payroll
 database.
 
-The answer came back quickly: “We can’t give you that. That’s private
-information.”
+The answer came back quickly: **“We can’t give you that. That’s private
+information.”**
 
 At that point the project stopped. The data could not be accessed
 because it was sensitive, yet the analysis required access to the very
@@ -139,12 +139,12 @@ new behaviours without requiring new infrastructure each time.
 
 Infrastructure is often invisible when it works well. A CI pipeline,
 an observability stack, or a deployment platform does not deliver user
-features directly. Instead, it changes what the system is capable of
-doing.
+features directly. Instead, it changes what the system is **capable of
+doing**.
 
-Reliable deployments become routine.\
-Debugging production incidents becomes feasible.\
-Sensitive data can be analysed without violating privacy constraints.\
+Reliable deployments become **routine**.\
+Debugging production incidents becomes **feasible**.\
+Sensitive data can be analysed without violating **privacy constraints**.\
 What looked like a difficult organizational problem turns out to be a
 missing mechanism in the system itself.
 
@@ -156,7 +156,7 @@ valuable response is often different: identify the capability the
 system lacks and introduce it as a reusable component.
 
 The first approach satisfies the request.\
-The second approach evolves the system.
+The second approach **evolves the system**.
 
 ---
 
