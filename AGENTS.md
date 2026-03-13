@@ -142,6 +142,7 @@ content/
 - When an image has a predominantly white or washed-out background, it is acceptable to add a subtle warm yellow overlay so it reads as aged and remains legible in the site design.
 - Reuse the same artwork family at the end of the post as a sourced figure with caption and attribution, even when the front matter points at a cropped social derivative.
 - Convert structural diagrams in posts to Mermaid when they are meant to explain system shape or flow. Keep literal commands or code examples as fenced code.
+- Write posts primarily as prose. Single-sentence paragraphs and stanza-like emphasis are acceptable, but they should be used deliberately to stress key points rather than dominate the structure of the piece.
 
 **MANDATORY WORKFLOW:**
 
