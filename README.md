@@ -130,12 +130,12 @@ If `:app-base` does not exist yet, the workflow automatically falls back to a fu
 
 ## Key Features
 
-✅ **Infrastructure as Code** - Everything managed with OpenTofu
-✅ **Secure CI/CD** - GitHub Actions with Workload Identity Federation
-✅ **Least Privilege** - Dedicated service accounts with minimal permissions
-✅ **Automated DNS** - Domain management through code
-✅ **Container Security** - Multi-stage builds, non-root containers
-✅ **Observability** - Structured logging with `tracing`
+✅ **Infrastructure as Code** - Everything managed with OpenTofu\
+✅ **Secure CI/CD** - GitHub Actions with Workload Identity Federation\
+✅ **Least Privilege** - Dedicated service accounts with minimal permissions\
+✅ **Automated DNS** - Domain management through code\
+✅ **Container Security** - Multi-stage builds, non-root containers\
+✅ **Observability** - Structured logging with `tracing`\
 ✅ **Faster content deploys** - Content-only changes reuse a prebuilt app base image
 
 ## Environment Configuration
