@@ -42,9 +42,9 @@ The changes went ahead.
 
 <figure>
   <a href="https://commons.wikimedia.org/wiki/File:A_Hungarian_nobleman_and_peasant_Townson_cropped.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;display:block;max-width:720px;width:100%;margin:0.5rem auto;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/A_Hungarian_nobleman_and_peasant_Townson_cropped.jpg" alt="A Hungarian nobleman and peasant" loading="lazy" style="display:block;width:60%;height:auto;margin:0 auto;background:transparent;" />
+    <img class="block w-full sm:w-3/5 h-auto mx-auto" src="https://upload.wikimedia.org/wikipedia/commons/8/89/A_Hungarian_nobleman_and_peasant_Townson_cropped.jpg" alt="A Hungarian nobleman and peasant" loading="lazy" style="background:transparent;" />
   </a>
-  <figcaption style="width:60%;margin:0.5rem auto 0;text-align:center;">
+  <figcaption class="w-full sm:w-3/5 mx-auto text-center" style="margin-top:0.5rem;">
     <strong>Figure 1.</strong> <em>A Hungarian nobleman and peasant</em>, from Robert Townson.
     Source: <a href="https://commons.wikimedia.org/wiki/File:A_Hungarian_nobleman_and_peasant_Townson_cropped.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>.
   </figcaption>
@@ -170,9 +170,9 @@ the system became easier to regulate.
 
 <figure>
   <a href="https://commons.wikimedia.org/wiki/File:Jean-Etienne_Liotard_-_A_Lady_in_Turkish_Dress_and_Her_Servant_-_Google_Art_ProjectFXD.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;display:block;max-width:720px;width:100%;margin:0.5rem auto;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Jean-Etienne_Liotard_-_A_Lady_in_Turkish_Dress_and_Her_Servant_-_Google_Art_ProjectFXD.jpg" alt="A Lady in Turkish Dress and Her Servant, by Jean-Etienne Liotard" loading="lazy" style="display:block;width:60%;height:auto;margin:0 auto;background:transparent;" />
+    <img class="block w-full sm:w-3/5 h-auto mx-auto" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Jean-Etienne_Liotard_-_A_Lady_in_Turkish_Dress_and_Her_Servant_-_Google_Art_ProjectFXD.jpg" alt="A Lady in Turkish Dress and Her Servant, by Jean-Etienne Liotard" loading="lazy" style="background:transparent;" />
   </a>
-  <figcaption style="width:60%;margin:0.5rem auto 0;text-align:center;">
+  <figcaption class="w-full sm:w-3/5 mx-auto text-center" style="margin-top:0.5rem;">
     <strong>Figure 2.</strong> <em>A Lady in Turkish Dress and Her Servant</em>, Jean-Etienne Liotard.
     Source: <a href="https://commons.wikimedia.org/wiki/File:Jean-Etienne_Liotard_-_A_Lady_in_Turkish_Dress_and_Her_Servant_-_Google_Art_ProjectFXD.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (public domain).
   </figcaption>
