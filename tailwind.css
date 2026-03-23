@@ -46,6 +46,10 @@
     .sidebar-post-subtitle {
         @apply block text-xs text-base01 opacity-60 mt-0.5 leading-snug;
     }
+
+    .sidebar-group-header {
+        @apply text-xs font-bold uppercase tracking-widest text-base01 opacity-50 mt-4 mb-1 px-1;
+    }
 }
 
 /* ── Post page header ────────────────────────────────────────────────── */

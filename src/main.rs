@@ -34,17 +34,44 @@ const HOT_RELOAD_TAG_START: &str = "<script>";
 const HOT_RELOAD_TAG_END: &str = "</script>";
 
 fn render_post_list(posts: &[Post]) -> String {
-    let mut list_items = String::new();
+    // Collect unique roles in first-seen order, preserving posts without a role.
+    let mut seen_roles: Vec<Option<&str>> = Vec::new();
     for post in posts {
-        let subtitle_html = post
-            .subtitle
-            .as_deref()
-            .map(|s| format!("<span class=\"sidebar-post-subtitle\">{s}</span>"))
-            .unwrap_or_default();
-        list_items.push_str(&format!(
-            "<li><a href=\"/posts/{}\" class=\"sidebar-post-link\"><span class=\"sidebar-post-title\">{}</span>{}</a></li>",
-            post.slug, post.title, subtitle_html
-        ));
+        let role = post.role.as_deref();
+        if !seen_roles.contains(&role) {
+            seen_roles.push(role);
+        }
+    }
+
+    let mut list_items = String::new();
+    for role in seen_roles {
+        if let Some(r) = role {
+            let header = r
+                .split('-')
+                .map(|w| {
+                    let mut c = w.chars();
+                    match c.next() {
+                        None => String::new(),
+                        Some(first) => first.to_uppercase().collect::<String>() + c.as_str(),
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(" ");
+            list_items.push_str(&format!(
+                "<li class=\"sidebar-group-header\">{header}</li>"
+            ));
+        }
+        for post in posts.iter().filter(|p| p.role.as_deref() == role) {
+            let subtitle_html = post
+                .subtitle
+                .as_deref()
+                .map(|s| format!("<span class=\"sidebar-post-subtitle\">{s}</span>"))
+                .unwrap_or_default();
+            list_items.push_str(&format!(
+                "<li><a href=\"/posts/{}\" class=\"sidebar-post-link\"><span class=\"sidebar-post-title\">{}</span>{}</a></li>",
+                post.slug, post.title, subtitle_html
+            ));
+        }
     }
     list_items
 }
