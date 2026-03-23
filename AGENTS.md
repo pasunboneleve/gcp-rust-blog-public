@@ -16,12 +16,14 @@ small, testable, and Rust-idiomatic.
 Local development requires **two parallel terminals**:
 
 ```bash
-# Terminal 1 — Rust server with hot reload
-cargo run
+# Terminal 1 — Rust server with restart-on-change and fresh cloudflared URL
+bacon run
 
 # Terminal 2 — Tailwind CSS watcher
 ./scripts/tailwatch.sh
 ```
+
+`bacon run` executes `./scripts/cloudflared-bacon-run.sh`, so each code-triggered restart also replaces the tunnel and prints a fresh public `/posts/<slug>` URL.
 
 Tailwind must be running alongside the server so that class changes in
 `src/**/*.rs` and `content/**/*.html` are compiled into
@@ -50,7 +52,7 @@ Set required environment variables first:
 ```bash
 export PROJECT_ID={{GCP_PROJECT_ID}}
 export GCP_REGION={{GCP_REGION}}
-export SERVICE_NAME=gcp-rust-blog
+export SERVICE_NAME=blog
 export REPO=blog
 ```
 

@@ -44,17 +44,19 @@ The focus is not the technology itself, but the shape of the system: making corr
 
 ### Local Development
 ```bash
-# Run the blog locally (default port 8080)
-cargo run
+# Terminal 1: Rust server with restart-on-change and fresh cloudflared URL
+bacon run
 
-# Run with custom port
-PORT=3000 cargo run
+# Terminal 2: Tailwind watcher
+./scripts/tailwatch.sh
 
 # Check and format code
 cargo check
 cargo fmt
 cargo clippy
 ```
+
+`bacon run` launches [`scripts/cloudflared-bacon-run.sh`](/home/dmvianna/src/sandbox/iac/gcp-rust-blog-public/scripts/cloudflared-bacon-run.sh), so each restart also replaces the Cloudflare tunnel and prints a fresh public post URL for social-card testing.
 
 ### Content Management
 - **Blog posts**: Add Markdown files in `content/posts/` as `<slug>.md`

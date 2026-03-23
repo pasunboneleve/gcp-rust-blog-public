@@ -1,3 +1,5 @@
+use pulldown_cmark::{Event, Parser, Tag, TagEnd};
+
 const DEFAULT_SITE_URL: &str = "https://boneleve.blog";
 const DEFAULT_SOCIAL_IMAGE_PATH: &str = "/static/favicon.png";
 const DEFAULT_PAGE_DESCRIPTION: &str = "Engineering notes on making change cheap.";
@@ -112,40 +114,51 @@ pub(crate) fn build_social_description(subtitle: Option<&str>, markdown_body: &s
 /// Strips markdown block-level syntax, flattens lines to a single
 /// normalised string suitable for sentence extraction.
 fn normalize_body_for_description(markdown: &str) -> String {
-    let mut parts: Vec<String> = Vec::new();
-    let mut in_code_block = false;
+    let mut out = String::new();
+    let mut heading_depth = 0usize;
+    let mut code_block_depth = 0usize;
+    let mut image_depth = 0usize;
 
-    for line in markdown.lines() {
-        let trimmed = line.trim();
-
-        if trimmed.starts_with("```") {
-            in_code_block = !in_code_block;
-            continue;
-        }
-        if in_code_block
-            || trimmed.is_empty()
-            || trimmed.starts_with('#')
-            || trimmed.starts_with('>')
-            || trimmed == "---"
-            || trimmed.starts_with("![")
-            || (trimmed.starts_with('<') && trimmed.ends_with('>'))
-        {
-            continue;
-        }
-
-        let stripped = strip_inline_for_description(trimmed);
-        let stripped = stripped.trim().to_string();
-        if !stripped.is_empty() {
-            parts.push(stripped);
+    for event in Parser::new(markdown) {
+        match event {
+            Event::Start(tag) => match tag {
+                Tag::Heading { .. } => heading_depth += 1,
+                Tag::CodeBlock(_) => code_block_depth += 1,
+                Tag::Image { .. } => image_depth += 1,
+                _ => {}
+            },
+            Event::End(tag_end) => match tag_end {
+                TagEnd::Paragraph | TagEnd::Item | TagEnd::BlockQuote(_) | TagEnd::TableCell => {
+                    append_normalized_fragment(&mut out, " ");
+                }
+                TagEnd::Heading(_) => heading_depth = heading_depth.saturating_sub(1),
+                TagEnd::CodeBlock => code_block_depth = code_block_depth.saturating_sub(1),
+                TagEnd::Image => image_depth = image_depth.saturating_sub(1),
+                _ => {}
+            },
+            Event::Text(text) | Event::Code(text)
+                if heading_depth == 0 && code_block_depth == 0 && image_depth == 0 =>
+            {
+                append_normalized_fragment(&mut out, &text);
+            }
+            Event::SoftBreak | Event::HardBreak
+                if heading_depth == 0 && code_block_depth == 0 && image_depth == 0 =>
+            {
+                append_normalized_fragment(&mut out, " ");
+            }
+            _ => {}
         }
     }
 
-    let joined = parts.join(" ");
-    let mut out = String::with_capacity(joined.len());
-    let mut prev_space = false;
-    for c in joined.chars() {
+    out.trim().to_string()
+}
+
+fn append_normalized_fragment(out: &mut String, fragment: &str) {
+    let mut prev_space = out.ends_with(' ');
+
+    for c in fragment.chars() {
         if c.is_whitespace() {
-            if !prev_space {
+            if !prev_space && !out.is_empty() {
                 out.push(' ');
             }
             prev_space = true;
@@ -154,69 +167,7 @@ fn normalize_body_for_description(markdown: &str) -> String {
             prev_space = false;
         }
     }
-    out.trim().to_string()
 }
-
-/// Strips inline markdown: removes images, replaces links with their
-/// text, removes bold/italic/code markers.
-fn strip_inline_for_description(text: &str) -> String {
-    let chars: Vec<char> = text.chars().collect();
-    let n = chars.len();
-    let mut out = String::with_capacity(n);
-    let mut i = 0;
-
-    while i < n {
-        // Image: ![alt](url) → skip entirely
-        if chars[i] == '!' && i + 1 < n && chars[i + 1] == '[' {
-            if let Some(cb) = chars[i + 2..].iter().position(|&c| c == ']') {
-                let after = i + 2 + cb + 1;
-                if after < n && chars[after] == '(' {
-                    if let Some(cp) = chars[after + 1..].iter().position(|&c| c == ')') {
-                        i = after + 1 + cp + 1;
-                        continue;
-                    }
-                }
-            }
-        }
-
-        // Link: [text](url) → text
-        if chars[i] == '[' {
-            if let Some(cb) = chars[i + 1..].iter().position(|&c| c == ']') {
-                let after = i + 1 + cb + 1;
-                if after < n && chars[after] == '(' {
-                    if let Some(cp) = chars[after + 1..].iter().position(|&c| c == ')') {
-                        for &c in &chars[i + 1..i + 1 + cb] {
-                            out.push(c);
-                        }
-                        i = after + 1 + cp + 1;
-                        continue;
-                    }
-                }
-            }
-        }
-
-        // Double markers: ** __
-        if i + 1 < n
-            && ((chars[i] == '*' && chars[i + 1] == '*')
-                || (chars[i] == '_' && chars[i + 1] == '_'))
-        {
-            i += 2;
-            continue;
-        }
-
-        // Single markers: * _ `
-        if matches!(chars[i], '*' | '_' | '`') {
-            i += 1;
-            continue;
-        }
-
-        out.push(chars[i]);
-        i += 1;
-    }
-
-    out
-}
-
 
 pub(crate) fn escape_html(input: &str) -> String {
     htmlescape::encode_minimal(input)
@@ -241,7 +192,6 @@ fn absolute_url(path_or_url: &str) -> String {
         format!("{base}/{path_or_url}")
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -291,7 +241,11 @@ mod tests {
                     A sentence that is far too long to fit within the remaining budget after the subtitle and first sentence have been included in full. \
                     Short one.";
         let desc = build_social_description(Some(subtitle), body);
-        assert!(desc.chars().count() <= 160, "length was {}", desc.chars().count());
+        assert!(
+            desc.chars().count() <= 160,
+            "length was {}",
+            desc.chars().count()
+        );
     }
 
     #[test]
@@ -300,11 +254,21 @@ mod tests {
         let subtitle = "Subtitle";
         let body = "word ".repeat(40); // ~200 chars when combined
         let desc = build_social_description(Some(subtitle), &body);
-        assert!(desc.chars().count() <= 160, "length was {}", desc.chars().count());
-        assert!(desc.ends_with("..."), "should end with ellipsis, got: {desc:?}");
+        assert!(
+            desc.chars().count() <= 160,
+            "length was {}",
+            desc.chars().count()
+        );
+        assert!(
+            desc.ends_with("..."),
+            "should end with ellipsis, got: {desc:?}"
+        );
         // Must not cut mid-word
         let without_ellipsis = desc.trim_end_matches("...");
-        assert!(!without_ellipsis.ends_with(' '), "should trim trailing space before ellipsis");
+        assert!(
+            !without_ellipsis.ends_with(' '),
+            "should trim trailing space before ellipsis"
+        );
     }
 
     #[test]
@@ -339,6 +303,13 @@ mod tests {
         assert!(!desc.contains("Heading"));
         assert!(!desc.contains("code here"));
         assert!(desc.contains("Real sentence."));
+    }
+
+    #[test]
+    fn social_description_keeps_angle_bracket_text() {
+        let body = "<5% of failures were random.>";
+        let desc = build_social_description(None, body);
+        assert_eq!(desc, "<5% of failures were random.>");
     }
 
     // ── build_post_meta ───────────────────────────────────────────────────────
@@ -434,5 +405,4 @@ mod tests {
         let escaped = escape_html(r#""A&B" <tag> 'q'"#);
         assert_eq!(escaped, "&quot;A&amp;B&quot; &lt;tag&gt; &#x27;q&#x27;");
     }
-
 }

@@ -125,7 +125,7 @@ gcloud resource-manager org-policies set-policy policy.yaml \
 ```
 
 ### Access Patterns
-- **Owner account**: `admin@boneleve.blog` - High-level access, minimal day-to-day use
+- **Owner account**: Your designated administrative user - High-level access, minimal day-to-day use
 - **Admin service account**: Organization policy and security administration
 - **Deploy service account**: CI/CD and application deployment only
 - **Application runtime**: No GCP API access required
@@ -164,7 +164,7 @@ gcloud resource-manager org-policies set-policy policy.yaml \
 ## Incident Response
 
 ### Administrative Access Recovery
-1. **Primary**: `admin@boneleve.blog` account access
+1. **Primary**: Your designated administrative user account
 2. **Secondary**: Google Workspace admin access (if applicable)
 3. **Escalation**: Google Cloud support with domain verification
 

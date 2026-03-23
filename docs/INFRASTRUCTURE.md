@@ -102,11 +102,11 @@ graph TB
 - **Images**: Tagged with GitHub commit SHA
 
 ### 3. Google Cloud DNS
-- **Zone**: `boneleve-blog`
-- **Domain**: `boneleve.blog`
+- **Zone**: Configured via `dns_zone_name` in `infra/prod.tfvars`
+- **Domain**: Configured via `domain_name` in `infra/prod.tfvars`
 - **Records**:
-  - `www.boneleve.blog` → A record → Global Load Balancer IP
-  - `boneleve.blog` → A record → Global Load Balancer IP
+  - `www.<domain_name>` → A record → Global Load Balancer IP
+  - `<domain_name>` → A record → Global Load Balancer IP
 
 ### 4. APIs Enabled
 - Cloud Run API (`run.googleapis.com`)
@@ -134,8 +134,8 @@ infra/
 
 ### State Management
 - **Backend**: Google Cloud Storage
-- **Bucket**: `boneleve-bucket`
-- **Path**: `gcp-rust-blog/infra/default.tfstate`
+- **Bucket**: Configured when bootstrapping the backend
+- **Path**: Controlled by the `prefix` passed to `tofu init`
 - **Locking**: Enabled
 - **Versioning**: Enabled with 30-day retention
 
@@ -272,7 +272,7 @@ graph LR
     class LBIP,LB,CR gcp
 ```
 
-### Current DNS Setup
+### Example DNS Setup
 ```bash
 # Nameservers (set in Squarespace)
 ns-cloud-e1.googledomains.com
@@ -281,8 +281,8 @@ ns-cloud-e3.googledomains.com
 ns-cloud-e4.googledomains.com
 
 # DNS Records (managed by OpenTofu)
-www.boneleve.blog.  300  A      {LOAD_BALANCER_GLOBAL_IP}
-boneleve.blog.      300  A      {LOAD_BALANCER_GLOBAL_IP}
+www.<domain_name>.  300  A      {LOAD_BALANCER_GLOBAL_IP}
+<domain_name>.      300  A      {LOAD_BALANCER_GLOBAL_IP}
 ```
 
 ### SSL/TLS Configuration
@@ -372,7 +372,7 @@ gcloud resource-manager org-policies set-policy policy.yaml \
 
 # DNS management
 gcloud dns record-sets transaction start \
-  --zone=boneleve-blog \
+  --zone=<DNS_ZONE_NAME> \
   --project={PROJECT_ID} \
   --impersonate-service-account=infrastructure-admin@{PROJECT_ID}.iam.gserviceaccount.com
 ```
