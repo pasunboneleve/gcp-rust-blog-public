@@ -1,5 +1,7 @@
+use chrono::{DateTime, NaiveDate, SecondsFormat};
 use pulldown_cmark::{Event, Parser, Tag, TagEnd};
 
+const DEFAULT_AUTHOR_NAME: &str = "Daniel Vianna";
 const DEFAULT_SITE_URL: &str = "https://boneleve.blog";
 const DEFAULT_SOCIAL_IMAGE_PATH: &str = "/static/favicon.png";
 const DEFAULT_PAGE_DESCRIPTION: &str = "Engineering notes on making change cheap.";
@@ -9,6 +11,8 @@ pub(crate) struct PageMeta {
     pub(crate) description: String,
     pub(crate) url: String,
     pub(crate) image: String,
+    pub(crate) author: String,
+    pub(crate) published_time: Option<String>,
     pub(crate) role: Option<String>,
 }
 
@@ -18,6 +22,8 @@ pub(crate) fn default_home_meta() -> PageMeta {
         description: DEFAULT_PAGE_DESCRIPTION.to_string(),
         url: site_url(),
         image: absolute_url(DEFAULT_SOCIAL_IMAGE_PATH),
+        author: site_author(),
+        published_time: None,
         role: None,
     }
 }
@@ -29,6 +35,8 @@ pub(crate) fn default_not_found_meta(slug: &str) -> PageMeta {
         description: format!("The post \"{}\" was not found.", slug),
         url: format!("{base}/posts/{slug}"),
         image: absolute_url(DEFAULT_SOCIAL_IMAGE_PATH),
+        author: site_author(),
+        published_time: None,
         role: None,
     }
 }
@@ -36,6 +44,7 @@ pub(crate) fn default_not_found_meta(slug: &str) -> PageMeta {
 pub(crate) fn build_post_meta(
     slug: &str,
     title: Option<&str>,
+    date: Option<&str>,
     subtitle: Option<&str>,
     role: Option<&str>,
     image: Option<&str>,
@@ -63,8 +72,31 @@ pub(crate) fn build_post_meta(
         description,
         url: format!("{base}/posts/{slug}"),
         image: absolute_url(&image_path),
+        author: site_author(),
+        published_time: date.and_then(iso_published_time),
         role: role.map(ToString::to_string),
     }
+}
+
+fn iso_published_time(date: &str) -> Option<String> {
+    let date = date.trim();
+    if date.is_empty() {
+        return None;
+    }
+
+    if let Ok(datetime) = DateTime::parse_from_rfc3339(date) {
+        return Some(datetime.to_rfc3339_opts(SecondsFormat::Secs, true));
+    }
+
+    if let Ok(calendar_date) = NaiveDate::parse_from_str(date, "%Y-%m-%d") {
+        return calendar_date.and_hms_opt(0, 0, 0).map(|datetime| {
+            datetime
+                .and_utc()
+                .to_rfc3339_opts(SecondsFormat::Secs, true)
+        });
+    }
+
+    None
 }
 
 /// Generates a social-card description (≤160 chars):
@@ -181,6 +213,14 @@ fn site_url() -> String {
         .unwrap_or_else(|| DEFAULT_SITE_URL.to_string())
 }
 
+fn site_author() -> String {
+    std::env::var("SITE_AUTHOR")
+        .ok()
+        .map(|author| author.trim().to_string())
+        .filter(|author| !author.is_empty())
+        .unwrap_or_else(|| DEFAULT_AUTHOR_NAME.to_string())
+}
+
 fn absolute_url(path_or_url: &str) -> String {
     if path_or_url.starts_with("http://") || path_or_url.starts_with("https://") {
         return path_or_url.to_string();
@@ -195,7 +235,12 @@ fn absolute_url(path_or_url: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{absolute_url, build_post_meta, build_social_description, escape_html};
+    use std::sync::{Mutex, OnceLock};
+
+    use super::{
+        absolute_url, build_post_meta, build_social_description, escape_html, iso_published_time,
+        site_author,
+    };
     use crate::models::FrontMatter;
 
     fn front_matter_with(image: Option<&str>) -> FrontMatter {
@@ -320,6 +365,7 @@ mod tests {
         let meta = build_post_meta(
             "test-post",
             Some(&fm.title),
+            Some(&fm.date),
             fm.subtitle.as_deref(),
             fm.role.as_deref(),
             fm.image.as_deref(),
@@ -328,6 +374,8 @@ mod tests {
         assert_eq!(meta.title, "Test Post");
         assert!(meta.url.ends_with("/posts/test-post"));
         assert!(meta.image.ends_with("/static/custom.png"));
+        assert_eq!(meta.author, "Daniel Vianna");
+        assert_eq!(meta.published_time.as_deref(), Some("2026-03-04T00:00:00Z"));
     }
 
     #[test]
@@ -335,6 +383,7 @@ mod tests {
         let meta = build_post_meta(
             "test-post",
             Some("Test Post"),
+            Some("2026-03-04"),
             Some("Punchy subtitle"),
             None,
             None,
@@ -351,6 +400,7 @@ mod tests {
         let meta = build_post_meta(
             "test-post",
             Some(&fm.title),
+            Some(&fm.date),
             fm.subtitle.as_deref(),
             fm.role.as_deref(),
             fm.image.as_deref(),
@@ -367,12 +417,55 @@ mod tests {
         let meta = build_post_meta(
             "test-post",
             Some(&fm.title),
+            Some(&fm.date),
             fm.subtitle.as_deref(),
             fm.role.as_deref(),
             fm.image.as_deref(),
             "body",
         );
         assert_eq!(meta.role.as_deref(), Some("mechanism"));
+    }
+
+    #[test]
+    fn iso_published_time_expands_date_only_values() {
+        assert_eq!(
+            iso_published_time("2026-03-04").as_deref(),
+            Some("2026-03-04T00:00:00Z")
+        );
+    }
+
+    #[test]
+    fn iso_published_time_keeps_existing_datetimes() {
+        assert_eq!(
+            iso_published_time("2026-03-04T09:30:00Z").as_deref(),
+            Some("2026-03-04T09:30:00Z")
+        );
+    }
+
+    #[test]
+    fn iso_published_time_rejects_non_iso_datetimes() {
+        assert_eq!(iso_published_time("2026-03-04T9am").as_deref(), None);
+    }
+
+    #[test]
+    fn site_author_uses_environment_override() {
+        static ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        let guard = ENV_LOCK
+            .get_or_init(|| Mutex::new(()))
+            .lock()
+            .expect("env lock poisoned");
+
+        let previous = std::env::var("SITE_AUTHOR").ok();
+        std::env::set_var("SITE_AUTHOR", "Example Author");
+
+        assert_eq!(site_author(), "Example Author");
+
+        match previous {
+            Some(value) => std::env::set_var("SITE_AUTHOR", value),
+            None => std::env::remove_var("SITE_AUTHOR"),
+        }
+
+        drop(guard);
     }
 
     // ── other helpers ─────────────────────────────────────────────────────────

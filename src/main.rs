@@ -97,6 +97,7 @@ fn render_with_layout(
     let escaped_description = escape_html(&meta.description);
     let escaped_url = escape_html(&meta.url);
     let escaped_image = escape_html(&meta.image);
+    let escaped_author = escape_html(&meta.author);
 
     let role_meta = meta
         .role
@@ -108,6 +109,16 @@ fn render_with_layout(
             )
         })
         .unwrap_or_default();
+    let published_time_meta = meta
+        .published_time
+        .as_deref()
+        .map(|published_time| {
+            format!(
+                "<meta property=\"article:published_time\" content=\"{}\" />",
+                escape_html(published_time)
+            )
+        })
+        .unwrap_or_default();
 
     let mut page = layout
         .replace("{{ banner }}", banner)
@@ -116,6 +127,8 @@ fn render_with_layout(
         .replace("{{ page_description }}", &escaped_description)
         .replace("{{ page_url }}", &escaped_url)
         .replace("{{ page_image }}", &escaped_image)
+        .replace("{{ page_author }}", &escaped_author)
+        .replace("{{ page_published_time_meta }}", &published_time_meta)
         .replace("{{ page_role_meta }}", &role_meta)
         .replace("{{ content }}", content);
 
@@ -173,7 +186,12 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     let subtitle_span = post
         .subtitle
         .as_deref()
-        .map(|s| format!("<span class=\"post-eyebrow-subtitle\">{}</span>", escape_html(s)))
+        .map(|s| {
+            format!(
+                "<span class=\"post-eyebrow-subtitle\">{}</span>",
+                escape_html(s)
+            )
+        })
         .unwrap_or_default();
     let eyebrow_html = if role_span.is_empty() && subtitle_span.is_empty() {
         String::new()
@@ -189,6 +207,7 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     let meta = build_post_meta(
         &post.slug,
         Some(&post.title),
+        Some(&post.date),
         post.subtitle.as_deref(),
         post.role.as_deref(),
         post.image.as_deref(),
@@ -324,7 +343,7 @@ mod tests {
     use crate::page_meta::PageMeta;
 
     fn test_layout() -> &'static str {
-        "<html><head><title>{{ page_title }}</title><meta name=\"description\" content=\"{{ page_description }}\" /><meta property=\"og:title\" content=\"{{ page_title }}\" /><meta property=\"og:description\" content=\"{{ page_description }}\" /><meta property=\"og:url\" content=\"{{ page_url }}\" /><meta property=\"og:image\" content=\"{{ page_image }}\" />{{ page_role_meta }}<meta name=\"twitter:title\" content=\"{{ page_title }}\" /><meta name=\"twitter:description\" content=\"{{ page_description }}\" /><meta name=\"twitter:image\" content=\"{{ page_image }}\" /></head><body>{{ banner }}<main>{{ content }}</main><ul>{{ posts }}</ul></body></html>"
+        "<html><head><title>{{ page_title }}</title><meta name=\"description\" content=\"{{ page_description }}\" /><meta name=\"author\" content=\"{{ page_author }}\" /><meta property=\"og:title\" content=\"{{ page_title }}\" /><meta property=\"og:description\" content=\"{{ page_description }}\" /><meta property=\"og:url\" content=\"{{ page_url }}\" /><meta property=\"og:image\" content=\"{{ page_image }}\" />{{ page_published_time_meta }}{{ page_role_meta }}<meta name=\"twitter:title\" content=\"{{ page_title }}\" /><meta name=\"twitter:description\" content=\"{{ page_description }}\" /><meta name=\"twitter:image\" content=\"{{ page_image }}\" /></head><body>{{ banner }}<main>{{ content }}</main><ul>{{ posts }}</ul></body></html>"
     }
 
     fn test_posts() -> Vec<Post> {
@@ -346,6 +365,8 @@ mod tests {
             description: "Test description".to_string(),
             url: "https://example.com/posts/test".to_string(),
             image: "https://example.com/static/test.png".to_string(),
+            author: "Daniel Vianna".to_string(),
+            published_time: Some("2026-03-04T00:00:00Z".to_string()),
             role: Some("mechanism".to_string()),
         }
     }
@@ -427,6 +448,10 @@ mod tests {
             "<meta property=\"og:image\" content=\"https://example.com/static/test.png\" />"
         ));
         assert!(page.contains("<meta name=\"twitter:title\" content=\"Test title\" />"));
+        assert!(page.contains("<meta name=\"author\" content=\"Daniel Vianna\" />"));
+        assert!(page.contains(
+            "<meta property=\"article:published_time\" content=\"2026-03-04T00:00:00Z\" />"
+        ));
         assert!(page.contains("<meta property=\"article:section\" content=\"mechanism\" />"));
     }
 
