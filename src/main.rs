@@ -39,10 +39,10 @@ fn render_post_list(posts: &[Post]) -> String {
         let subtitle_html = post
             .subtitle
             .as_deref()
-            .map(|s| format!("<span class=\"sidebar-subtitle\">{s}</span>"))
+            .map(|s| format!("<span class=\"block text-xs text-base01 opacity-60 mt-0.5 leading-snug\">{s}</span>"))
             .unwrap_or_default();
         list_items.push_str(&format!(
-            "<li><a href=\"/posts/{}\" class=\"no-underline\"><span class=\"sidebar-title\">{}</span>{}</a></li>",
+            "<li><a href=\"/posts/{}\" class=\"no-underline\"><span class=\"block text-yellow text-sm leading-snug\">{}</span>{}</a></li>",
             post.slug, post.title, subtitle_html
         ));
     }
@@ -130,18 +130,23 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     };
 
     let html_out = render_markdown_to_html(&post.markdown_body);
-    let role_html = post
+    let role_span = post
         .role
         .as_deref()
         .map(|r| format!("<span class=\"post-role\">{r}</span>"))
         .unwrap_or_default();
-    let subtitle_html = post
+    let subtitle_span = post
         .subtitle
         .as_deref()
-        .map(|s| format!("<p class=\"post-subtitle\">{s}</p>"))
+        .map(|s| format!("<span class=\"text-xs text-base01 opacity-60\">{s}</span>"))
         .unwrap_or_default();
+    let eyebrow_html = if role_span.is_empty() && subtitle_span.is_empty() {
+        String::new()
+    } else {
+        format!("<div class=\"flex items-center gap-3 flex-wrap mb-2\">{role_span}{subtitle_span}</div>")
+    };
     let body = format!(
-        "<header class=\"post-header\">{role_html}<h1>{title}</h1>{subtitle_html}<p class=\"post-date\">{date}</p></header>{content}",
+        "<header class=\"post-header\">{eyebrow_html}<h1>{title}</h1><p class=\"text-xs text-base01 mt-3 mb-0\">{date}</p></header>{content}",
         title = &post.title,
         date = &post.date,
         content = html_out,
