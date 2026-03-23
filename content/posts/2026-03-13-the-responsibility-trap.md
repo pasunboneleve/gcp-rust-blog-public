@@ -5,7 +5,7 @@ subtitle: "Blaming people for system constraints"
 date: 2026-03-13
 slug: 2026-03-13-the-responsibility-trap
 description: "Two stories about fast engineers, slow engineers, and what responsibility does to both."
-image: "/static/responsibility-trap-liotard-social.jpg"
+image: "/static/responsibility-trap-liotard-social-v2.jpg"
 ---
 
 Anyone who has worked in software teams has seen it. One engineer ships
