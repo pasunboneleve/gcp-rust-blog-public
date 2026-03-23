@@ -34,17 +34,19 @@ const HOT_RELOAD_TAG_START: &str = "<script>";
 const HOT_RELOAD_TAG_END: &str = "</script>";
 
 fn render_post_list(posts: &[Post]) -> String {
-    // Collect unique roles in first-seen order, preserving posts without a role.
-    let mut seen_roles: Vec<Option<&str>> = Vec::new();
+    // Single pass: collect ordered groups preserving first-seen role order.
+    let mut groups: Vec<(Option<&str>, Vec<&Post>)> = Vec::new();
     for post in posts {
         let role = post.role.as_deref();
-        if !seen_roles.contains(&role) {
-            seen_roles.push(role);
+        if let Some(group) = groups.iter_mut().find(|(r, _)| *r == role) {
+            group.1.push(post);
+        } else {
+            groups.push((role, vec![post]));
         }
     }
 
     let mut list_items = String::new();
-    for role in seen_roles {
+    for (role, group_posts) in groups {
         if let Some(r) = role {
             let header = r
                 .split('-')
@@ -58,18 +60,24 @@ fn render_post_list(posts: &[Post]) -> String {
                 .collect::<Vec<_>>()
                 .join(" ");
             list_items.push_str(&format!(
-                "<li class=\"sidebar-group-header\">{header}</li>"
+                "<li class=\"sidebar-group-header\">{}</li>",
+                escape_html(&header)
             ));
         }
-        for post in posts.iter().filter(|p| p.role.as_deref() == role) {
+        for post in group_posts {
             let subtitle_html = post
                 .subtitle
                 .as_deref()
-                .map(|s| format!("<span class=\"sidebar-post-subtitle\">{s}</span>"))
+                .map(|s| {
+                    format!(
+                        "<span class=\"sidebar-post-subtitle\">{}</span>",
+                        escape_html(s)
+                    )
+                })
                 .unwrap_or_default();
             list_items.push_str(&format!(
                 "<li><a href=\"/posts/{}\" class=\"sidebar-post-link\"><span class=\"sidebar-post-title\">{}</span>{}</a></li>",
-                post.slug, post.title, subtitle_html
+                post.slug, escape_html(&post.title), subtitle_html
             ));
         }
     }
@@ -160,12 +168,12 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     let role_span = post
         .role
         .as_deref()
-        .map(|r| format!("<span class=\"post-role\">{r}</span>"))
+        .map(|r| format!("<span class=\"post-role\">{}</span>", escape_html(r)))
         .unwrap_or_default();
     let subtitle_span = post
         .subtitle
         .as_deref()
-        .map(|s| format!("<span class=\"post-eyebrow-subtitle\">{s}</span>"))
+        .map(|s| format!("<span class=\"post-eyebrow-subtitle\">{}</span>", escape_html(s)))
         .unwrap_or_default();
     let eyebrow_html = if role_span.is_empty() && subtitle_span.is_empty() {
         String::new()
@@ -174,8 +182,8 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     };
     let body = format!(
         "<header class=\"post-header\">{eyebrow_html}<h1>{title}</h1><p class=\"post-date\">{date}</p></header>{content}",
-        title = &post.title,
-        date = &post.date,
+        title = escape_html(&post.title),
+        date = escape_html(&post.date),
         content = html_out,
     );
     let meta = build_post_meta(
@@ -312,7 +320,7 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_valid_post_slug, render_with_layout};
+    use super::{is_valid_post_slug, render_post_list, render_with_layout};
     use crate::models::Post;
     use crate::page_meta::PageMeta;
 
@@ -432,5 +440,61 @@ mod tests {
         assert!(!is_valid_post_slug("post/with/slash"));
         assert!(!is_valid_post_slug("UPPERCASE"));
         assert!(!is_valid_post_slug("bad_slug"));
+    }
+
+    fn make_post(slug: &str, title: &str, role: Option<&str>, subtitle: Option<&str>) -> Post {
+        Post {
+            slug: slug.to_string(),
+            title: title.to_string(),
+            date: "2026-01-01".to_string(),
+            role: role.map(ToString::to_string),
+            subtitle: subtitle.map(ToString::to_string),
+            description: None,
+            image: None,
+            markdown_body: String::new(),
+        }
+    }
+
+    #[test]
+    fn groups_posts_by_role_in_first_seen_order() {
+        let posts = vec![
+            make_post("a", "A", Some("mechanism"), None),
+            make_post("b", "B", Some("strategy"), None),
+            make_post("c", "C", Some("mechanism"), None),
+        ];
+        let html = render_post_list(&posts);
+        let mech_pos = html.find("Mechanism").unwrap();
+        let strat_pos = html.find("Strategy").unwrap();
+        // Mechanism group header appears before Strategy
+        assert!(mech_pos < strat_pos);
+        // Post C (second mechanism post) appears after post A
+        let a_pos = html.find("/posts/a").unwrap();
+        let c_pos = html.find("/posts/c").unwrap();
+        assert!(a_pos < c_pos);
+        // All posts are present
+        assert!(html.contains("/posts/b"));
+    }
+
+    #[test]
+    fn escapes_html_in_sidebar_titles_and_subtitles() {
+        let posts = vec![make_post(
+            "xss",
+            "<script>alert(1)</script>",
+            Some("<role>"),
+            Some("<b>bad</b>"),
+        )];
+        let html = render_post_list(&posts);
+        assert!(!html.contains("<script>"));
+        assert!(!html.contains("<b>bad</b>"));
+        assert!(html.contains("&lt;script&gt;"));
+        assert!(html.contains("&lt;b&gt;"));
+    }
+
+    #[test]
+    fn posts_without_role_render_without_group_header() {
+        let posts = vec![make_post("no-role", "No Role", None, None)];
+        let html = render_post_list(&posts);
+        assert!(!html.contains("sidebar-group-header"));
+        assert!(html.contains("/posts/no-role"));
     }
 }
