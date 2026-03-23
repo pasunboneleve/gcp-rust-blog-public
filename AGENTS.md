@@ -13,6 +13,22 @@ small, testable, and Rust-idiomatic.
 
 ## Common Development Commands
 
+Local development requires **two parallel terminals**:
+
+```bash
+# Terminal 1 — Rust server with hot reload
+cargo run
+
+# Terminal 2 — Tailwind CSS watcher
+./scripts/tailwatch.sh
+```
+
+Tailwind must be running alongside the server so that class changes in
+`src/**/*.rs` and `content/**/*.html` are compiled into
+`content/static/tailwind.css` automatically. Stopping `tailwatch.sh`
+means CSS changes (including new Tailwind classes added to generated
+HTML) will not appear in the browser.
+
 ## Success criteria
 - New logic includes tests.
 - Work is delivered as small, reviewable increments aligned with
@@ -125,6 +141,13 @@ content/
 - Uses minimal IAM permissions via dedicated service account
 - Secrets managed via environment variables, not baked into images
 - Public blog configured with `--allow-unauthenticated`
+
+## Frontend CSS rule
+
+Rust emits **semantic class names only** — no Tailwind utility classes
+in format strings. All visual decisions live in `tailwind.css`.
+See `FRONTEND_DEVELOPMENT.md` for the full pattern and the table of
+defined component classes.
 
 ## Engineering standards
 - No global state unless there is a clear documented need.

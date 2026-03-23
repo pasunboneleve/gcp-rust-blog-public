@@ -1,5 +1,7 @@
 ---
 title: "How this blog works (and why it’s built this way)"
+role: "example"
+subtitle: "What cheap change looks like in practice"
 date: 2026-03-02
 slug: 2026-03-02-how-this-blog-works
 image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Li_Tang_-_Wind_in_Pines_Among_a_Myriad_Valleys.jpg/960px-Li_Tang_-_Wind_in_Pines_Among_a_Myriad_Valleys.jpg"

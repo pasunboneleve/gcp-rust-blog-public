@@ -1,5 +1,7 @@
 ---
 title: "Optimise for the cheapest change"
+role: "thesis"
+subtitle: "A foundational principle"
 date: 2026-03-03
 slug: 2026-03-03-optimise-for-the-cheapest-change
 image: "/static/Yang_Chengfu_Form.jpg"

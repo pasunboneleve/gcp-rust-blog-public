@@ -51,6 +51,8 @@ pub async fn load_content() -> Result<(String, String, String, String, Vec<Post>
                             slug: "Error".to_string(),
                             description: None,
                             image: None,
+                            role: None,
+                            subtitle: None,
                         }),
                         file_content,
                     )
@@ -72,6 +74,8 @@ pub async fn load_content() -> Result<(String, String, String, String, Vec<Post>
                     .unwrap_or_else(|| "Error".to_string()),
                 description: front_matter.as_ref().and_then(|fm| fm.description.clone()),
                 image: front_matter.as_ref().and_then(|fm| fm.image.clone()),
+                role: front_matter.as_ref().and_then(|fm| fm.role.clone()),
+                subtitle: front_matter.as_ref().and_then(|fm| fm.subtitle.clone()),
                 markdown_body,
             });
         }

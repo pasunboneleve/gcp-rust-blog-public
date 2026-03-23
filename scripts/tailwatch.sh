@@ -12,4 +12,4 @@ set -euox pipefail
 
 tailwindcss -i tailwind.css \
             -o content/static/tailwind.css \
-            --config tailwind.config.js --watch
+            --watch

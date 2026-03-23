@@ -1,5 +1,7 @@
 ---
 title: "Cheap to run, expensive to change"
+role: "case study"
+subtitle: "A system that worked, but resisted change"
 date: 2026-03-04
 slug: 2026-03-04-cost-of-change
 image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Ma_Yuan_Walking_on_Path_in_Spring.jpg/960px-Ma_Yuan_Walking_on_Path_in_Spring.jpg"

@@ -34,12 +34,44 @@ const HOT_RELOAD_TAG_START: &str = "<script>";
 const HOT_RELOAD_TAG_END: &str = "</script>";
 
 fn render_post_list(posts: &[Post]) -> String {
-    let mut list_items = String::new();
+    // Collect unique roles in first-seen order, preserving posts without a role.
+    let mut seen_roles: Vec<Option<&str>> = Vec::new();
     for post in posts {
-        list_items.push_str(&format!(
-            "<li><a href=\"/posts/{}\" class=\"text-yellow no-underline\">{}</a></li>",
-            post.slug, post.title
-        ));
+        let role = post.role.as_deref();
+        if !seen_roles.contains(&role) {
+            seen_roles.push(role);
+        }
+    }
+
+    let mut list_items = String::new();
+    for role in seen_roles {
+        if let Some(r) = role {
+            let header = r
+                .split('-')
+                .map(|w| {
+                    let mut c = w.chars();
+                    match c.next() {
+                        None => String::new(),
+                        Some(first) => first.to_uppercase().collect::<String>() + c.as_str(),
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(" ");
+            list_items.push_str(&format!(
+                "<li class=\"sidebar-group-header\">{header}</li>"
+            ));
+        }
+        for post in posts.iter().filter(|p| p.role.as_deref() == role) {
+            let subtitle_html = post
+                .subtitle
+                .as_deref()
+                .map(|s| format!("<span class=\"sidebar-post-subtitle\">{s}</span>"))
+                .unwrap_or_default();
+            list_items.push_str(&format!(
+                "<li><a href=\"/posts/{}\" class=\"sidebar-post-link\"><span class=\"sidebar-post-title\">{}</span>{}</a></li>",
+                post.slug, post.title, subtitle_html
+            ));
+        }
     }
     list_items
 }
@@ -58,6 +90,17 @@ fn render_with_layout(
     let escaped_url = escape_html(&meta.url);
     let escaped_image = escape_html(&meta.image);
 
+    let role_meta = meta
+        .role
+        .as_deref()
+        .map(|r| {
+            format!(
+                "<meta property=\"article:section\" content=\"{}\" />",
+                escape_html(r)
+            )
+        })
+        .unwrap_or_default();
+
     let mut page = layout
         .replace("{{ banner }}", banner)
         .replace("{{ posts }}", &list_items)
@@ -65,6 +108,7 @@ fn render_with_layout(
         .replace("{{ page_description }}", &escaped_description)
         .replace("{{ page_url }}", &escaped_url)
         .replace("{{ page_image }}", &escaped_image)
+        .replace("{{ page_role_meta }}", &role_meta)
         .replace("{{ content }}", content);
 
     if is_development {
@@ -113,14 +157,33 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     };
 
     let html_out = render_markdown_to_html(&post.markdown_body);
+    let role_span = post
+        .role
+        .as_deref()
+        .map(|r| format!("<span class=\"post-role\">{r}</span>"))
+        .unwrap_or_default();
+    let subtitle_span = post
+        .subtitle
+        .as_deref()
+        .map(|s| format!("<span class=\"post-eyebrow-subtitle\">{s}</span>"))
+        .unwrap_or_default();
+    let eyebrow_html = if role_span.is_empty() && subtitle_span.is_empty() {
+        String::new()
+    } else {
+        format!("<div class=\"post-eyebrow\">{role_span}{subtitle_span}</div>")
+    };
     let body = format!(
-        "<h1>{}</h1><p style=\"font-size: smaller; color: #888;\">{}</p>{}",
-        post.title, post.date, html_out
+        "<header class=\"post-header\">{eyebrow_html}<h1>{title}</h1><p class=\"post-date\">{date}</p></header>{content}",
+        title = &post.title,
+        date = &post.date,
+        content = html_out,
     );
     let meta = build_post_meta(
         &post.slug,
         Some(&post.title),
         post.description.as_deref(),
+        post.subtitle.as_deref(),
+        post.role.as_deref(),
         post.image.as_deref(),
         &post.markdown_body,
     );
@@ -254,7 +317,7 @@ mod tests {
     use crate::page_meta::PageMeta;
 
     fn test_layout() -> &'static str {
-        "<html><head><title>{{ page_title }}</title><meta name=\"description\" content=\"{{ page_description }}\" /><meta property=\"og:title\" content=\"{{ page_title }}\" /><meta property=\"og:description\" content=\"{{ page_description }}\" /><meta property=\"og:url\" content=\"{{ page_url }}\" /><meta property=\"og:image\" content=\"{{ page_image }}\" /><meta name=\"twitter:title\" content=\"{{ page_title }}\" /><meta name=\"twitter:description\" content=\"{{ page_description }}\" /><meta name=\"twitter:image\" content=\"{{ page_image }}\" /></head><body>{{ banner }}<main>{{ content }}</main><ul>{{ posts }}</ul></body></html>"
+        "<html><head><title>{{ page_title }}</title><meta name=\"description\" content=\"{{ page_description }}\" /><meta property=\"og:title\" content=\"{{ page_title }}\" /><meta property=\"og:description\" content=\"{{ page_description }}\" /><meta property=\"og:url\" content=\"{{ page_url }}\" /><meta property=\"og:image\" content=\"{{ page_image }}\" />{{ page_role_meta }}<meta name=\"twitter:title\" content=\"{{ page_title }}\" /><meta name=\"twitter:description\" content=\"{{ page_description }}\" /><meta name=\"twitter:image\" content=\"{{ page_image }}\" /></head><body>{{ banner }}<main>{{ content }}</main><ul>{{ posts }}</ul></body></html>"
     }
 
     fn test_posts() -> Vec<Post> {
@@ -264,6 +327,8 @@ mod tests {
             date: "2026-03-04".to_string(),
             description: None,
             image: None,
+            role: None,
+            subtitle: None,
             markdown_body: "Body".to_string(),
         }]
     }
@@ -274,6 +339,7 @@ mod tests {
             description: "Test description".to_string(),
             url: "https://example.com/posts/test".to_string(),
             image: "https://example.com/static/test.png".to_string(),
+            role: Some("mechanism".to_string()),
         }
     }
 
@@ -354,6 +420,7 @@ mod tests {
             "<meta property=\"og:image\" content=\"https://example.com/static/test.png\" />"
         ));
         assert!(page.contains("<meta name=\"twitter:title\" content=\"Test title\" />"));
+        assert!(page.contains("<meta property=\"article:section\" content=\"mechanism\" />"));
     }
 
     #[test]

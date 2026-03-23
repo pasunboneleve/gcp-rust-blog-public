@@ -15,6 +15,7 @@
     <meta property="og:description" content="{{ page_description }}" />
     <meta property="og:url" content="{{ page_url }}" />
     <meta property="og:image" content="{{ page_image }}" />
+    {{ page_role_meta }}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="{{ page_title }}" />
     <meta name="twitter:description" content="{{ page_description }}" />
@@ -81,19 +82,25 @@
         list-style: none;
       }
 
-      .posts-sidebar li + li {
+      .posts-sidebar .sidebar-group-header + li {
         border-top: 1px solid color-mix(in oklab, var(--color-base01) 20%, transparent);
       }
 
       .posts-sidebar li a {
         display: block;
-        padding: 0.625rem 0.25rem;
+        padding: 0.35rem 0.25rem 0.35rem 0.75rem;
         line-height: 1.35;
       }
 
-      .posts-sidebar li a:hover {
-        background: color-mix(in oklab, var(--color-base02) 40%, transparent);
+      .posts-sidebar li a:hover .sidebar-post-title {
+        opacity: 1;
+        font-weight: 700;
       }
+
+      .posts-sidebar li a:hover .sidebar-post-subtitle {
+        opacity: 1;
+      }
+
 
       .mermaid-block {
         margin: 1.5rem 0;
@@ -122,7 +129,6 @@
     <div class="page-layout flex">
       <main class="content-main max-w-4xl mx-auto my-16 px-4 prose">{{ content }}</main>
       <aside class="posts-sidebar w-64 bg-gradient-to-b from-base02 to-transparent p-4">
-        <h3 class="mt-4">Posts</h3>
         <ul>
           {{ posts }}
         </ul>

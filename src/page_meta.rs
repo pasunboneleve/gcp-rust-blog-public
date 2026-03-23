@@ -7,6 +7,7 @@ pub(crate) struct PageMeta {
     pub(crate) description: String,
     pub(crate) url: String,
     pub(crate) image: String,
+    pub(crate) role: Option<String>,
 }
 
 pub(crate) fn default_home_meta() -> PageMeta {
@@ -15,6 +16,7 @@ pub(crate) fn default_home_meta() -> PageMeta {
         description: DEFAULT_PAGE_DESCRIPTION.to_string(),
         url: site_url(),
         image: absolute_url(DEFAULT_SOCIAL_IMAGE_PATH),
+        role: None,
     }
 }
 
@@ -25,6 +27,7 @@ pub(crate) fn default_not_found_meta(slug: &str) -> PageMeta {
         description: format!("The post \"{}\" was not found.", slug),
         url: format!("{base}/posts/{slug}"),
         image: absolute_url(DEFAULT_SOCIAL_IMAGE_PATH),
+        role: None,
     }
 }
 
@@ -32,6 +35,8 @@ pub(crate) fn build_post_meta(
     slug: &str,
     title: Option<&str>,
     description: Option<&str>,
+    subtitle: Option<&str>,
+    role: Option<&str>,
     image: Option<&str>,
     markdown_body: &str,
 ) -> PageMeta {
@@ -39,9 +44,16 @@ pub(crate) fn build_post_meta(
     let title = title
         .map(ToString::to_string)
         .unwrap_or_else(|| "Bon Élève Blog".to_string());
-    let description = description
+    // Subtitle is written as the punchy social-card hook; prefer it over the
+    // longer explicit description, which is better suited to on-page display.
+    let description = subtitle
         .map(ToString::to_string)
-        .filter(|d| !d.trim().is_empty())
+        .filter(|s| !s.trim().is_empty())
+        .or_else(|| {
+            description
+                .map(ToString::to_string)
+                .filter(|d| !d.trim().is_empty())
+        })
         .unwrap_or_else(|| extract_markdown_excerpt(markdown_body, 3, 220));
     let image_path = image
         .map(ToString::to_string)
@@ -57,6 +69,7 @@ pub(crate) fn build_post_meta(
         },
         url: format!("{base}/posts/{slug}"),
         image: absolute_url(&image_path),
+        role: role.map(ToString::to_string),
     }
 }
 
@@ -136,6 +149,8 @@ mod tests {
             slug: "test-post".to_string(),
             description: description.map(ToString::to_string),
             image: image.map(ToString::to_string),
+            role: None,
+            subtitle: None,
         }
     }
 
@@ -198,6 +213,8 @@ Fourth useful line.
             "test-post",
             Some(&fm.title),
             fm.description.as_deref(),
+            fm.subtitle.as_deref(),
+            fm.role.as_deref(),
             fm.image.as_deref(),
             "Body fallback should not be used",
         );
@@ -216,12 +233,46 @@ Fourth useful line.
             "test-post",
             Some(&fm.title),
             fm.description.as_deref(),
+            fm.subtitle.as_deref(),
+            fm.role.as_deref(),
             fm.image.as_deref(),
             markdown,
         );
 
         assert_eq!(meta.description, "First line. Second line.");
         assert!(meta.image.ends_with("/static/favicon.png"));
+    }
+
+    #[test]
+    fn build_post_meta_prefers_subtitle_over_description_for_social_cards() {
+        let mut fm = front_matter_with(Some("Longer description text"), None);
+        fm.subtitle = Some("Punchy subtitle".to_string());
+        let meta = build_post_meta(
+            "test-post",
+            Some(&fm.title),
+            fm.description.as_deref(),
+            fm.subtitle.as_deref(),
+            fm.role.as_deref(),
+            fm.image.as_deref(),
+            "body fallback",
+        );
+        assert_eq!(meta.description, "Punchy subtitle");
+    }
+
+    #[test]
+    fn build_post_meta_sets_role_on_meta() {
+        let mut fm = front_matter_with(None, None);
+        fm.role = Some("mechanism".to_string());
+        let meta = build_post_meta(
+            "test-post",
+            Some(&fm.title),
+            fm.description.as_deref(),
+            fm.subtitle.as_deref(),
+            fm.role.as_deref(),
+            fm.image.as_deref(),
+            "body",
+        );
+        assert_eq!(meta.role.as_deref(), Some("mechanism"));
     }
 
     #[test]

@@ -1,5 +1,7 @@
 ---
 title: "Wide and tall coupling"
+role: "mechanism"
+subtitle: "A model for understanding coupling in systems"
 date: 2026-03-05
 slug: 2026-03-05-wide-and-tall-coupling
 image: "/static/wide-tall-coupling-social.jpg"
