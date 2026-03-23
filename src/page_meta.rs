@@ -1,10 +1,10 @@
 use chrono::{DateTime, NaiveDate, SecondsFormat};
 use pulldown_cmark::{Event, Parser, Tag, TagEnd};
 
-const DEFAULT_AUTHOR_NAME: &str = "Daniel Vianna";
+use crate::models::SiteConfig;
+
 const DEFAULT_SITE_URL: &str = "https://boneleve.blog";
 const DEFAULT_SOCIAL_IMAGE_PATH: &str = "/static/favicon.png";
-const DEFAULT_PAGE_DESCRIPTION: &str = "Engineering notes on making change cheap.";
 
 pub(crate) struct PageMeta {
     pub(crate) title: String,
@@ -16,26 +16,35 @@ pub(crate) struct PageMeta {
     pub(crate) role: Option<String>,
 }
 
-pub(crate) fn default_home_meta() -> PageMeta {
+pub(crate) struct PostMetaInput<'a> {
+    pub(crate) title: Option<&'a str>,
+    pub(crate) date: Option<&'a str>,
+    pub(crate) subtitle: Option<&'a str>,
+    pub(crate) role: Option<&'a str>,
+    pub(crate) image: Option<&'a str>,
+    pub(crate) markdown_body: &'a str,
+}
+
+pub(crate) fn default_home_meta(site_config: &SiteConfig) -> PageMeta {
     PageMeta {
-        title: "Bon Élève Blog".to_string(),
-        description: DEFAULT_PAGE_DESCRIPTION.to_string(),
+        title: site_config.title.clone(),
+        description: site_config.description.clone(),
         url: site_url(),
         image: absolute_url(DEFAULT_SOCIAL_IMAGE_PATH),
-        author: site_author(),
+        author: site_config.author.clone(),
         published_time: None,
         role: None,
     }
 }
 
-pub(crate) fn default_not_found_meta(slug: &str) -> PageMeta {
+pub(crate) fn default_not_found_meta(slug: &str, site_config: &SiteConfig) -> PageMeta {
     let base = site_url();
     PageMeta {
-        title: "Post not found | Bon Élève Blog".to_string(),
+        title: format!("Post not found | {}", site_config.title),
         description: format!("The post \"{}\" was not found.", slug),
         url: format!("{base}/posts/{slug}"),
         image: absolute_url(DEFAULT_SOCIAL_IMAGE_PATH),
-        author: site_author(),
+        author: site_config.author.clone(),
         published_time: None,
         role: None,
     }
@@ -43,26 +52,24 @@ pub(crate) fn default_not_found_meta(slug: &str) -> PageMeta {
 
 pub(crate) fn build_post_meta(
     slug: &str,
-    title: Option<&str>,
-    date: Option<&str>,
-    subtitle: Option<&str>,
-    role: Option<&str>,
-    image: Option<&str>,
-    markdown_body: &str,
+    site_config: &SiteConfig,
+    input: PostMetaInput<'_>,
 ) -> PageMeta {
     let base = site_url();
-    let title = title
+    let title = input
+        .title
         .map(ToString::to_string)
-        .unwrap_or_else(|| "Bon Élève Blog".to_string());
+        .unwrap_or_else(|| site_config.title.clone());
 
-    let description = build_social_description(subtitle, markdown_body);
+    let description = build_social_description(input.subtitle, input.markdown_body);
     let description = if description.is_empty() {
-        DEFAULT_PAGE_DESCRIPTION.to_string()
+        site_config.description.clone()
     } else {
         description
     };
 
-    let image_path = image
+    let image_path = input
+        .image
         .map(ToString::to_string)
         .filter(|i| !i.trim().is_empty())
         .unwrap_or_else(|| DEFAULT_SOCIAL_IMAGE_PATH.to_string());
@@ -72,9 +79,9 @@ pub(crate) fn build_post_meta(
         description,
         url: format!("{base}/posts/{slug}"),
         image: absolute_url(&image_path),
-        author: site_author(),
-        published_time: date.and_then(iso_published_time),
-        role: role.map(ToString::to_string),
+        author: site_config.author.clone(),
+        published_time: input.date.and_then(iso_published_time),
+        role: input.role.map(ToString::to_string),
     }
 }
 
@@ -213,14 +220,6 @@ fn site_url() -> String {
         .unwrap_or_else(|| DEFAULT_SITE_URL.to_string())
 }
 
-fn site_author() -> String {
-    std::env::var("SITE_AUTHOR")
-        .ok()
-        .map(|author| author.trim().to_string())
-        .filter(|author| !author.is_empty())
-        .unwrap_or_else(|| DEFAULT_AUTHOR_NAME.to_string())
-}
-
 fn absolute_url(path_or_url: &str) -> String {
     if path_or_url.starts_with("http://") || path_or_url.starts_with("https://") {
         return path_or_url.to_string();
@@ -235,13 +234,11 @@ fn absolute_url(path_or_url: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::{Mutex, OnceLock};
-
     use super::{
-        absolute_url, build_post_meta, build_social_description, escape_html, iso_published_time,
-        site_author,
+        absolute_url, build_post_meta, build_social_description, default_home_meta, escape_html,
+        iso_published_time, PostMetaInput,
     };
-    use crate::models::FrontMatter;
+    use crate::models::{FrontMatter, SiteConfig};
 
     fn front_matter_with(image: Option<&str>) -> FrontMatter {
         FrontMatter {
@@ -252,6 +249,15 @@ mod tests {
             image: image.map(ToString::to_string),
             role: None,
             subtitle: None,
+        }
+    }
+
+    fn test_site_config() -> SiteConfig {
+        SiteConfig {
+            title: "Configured Blog".to_string(),
+            author: "Configured Author".to_string(),
+            description: "Configured description.".to_string(),
+            og_site_name: "Configured OG Name".to_string(),
         }
     }
 
@@ -364,17 +370,20 @@ mod tests {
         let fm = front_matter_with(Some("/static/custom.png"));
         let meta = build_post_meta(
             "test-post",
-            Some(&fm.title),
-            Some(&fm.date),
-            fm.subtitle.as_deref(),
-            fm.role.as_deref(),
-            fm.image.as_deref(),
-            "Body sentence.",
+            &test_site_config(),
+            PostMetaInput {
+                title: Some(&fm.title),
+                date: Some(&fm.date),
+                subtitle: fm.subtitle.as_deref(),
+                role: fm.role.as_deref(),
+                image: fm.image.as_deref(),
+                markdown_body: "Body sentence.",
+            },
         );
         assert_eq!(meta.title, "Test Post");
         assert!(meta.url.ends_with("/posts/test-post"));
         assert!(meta.image.ends_with("/static/custom.png"));
-        assert_eq!(meta.author, "Daniel Vianna");
+        assert_eq!(meta.author, "Configured Author");
         assert_eq!(meta.published_time.as_deref(), Some("2026-03-04T00:00:00Z"));
     }
 
@@ -382,12 +391,15 @@ mod tests {
     fn build_post_meta_description_comes_from_subtitle_and_body() {
         let meta = build_post_meta(
             "test-post",
-            Some("Test Post"),
-            Some("2026-03-04"),
-            Some("Punchy subtitle"),
-            None,
-            None,
-            "First sentence. Second sentence.",
+            &test_site_config(),
+            PostMetaInput {
+                title: Some("Test Post"),
+                date: Some("2026-03-04"),
+                subtitle: Some("Punchy subtitle"),
+                role: None,
+                image: None,
+                markdown_body: "First sentence. Second sentence.",
+            },
         );
         assert!(meta.description.starts_with("Punchy subtitle."));
         assert!(meta.description.contains("First sentence."));
@@ -399,12 +411,15 @@ mod tests {
         let markdown = "First line.\n\nSecond line.";
         let meta = build_post_meta(
             "test-post",
-            Some(&fm.title),
-            Some(&fm.date),
-            fm.subtitle.as_deref(),
-            fm.role.as_deref(),
-            fm.image.as_deref(),
-            markdown,
+            &test_site_config(),
+            PostMetaInput {
+                title: Some(&fm.title),
+                date: Some(&fm.date),
+                subtitle: fm.subtitle.as_deref(),
+                role: fm.role.as_deref(),
+                image: fm.image.as_deref(),
+                markdown_body: markdown,
+            },
         );
         assert_eq!(meta.description, "First line. Second line.");
         assert!(meta.image.ends_with("/static/favicon.png"));
@@ -416,14 +431,25 @@ mod tests {
         fm.role = Some("mechanism".to_string());
         let meta = build_post_meta(
             "test-post",
-            Some(&fm.title),
-            Some(&fm.date),
-            fm.subtitle.as_deref(),
-            fm.role.as_deref(),
-            fm.image.as_deref(),
-            "body",
+            &test_site_config(),
+            PostMetaInput {
+                title: Some(&fm.title),
+                date: Some(&fm.date),
+                subtitle: fm.subtitle.as_deref(),
+                role: fm.role.as_deref(),
+                image: fm.image.as_deref(),
+                markdown_body: "body",
+            },
         );
         assert_eq!(meta.role.as_deref(), Some("mechanism"));
+    }
+
+    #[test]
+    fn default_home_meta_uses_site_config() {
+        let meta = default_home_meta(&test_site_config());
+        assert_eq!(meta.title, "Configured Blog");
+        assert_eq!(meta.author, "Configured Author");
+        assert_eq!(meta.description, "Configured description.");
     }
 
     #[test]
@@ -445,27 +471,6 @@ mod tests {
     #[test]
     fn iso_published_time_rejects_non_iso_datetimes() {
         assert_eq!(iso_published_time("2026-03-04T9am").as_deref(), None);
-    }
-
-    #[test]
-    fn site_author_uses_environment_override() {
-        static ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
-        let guard = ENV_LOCK
-            .get_or_init(|| Mutex::new(()))
-            .lock()
-            .expect("env lock poisoned");
-
-        let previous = std::env::var("SITE_AUTHOR").ok();
-        std::env::set_var("SITE_AUTHOR", "Example Author");
-
-        assert_eq!(site_author(), "Example Author");
-
-        match previous {
-            Some(value) => std::env::set_var("SITE_AUTHOR", value),
-            None => std::env::remove_var("SITE_AUTHOR"),
-        }
-
-        drop(guard);
     }
 
     // ── other helpers ─────────────────────────────────────────────────────────

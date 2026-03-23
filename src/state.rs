@@ -1,15 +1,16 @@
 use std::sync::Arc;
 use tokio::sync::{broadcast, RwLock};
 
-use crate::models::Post;
+use crate::models::{Post, SiteConfig};
 
 pub type RefreshBroadcaster = broadcast::Sender<()>;
 
 pub struct AppState {
+    pub site_config: RwLock<SiteConfig>,
     pub banner_html: RwLock<String>,
     pub layout_html: RwLock<String>,
     pub home_html: RwLock<String>,
-    pub not_found_html: RwLock<String>, // supports {{slug}} placeholder
+    pub not_found_markdown: RwLock<String>, // supports {{slug}} placeholder
     pub posts: RwLock<Vec<Post>>,
     pub is_development: bool,
 }

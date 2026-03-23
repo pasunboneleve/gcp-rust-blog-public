@@ -22,9 +22,10 @@ mod state;
 use content_loader::load_content;
 use hot_reload::{start_content_watcher, ws_handler};
 use markdown::render_markdown_to_html;
-use models::Post;
+use models::{Post, SiteConfig};
 use page_meta::{
     build_post_meta, default_home_meta, default_not_found_meta, escape_html, PageMeta,
+    PostMetaInput,
 };
 use state::{AppState, RouterState};
 
@@ -153,11 +154,12 @@ fn inject_hot_reload_script(page: String) -> String {
 }
 
 async fn homepage(State(state): State<Arc<AppState>>) -> Html<String> {
+    let site_config = state.site_config.read().await;
     let banner = state.banner_html.read().await;
     let layout = state.layout_html.read().await;
     let home = state.home_html.read().await;
     let posts = state.posts.read().await;
-    let meta = default_home_meta();
+    let meta = default_home_meta(&site_config);
 
     let page = render_with_layout(&layout, &banner, &home, &posts, &meta, state.is_development);
     Html(page)
@@ -204,14 +206,18 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
         date = escape_html(&post.date),
         content = html_out,
     );
+    let site_config = state.site_config.read().await;
     let meta = build_post_meta(
         &post.slug,
-        Some(&post.title),
-        Some(&post.date),
-        post.subtitle.as_deref(),
-        post.role.as_deref(),
-        post.image.as_deref(),
-        &post.markdown_body,
+        &site_config,
+        PostMetaInput {
+            title: Some(&post.title),
+            date: Some(&post.date),
+            subtitle: post.subtitle.as_deref(),
+            role: post.role.as_deref(),
+            image: post.image.as_deref(),
+            markdown_body: &post.markdown_body,
+        },
     );
 
     let layout = state.layout_html.read().await;
@@ -230,13 +236,14 @@ fn is_valid_post_slug(slug: &str) -> bool {
 }
 
 async fn render_not_found_response(state: &Arc<AppState>, slug: &str) -> Response {
-    let not_found_html = state.not_found_html.read().await;
-    let body = not_found_html.replace("{{slug}}", slug);
+    let not_found_markdown = state.not_found_markdown.read().await;
+    let body = render_markdown_to_html(&not_found_markdown.replace("{{slug}}", slug));
 
+    let site_config = state.site_config.read().await;
     let layout = state.layout_html.read().await;
     let banner = state.banner_html.read().await;
     let posts = state.posts.read().await;
-    let meta = default_not_found_meta(slug);
+    let meta = default_not_found_meta(slug, &site_config);
     let page = render_with_layout(&layout, &banner, &body, &posts, &meta, state.is_development);
 
     (StatusCode::NOT_FOUND, Html(page)).into_response()
@@ -258,25 +265,28 @@ async fn initialize_state() -> RouterState {
 
     info!("RUST_ENV is set to development: {}", is_development);
 
-    let (banner_html, layout_html, home_html, not_found_html, posts) = match load_content().await {
-        Ok(content) => content,
-        Err(e) => {
-            error!("Failed to load initial content files: {}", e);
-            (
-                String::new(),
-                "<!doctype html><html><body>{{ content }}</body></html>".to_string(),
-                "<p>Content loading failed during startup.</p>".to_string(),
-                "<p>Post '{{slug}}' not found.</p>".to_string(),
-                Vec::new(),
-            )
-        }
-    };
+    let (site_config, banner_html, layout_html, home_html, not_found_markdown, posts) =
+        match load_content().await {
+            Ok(content) => content,
+            Err(e) => {
+                error!("Failed to load initial content files: {}", e);
+                (
+                    SiteConfig::default(),
+                    String::new(),
+                    "<!doctype html><html><body>{{ content }}</body></html>".to_string(),
+                    "<p>Content loading failed during startup.</p>".to_string(),
+                    "# Post not found\n\nNo post exists for slug `{{slug}}`.".to_string(),
+                    Vec::new(),
+                )
+            }
+        };
 
     let state = Arc::new(AppState {
+        site_config: RwLock::new(site_config),
         banner_html: RwLock::new(banner_html),
         layout_html: RwLock::new(layout_html),
         home_html: RwLock::new(home_html),
-        not_found_html: RwLock::new(not_found_html),
+        not_found_markdown: RwLock::new(not_found_markdown),
         posts: RwLock::new(posts),
         is_development,
     });
@@ -339,7 +349,7 @@ async fn main() {
 #[cfg(test)]
 mod tests {
     use super::{is_valid_post_slug, render_post_list, render_with_layout};
-    use crate::models::Post;
+    use crate::models::{Post, SiteConfig};
     use crate::page_meta::PageMeta;
 
     fn test_layout() -> &'static str {
@@ -351,6 +361,14 @@ mod tests {
         let layout = include_str!("../content/layout.html");
         assert!(layout.contains("{{ page_author }}"));
         assert!(layout.contains("{{ page_published_time_meta }}"));
+    }
+
+    #[test]
+    fn content_templates_use_site_placeholders() {
+        let layout = include_str!("../content/layout.html");
+        let banner = include_str!("../content/banner.html");
+        assert!(layout.contains("{{ site_og_name }}"));
+        assert!(banner.contains("{{ site_title }}"));
     }
 
     fn test_posts() -> Vec<Post> {
@@ -376,6 +394,13 @@ mod tests {
             published_time: Some("2026-03-04T00:00:00Z".to_string()),
             role: Some("mechanism".to_string()),
         }
+    }
+
+    #[test]
+    fn site_config_defaults_match_content_defaults() {
+        let config = SiteConfig::default();
+        assert_eq!(config.title, "Bon Élève Blog");
+        assert_eq!(config.author, "Daniel Vianna");
     }
 
     #[test]
