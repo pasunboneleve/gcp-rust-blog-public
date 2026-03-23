@@ -19,6 +19,7 @@
     --tracking-widest: 0.1em;
     --leading-snug: 1.375;
     --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
     --color-base0: #839496;
@@ -670,14 +671,14 @@
   .w-16 {
     width: calc(var(--spacing) * 16);
   }
-  .w-64 {
-    width: calc(var(--spacing) * 64);
-  }
   .w-full {
     width: 100%;
   }
   .max-w-4xl {
     max-width: var(--container-4xl);
+  }
+  .flex-shrink {
+    flex-shrink: 1;
   }
   .grow {
     flex-grow: 1;
@@ -781,7 +782,74 @@
     }
   }
 }
+.prose {
+  --color-base2: #eee8d5;
+  --tw-prose-body: var(--color-base2);
+  --tw-prose-headings: var(--color-base2);
+  --tw-prose-lead: var(--color-base1);
+  --tw-prose-links: var(--color-cyan);
+  --tw-prose-bold: var(--color-base2);
+  --tw-prose-counters: var(--color-base1);
+  --tw-prose-bullets: var(--color-base01);
+  --tw-prose-hr: var(--color-base01);
+  --tw-prose-quotes: var(--color-base1);
+  --tw-prose-quote-borders: var(--color-base01);
+  --tw-prose-captions: var(--color-base1);
+  --tw-prose-kbd: var(--color-base1);
+  --tw-prose-kbd-shadows: color-mix(in srgb, #93a1a1 10%, transparent);
+  @supports (color: color-mix(in lab, red, red)) {
+    --tw-prose-kbd-shadows: color-mix(in oklab, var(--color-base1) 10%, transparent);
+  }
+  --tw-prose-code: var(--color-cyan);
+  --tw-prose-pre-code: var(--color-base2);
+  --tw-prose-pre-bg: var(--color-base02);
+  --tw-prose-th-borders: var(--color-base01);
+  --tw-prose-td-borders: var(--color-base01);
+}
+.prose a {
+  text-decoration-color: color-mix(in srgb, #2aa198 45%, transparent);
+  @supports (color: color-mix(in lab, red, red)) {
+    text-decoration-color: color-mix(in oklab, var(--color-cyan) 45%, transparent);
+  }
+}
+.prose a:hover {
+  color: var(--color-base1);
+  text-decoration-color: color-mix(in srgb, #93a1a1 60%, transparent);
+  @supports (color: color-mix(in lab, red, red)) {
+    text-decoration-color: color-mix(in oklab, var(--color-base1) 60%, transparent);
+  }
+}
+.prose figure > a {
+  color: var(--color-cyan);
+}
 @layer components {
+  .page-layout {
+    display: flex;
+    flex-direction: column;
+    @media (width >= 48rem) {
+      flex-direction: row;
+    }
+    @media (width >= 48rem) {
+      align-items: flex-start;
+    }
+  }
+  .content-main {
+    width: 100%;
+    min-width: calc(var(--spacing) * 0);
+    flex: auto;
+  }
+}
+@layer components {
+  .posts-sidebar {
+    width: 100%;
+    @media (width >= 48rem) {
+      width: calc(var(--spacing) * 64);
+    }
+    @media (width >= 48rem) {
+      flex-shrink: 0;
+    }
+    background: linear-gradient(to bottom, var(--color-base02), transparent);
+  }
   .sidebar-post-link {
     text-decoration-line: none;
   }
@@ -815,6 +883,29 @@
     text-transform: uppercase;
     opacity: 80%;
   }
+}
+.posts-sidebar ul {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.posts-sidebar .sidebar-group-header + li {
+  border-top: 1px solid color-mix(in srgb, #586e75 20%, transparent);
+  @supports (color: color-mix(in lab, red, red)) {
+    border-top: 1px solid color-mix(in oklab, var(--color-base01) 20%, transparent);
+  }
+}
+.posts-sidebar li a {
+  display: block;
+  padding: 0.35rem 0.25rem 0.35rem 0.75rem;
+  line-height: 1.35;
+}
+.posts-sidebar li a:hover .sidebar-post-title {
+  opacity: 1;
+  font-weight: 700;
+}
+.posts-sidebar li a:hover .sidebar-post-subtitle {
+  opacity: 1;
 }
 .post-header {
   margin-bottom: 2.5rem;
@@ -868,6 +959,25 @@
     line-height: var(--tw-leading, var(--text-xs--line-height));
     color: var(--color-base01);
   }
+}
+@layer components {
+  .mermaid-block {
+    margin-block: calc(var(--spacing) * 6);
+    border-radius: var(--radius-lg);
+    background-color: transparent;
+    padding: calc(var(--spacing) * 3);
+  }
+  .mermaid {
+    background-color: transparent;
+    padding: calc(var(--spacing) * 0);
+    border-radius: 0.4rem;
+  }
+}
+.mermaid svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
 }
 @property --tw-rotate-x {
   syntax: "*";
