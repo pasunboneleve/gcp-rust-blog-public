@@ -81,7 +81,7 @@
     }
 
     .post-eyebrow-subtitle {
-        @apply text-base01 opacity-60;
+        @apply text-base text-base01 opacity-90;
     }
 
     .post-date {
