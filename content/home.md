@@ -1,29 +1,32 @@
 ---
-title: "Systems that evolve"
-subtitle: "Notes on building cheap to change software"
+title: "Home"
 date: 2025-12-12
 slug: home
 ---
 
-This site is a deliberately small system.
+This blog is about software systems that can evolve.
 
-It exists to make the whole path visible — from source code to running
-software — without hidden steps, implicit state, or manual
-intervention.
+Most software projects optimise for features, velocity, or cost.
+This one is organised around a different question:
 
-Most software projects optimise for features. This one optimises for
-flow.
+**How expensive is it to change the system when reality changes?**
 
-In development, changes appear immediately in the browser; in
-production, pushing to `master` is the deployment. Every commit
-exercises the entire system.  If something breaks, it breaks in the
-open.
+Some posts argue for a principle.\
+Some describe the mechanisms that make systems hard to reshape.\
+Some examine real systems that looked fine until they resisted modification.\
+Some focus on strategy: what to do when a request reveals a structural limitation.\
+And [one of them](/posts/2026-03-02-how-this-blog-works) is the system itself.
 
-The code is public.  The infrastructure is declared.  The process is
-the product.
+The <a href="https://github.com/pasunboneleve/gcp-rust-blog-public"
+target="_blank" rel="noopener noreferrer">code</a> is public.\
+The infrastructure is declared.\
+The process is visible.
 
-- Read the posts — the thinking behind the decisions.
-- Explore the <a href="https://github.com/pasunboneleve/gcp-rust-blog-public" target="_blank" rel="noopener noreferrer">gcp-rust-blog-public repository</a> — the system itself.
-- Connect on <a href="https://linkedin.com/in/dmvianna" target="_blank" rel="noopener noreferrer">LinkedIn</a> — the broader context.
+This is a small system, built to make the full path of change legible
+— from local edit to running software, without hidden steps, implicit
+state, or manual intervention.
+
+The sidebar is the index.\
+The posts are the argument.
 
 Enjoy your stay!
