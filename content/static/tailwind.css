@@ -643,9 +643,6 @@
   .mt-0\.5 {
     margin-top: calc(var(--spacing) * 0.5);
   }
-  .mt-4 {
-    margin-top: calc(var(--spacing) * 4);
-  }
   .block {
     display: block;
   }
@@ -802,10 +799,10 @@
     --tw-leading: var(--leading-snug);
     line-height: var(--leading-snug);
     color: var(--color-base01);
-    opacity: 60%;
+    opacity: 75%;
   }
   .sidebar-group-header {
-    margin-top: calc(var(--spacing) * 4);
+    margin-top: calc(var(--spacing) * 6);
     margin-bottom: calc(var(--spacing) * 1);
     padding-inline: calc(var(--spacing) * 1);
     font-size: var(--text-xs);
@@ -814,9 +811,9 @@
     font-weight: var(--font-weight-bold);
     --tw-tracking: var(--tracking-widest);
     letter-spacing: var(--tracking-widest);
-    color: var(--color-base01);
+    color: var(--color-base0);
     text-transform: uppercase;
-    opacity: 50%;
+    opacity: 80%;
   }
 }
 .post-header {
