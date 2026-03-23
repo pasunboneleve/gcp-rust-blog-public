@@ -9,12 +9,14 @@
     <link rel="shortcut icon" href="/favicon.ico?v=1" type="image/x-icon" />
     <title>{{ page_title }}</title>
     <meta name="description" content="{{ page_description }}" />
+    <meta name="author" content="{{ page_author }}" />
     <meta property="og:type" content="article" />
     <meta property="og:site_name" content="Bon Élève Blog" />
     <meta property="og:title" content="{{ page_title }}" />
     <meta property="og:description" content="{{ page_description }}" />
     <meta property="og:url" content="{{ page_url }}" />
     <meta property="og:image" content="{{ page_image }}" />
+    {{ page_published_time_meta }}
     {{ page_role_meta }}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="{{ page_title }}" />

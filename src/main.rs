@@ -346,6 +346,13 @@ mod tests {
         "<html><head><title>{{ page_title }}</title><meta name=\"description\" content=\"{{ page_description }}\" /><meta name=\"author\" content=\"{{ page_author }}\" /><meta property=\"og:title\" content=\"{{ page_title }}\" /><meta property=\"og:description\" content=\"{{ page_description }}\" /><meta property=\"og:url\" content=\"{{ page_url }}\" /><meta property=\"og:image\" content=\"{{ page_image }}\" />{{ page_published_time_meta }}{{ page_role_meta }}<meta name=\"twitter:title\" content=\"{{ page_title }}\" /><meta name=\"twitter:description\" content=\"{{ page_description }}\" /><meta name=\"twitter:image\" content=\"{{ page_image }}\" /></head><body>{{ banner }}<main>{{ content }}</main><ul>{{ posts }}</ul></body></html>"
     }
 
+    #[test]
+    fn content_layout_contains_new_meta_placeholders() {
+        let layout = include_str!("../content/layout.html");
+        assert!(layout.contains("{{ page_author }}"));
+        assert!(layout.contains("{{ page_published_time_meta }}"));
+    }
+
     fn test_posts() -> Vec<Post> {
         vec![Post {
             title: "First post".to_string(),
