@@ -66,13 +66,14 @@
     display: inline-block;
     flex-shrink: 0;
     font-size: 0.68rem;
-    font-weight: 500;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: color-mix(in oklab, var(--color-cyan) 60%, transparent);
     border: 1px solid color-mix(in oklab, var(--color-cyan) 25%, transparent);
     border-radius: 0.25em;
     padding: 0.2em 0.6em;
+    opacity: 0.9;
 }
 
 @layer components {
