@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
 #
-# dev.sh — Start a cloudflared tunnel and run the dev server via bacon.
+# cloudflared-bacon-run.sh — Start a cloudflared tunnel and run the dev server.
 #
 # SITE_URL is set from the tunnel URL so that og:image tags in rendered pages
 # resolve to a publicly reachable address, enabling social-card preview testing
 # from LinkedIn, Slack, or X while developing locally.
 #
 # Usage:
-#   ./scripts/dev.sh
+#   ./scripts/cloudflared-bacon-run.sh [post-slug]
 #
 # In a separate terminal, also run:
 #   ./scripts/tailwatch.sh
 #
 # To test social cards:
-#   1. Copy the tunnel URL printed below.
-#   2. Append a post path, e.g. https://<tunnel>.trycloudflare.com/posts/<slug>
+#   1. Copy the full post URL printed below.
 #   3. Paste that URL into the relevant inspector:
 #        LinkedIn  — https://www.linkedin.com/post-inspector/
 #        Slack     — paste the URL into any channel; Slack fetches og:image live
@@ -34,21 +33,59 @@ fi
 
 if ! command -v cargo &>/dev/null; then
     echo "Error: 'cargo' not found in PATH." >&2
-    echo "  Install: cargo install cargo" >&2
+    echo "  Install Rust via https://rustup.rs/" >&2
     exit 1
 fi
+
+DEFAULT_POST_SLUG=$(
+    find content/posts -maxdepth 1 -type f -name '*.md' -printf '%f\n' \
+        | sort \
+        | tail -1 \
+        | sed 's/\.md$//'
+)
+
+POST_SLUG="${1:-$DEFAULT_POST_SLUG}"
+
+if [ -z "$POST_SLUG" ]; then
+    echo "Error: no post slug provided and no posts were found in content/posts." >&2
+    exit 1
+fi
+
+CLOUDFLARED_PID=""
+CARGO_PID=""
+TUNNEL_LOG=""
+
+cleanup() {
+    trap - EXIT INT TERM
+
+    if [ -n "${CARGO_PID:-}" ]; then
+        kill "$CARGO_PID" 2>/dev/null || true
+        wait "$CARGO_PID" 2>/dev/null || true
+    fi
+
+    if [ -n "${CLOUDFLARED_PID:-}" ]; then
+        kill "$CLOUDFLARED_PID" 2>/dev/null || true
+        wait "$CLOUDFLARED_PID" 2>/dev/null || true
+    fi
+
+    if [ -n "${TUNNEL_LOG:-}" ]; then
+        rm -f "$TUNNEL_LOG"
+    fi
+}
+
+handle_signal() {
+    cleanup
+    exit 0
+}
+
+trap cleanup EXIT
+trap handle_signal INT TERM
 
 # ── Start cloudflared ──────────────────────────────────────────────────────────
 
 TUNNEL_LOG=$(mktemp)
 cloudflared tunnel --url http://localhost:8080 2>"$TUNNEL_LOG" &
 CLOUDFLARED_PID=$!
-
-cleanup() {
-    kill "$CLOUDFLARED_PID" 2>/dev/null || true
-    rm -f "$TUNNEL_LOG"
-}
-trap cleanup EXIT
 
 # ── Wait for tunnel URL ────────────────────────────────────────────────────────
 
@@ -70,16 +107,21 @@ fi
 
 # ── Print tunnel info ──────────────────────────────────────────────────────────
 
+POST_URL="$SITE_URL/posts/$POST_SLUG"
+
 echo ""
 echo "  Tunnel: $SITE_URL"
+echo "  Post:   $POST_URL"
 echo ""
 echo "  Test social cards:"
 echo "    LinkedIn  — https://www.linkedin.com/post-inspector/"
-echo "    Slack     — paste \$SITE_URL/posts/<slug> into any channel"
+echo "    Slack     — paste $POST_URL into any channel"
 echo "    X/Twitter — https://cards-dev.twitter.com/validator"
 echo ""
 
 # ── Run cargo ──────────────────────────────────────────────────────────────────
 
 export SITE_URL
-RUST_ENV=development cargo run
+RUST_ENV=development cargo run &
+CARGO_PID=$!
+wait "$CARGO_PID"

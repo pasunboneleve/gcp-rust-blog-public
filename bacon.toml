@@ -102,10 +102,7 @@ ignore = ["**/.#*", "**/*~", "content/static/tailwind.css"]
 # A custom kill command such as the one suggested below is frequently needed to kill
 # long running programs (uncomment it if you need it)
 [jobs.run-long]
-command = [
-    "cargo", "run",
-    # put launch parameters for your program behind a `--` separator
-]
+command = ["./scripts/cloudflared-bacon-run.sh"]
 need_stdout = true
 allow_warnings = true
 background = false

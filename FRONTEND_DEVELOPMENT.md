@@ -16,6 +16,11 @@ then
 bacon run
 ```
 
+This starts the Rust server through
+`./scripts/cloudflared-bacon-run.sh`, so each restart also replaces the
+Cloudflare tunnel and prints a fresh public post URL for social-card
+testing.
+
 In another terminal
 
 ```
