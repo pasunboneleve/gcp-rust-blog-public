@@ -44,7 +44,7 @@
     }
 
     .sidebar-post-subtitle {
-        @apply block text-xs text-base01 opacity-75 mt-0.5 leading-snug;
+        @apply block text-xs text-base1 opacity-50 mt-0.5 leading-snug;
     }
 
     .sidebar-group-header {

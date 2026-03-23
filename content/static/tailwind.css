@@ -798,8 +798,8 @@
     line-height: var(--tw-leading, var(--text-xs--line-height));
     --tw-leading: var(--leading-snug);
     line-height: var(--leading-snug);
-    color: var(--color-base01);
-    opacity: 75%;
+    color: var(--color-base1);
+    opacity: 50%;
   }
   .sidebar-group-header {
     margin-top: calc(var(--spacing) * 6);
