@@ -7,6 +7,8 @@ pub struct FrontMatter {
     pub slug: String,
     pub description: Option<String>,
     pub image: Option<String>,
+    pub role: Option<String>,
+    pub subtitle: Option<String>,
 }
 
 #[derive(Clone)]
@@ -16,5 +18,7 @@ pub struct Post {
     pub date: String,
     pub description: Option<String>,
     pub image: Option<String>,
+    pub role: Option<String>,
+    pub subtitle: Option<String>,
     pub markdown_body: String,
 }
