@@ -189,7 +189,6 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     let meta = build_post_meta(
         &post.slug,
         Some(&post.title),
-        post.description.as_deref(),
         post.subtitle.as_deref(),
         post.role.as_deref(),
         post.image.as_deref(),
