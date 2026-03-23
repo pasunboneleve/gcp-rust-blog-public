@@ -1,7 +1,7 @@
 ---
 title: "Impossible requests, missing capabilities"
 role: "strategy"
-subtitle: "Hero requests are signals — stop delivering, start diagnosing the system"
+subtitle: "Hero requests are signals — stop delivering, start diagnosing"
 date: 2026-03-13
 slug: 2026-03-13-impossible-requests-missing-capabilities
 description: "Impossible requests usually point to a missing system capability. Add the right layer, and the exceptional becomes routine."
