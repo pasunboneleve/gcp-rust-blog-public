@@ -13,6 +13,22 @@ small, testable, and Rust-idiomatic.
 
 ## Common Development Commands
 
+Local development requires **two parallel terminals**:
+
+```bash
+# Terminal 1 — Rust server with hot reload
+cargo run
+
+# Terminal 2 — Tailwind CSS watcher
+./scripts/tailwatch.sh
+```
+
+Tailwind must be running alongside the server so that class changes in
+`src/**/*.rs` and `content/**/*.html` are compiled into
+`content/static/tailwind.css` automatically. Stopping `tailwatch.sh`
+means CSS changes (including new Tailwind classes added to generated
+HTML) will not appear in the browser.
+
 ## Success criteria
 - New logic includes tests.
 - Work is delivered as small, reviewable increments aligned with
