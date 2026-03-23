@@ -7,9 +7,6 @@
       "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
-    --color-orange-500: oklch(70.5% 0.213 47.604);
-    --color-green-500: oklch(72.3% 0.219 149.579);
-    --color-blue-500: oklch(62.3% 0.214 259.815);
     --spacing: 0.25rem;
     --container-4xl: 56rem;
     --text-xs: 0.75rem;
@@ -30,9 +27,6 @@
     --color-base02: #073642;
     --color-base03: #002b36;
     --color-yellow: #b58900;
-    --color-orange: #cb4b16;
-    --color-red: #dc322f;
-    --color-blue: #268bd2;
     --color-cyan: #2aa198;
   }
 }
@@ -651,9 +645,6 @@
   .mt-0\.5 {
     margin-top: calc(var(--spacing) * 0.5);
   }
-  .mt-1 {
-    margin-top: calc(var(--spacing) * 1);
-  }
   .mt-3 {
     margin-top: calc(var(--spacing) * 3);
   }
@@ -812,19 +803,9 @@
     font-size: var(--text-xs);
     line-height: var(--tw-leading, var(--text-xs--line-height));
   }
-  .text-\[0\.7rem\] {
-    font-size: 0.7rem;
-  }
-  .text-\[0\.72rem\] {
-    font-size: 0.72rem;
-  }
   .leading-snug {
     --tw-leading: var(--leading-snug);
     line-height: var(--leading-snug);
-  }
-  .leading-tight {
-    --tw-leading: var(--leading-tight);
-    line-height: var(--leading-tight);
   }
   .text-base0 {
     color: var(--color-base0);
