@@ -851,6 +851,12 @@
 .prose figure > a {
   color: var(--color-cyan);
 }
+.prose .post-404-figure {
+  text-align: center;
+}
+.prose .post-404-figure img {
+  margin-inline: auto;
+}
 @layer components {
   .page-layout {
     display: flex;
