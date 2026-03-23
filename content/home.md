@@ -1,5 +1,6 @@
 ---
-title: Home
+title: "Systems that evolve"
+subtitle: "Notes on building cheap to change software"
 date: 2025-12-12
 slug: home
 ---
