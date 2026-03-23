@@ -142,6 +142,13 @@ content/
 - Secrets managed via environment variables, not baked into images
 - Public blog configured with `--allow-unauthenticated`
 
+## Frontend CSS rule
+
+Rust emits **semantic class names only** — no Tailwind utility classes
+in format strings. All visual decisions live in `tailwind.css`.
+See `FRONTEND_DEVELOPMENT.md` for the full pattern and the table of
+defined component classes.
+
 ## Engineering standards
 - No global state unless there is a clear documented need.
 - No hardcoded configuration. Keep configuration in config files.

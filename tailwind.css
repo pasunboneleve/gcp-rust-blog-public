@@ -23,3 +23,68 @@
     --color-cyan: #2aa198;
     --color-green: #859900;
 }
+
+/*
+ * Component classes for dynamically generated HTML (Rust templates).
+ *
+ * ARCHITECTURE: Rust emits only semantic class names. All visual decisions
+ * live here. To change appearance, edit this file — never edit Rust.
+ * See FRONTEND_DEVELOPMENT.md for the full pattern.
+ */
+
+/* ── Sidebar ─────────────────────────────────────────────────────────── */
+
+@layer components {
+    .sidebar-post-link {
+        @apply no-underline;
+    }
+
+    .sidebar-post-title {
+        @apply block text-yellow leading-snug;
+    }
+
+    .sidebar-post-subtitle {
+        @apply block text-xs text-base01 opacity-60 mt-0.5 leading-snug;
+    }
+}
+
+/* ── Post page header ────────────────────────────────────────────────── */
+
+/* color-mix() cannot be expressed with @apply; plain CSS used instead. */
+.post-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-base01) 25%, transparent);
+}
+
+.post-header h1 {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.post-role {
+    display: inline-block;
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: color-mix(in oklab, var(--color-cyan) 60%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-cyan) 25%, transparent);
+    border-radius: 0.25em;
+    padding: 0.2em 0.6em;
+}
+
+@layer components {
+    .post-eyebrow {
+        @apply flex items-center gap-3 flex-wrap mb-2;
+    }
+
+    .post-eyebrow-subtitle {
+        @apply text-base01 opacity-60;
+    }
+
+    .post-date {
+        @apply text-xs text-base01 mt-3 mb-0;
+    }
+}
