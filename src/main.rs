@@ -42,7 +42,7 @@ fn render_post_list(posts: &[Post]) -> String {
             .map(|s| format!("<span class=\"block text-xs text-base01 opacity-60 mt-0.5 leading-snug\">{s}</span>"))
             .unwrap_or_default();
         list_items.push_str(&format!(
-            "<li><a href=\"/posts/{}\" class=\"no-underline\"><span class=\"block text-yellow text-sm leading-snug\">{}</span>{}</a></li>",
+            "<li><a href=\"/posts/{}\" class=\"no-underline\"><span class=\"block text-yellow leading-snug\">{}</span>{}</a></li>",
             post.slug, post.title, subtitle_html
         ));
     }
@@ -138,7 +138,7 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     let subtitle_span = post
         .subtitle
         .as_deref()
-        .map(|s| format!("<span class=\"text-xs text-base01 opacity-60\">{s}</span>"))
+        .map(|s| format!("<span class=\"text-base01 opacity-60\">{s}</span>"))
         .unwrap_or_default();
     let eyebrow_html = if role_span.is_empty() && subtitle_span.is_empty() {
         String::new()
