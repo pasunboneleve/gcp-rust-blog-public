@@ -11,7 +11,27 @@ The focus is not the technology itself, but the shape of the system: making corr
 ## Quick Start
 
 ### Prerequisites
-- Rust toolchain (`cargo`) for local development
+- [Rust](https://www.rust-lang.org/tools/install) for building and
+  running the app locally. Install with `rustup`, which provides
+  `cargo` and `rustc`.
+- [devloop](https://github.com/pasunboneleve/devloop) for the primary
+  local development workflow. Install with
+  `cargo install --git https://github.com/pasunboneleve/devloop.git`.
+- [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
+  for the shareable public tunnel used to validate social cards during
+  local development. Install it from Cloudflare's package or binary
+  distribution for your platform.
+- [Node.js](https://nodejs.org/) or [Bun](https://bun.com/) to install
+  the Tailwind CLI.
+- [Tailwind CLI](https://tailwindcss.com/docs/installation/tailwind-cli)
+  for CSS compilation during local development. Install with
+  `npm install -g @tailwindcss/cli` or the equivalent Bun workflow.
+- [direnv](https://direnv.net/) to auto-load repo environment variables.
+  Install it from your system package manager and run `direnv allow` in
+  the repo.
+- [bacon](https://dystroy.org/bacon/) only if you want the fallback
+  direct-repo workflow instead of `devloop`. Install with
+  `cargo install bacon`.
 - Docker for containerization
 - `gcloud` CLI configured with your GCP project
 - OpenTofu/Terraform for infrastructure management
@@ -51,6 +71,17 @@ Recommended:
 - use the repo-local [`devloop.toml`](devloop.toml) as the working client config
 - keep repo-specific helper scripts in [`scripts/build-css.sh`](scripts/build-css.sh)
   and [`scripts/current-post-slug.sh`](scripts/current-post-slug.sh)
+
+Primary local workflow:
+
+```bash
+direnv allow
+devloop run
+```
+
+That gives you one supervised loop for Rust rebuilds, CSS recompilation,
+content reloads, cloudflared restarts, and copy/paste-ready public post
+URLs for card validation.
 
 Fallback direct-repo workflow:
 

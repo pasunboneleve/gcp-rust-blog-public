@@ -52,21 +52,12 @@ bacon run
 Dependencies
 ============
 
-You'll need [`devloop`](https://github.com/pasunboneleve/devloop),
-[Tailwind CLI](https://tailwindcss.com/), and optionally
-[bacon](https://dystroy.org/bacon/) for the fallback path.
+See the local development prerequisites in
+[`README.md`](README.md). The important distinction is:
 
-```sh
-cargo install --git https://github.com/pasunboneleve/devloop.git
-npm install -g @tailwindcss/cli
-cargo install bacon
-```
-
-Or use [bun](https://bun.com/) instead of
-[npm](https://docs.npmjs.com/cli/) if you prefer.
-
-[`direnv`](https://direnv.net/) is also useful for automatically
-loading environment variables when you change into the repo.
+- `devloop`, `cloudflared`, Node or Bun, Tailwind CLI, and `direnv` are
+  part of the primary workflow
+- `bacon` is fallback-only
 
 CSS Architecture
 ================
