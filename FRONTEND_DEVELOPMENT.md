@@ -7,8 +7,28 @@ Quickstart
 Preferred workflow
 ==================
 
-Use the external `devloop` tool against this repo for the integrated
-Rust + CSS + content + cloudflared loop. Repo-owned helper scripts:
+Use [`devloop`](https://github.com/pasunboneleve/devloop) against this
+repo for the integrated Rust + CSS + content + cloudflared loop. This
+is the primary development workflow for
+[`gcp-rust-blog-public`](https://github.com/pasunboneleve/gcp-rust-blog-public).
+
+From the repo root:
+
+```sh
+direnv allow
+devloop run
+```
+
+What you get:
+
+- Rust rebuilds and restarts in order when `src/**/*.rs` changes
+- Tailwind recompiles when CSS-relevant files change
+- Markdown and HTML content reload without manual server restarts
+- `cloudflared` is restarted when the workflow needs a fresh public URL
+- the current browsed post URL is printed in a copy/paste-friendly form
+  for LinkedIn, Slack, or X card validation
+
+Repo-owned helper files:
 
 - [`devloop.toml`](devloop.toml)
 - [`scripts/build-css.sh`](scripts/build-css.sh)
@@ -17,46 +37,36 @@ Rust + CSS + content + cloudflared loop. Repo-owned helper scripts:
 Fallback direct repo workflow
 =============================
 
-In one terminal
+Without `devloop`, the same loop is much clumsier. You would need three
+or four terminals for the server, CSS watcher, and tunnel management,
+and every time the tunnel URL changed you would also have to rebuild the
+full cloudflared URL plus post path manually before validating cards in
+LinkedIn, Slack, or X. `devloop` turns that into a simple copy/paste.
 
 ```sh
 direnv allow
-```
-
-then
-
-```sh
 bacon run
-```
-
-In another terminal
-
-```
 ./scripts/build-css.sh
 ```
 
 Dependencies
 ============
 
-You'll need to install [bacon](https://dystroy.org/bacon/)
+You'll need [`devloop`](https://github.com/pasunboneleve/devloop),
+[Tailwind CLI](https://tailwindcss.com/), and optionally
+[bacon](https://dystroy.org/bacon/) for the fallback path.
 
-sh
-```
+```sh
+cargo install --git https://github.com/pasunboneleve/devloop.git
+npm install -g @tailwindcss/cli
 cargo install bacon
 ```
 
-and [tailwind](https://tailwindcss.com/).
+Or use [bun](https://bun.com/) instead of
+[npm](https://docs.npmjs.com/cli/) if you prefer.
 
-sh
-```
-npm install -g @tailwindcss/cli
-```
-
-Although you really should use [bun](https://bun.com/) instead of [npm](https://docs.npmjs.com/cli/).
-
-And finally, I like using [direnv](https://direnv.net/) to
-automagically run Bash and add environment variables when we change
-into a directory.
+[`direnv`](https://direnv.net/) is also useful for automatically
+loading environment variables when you change into the repo.
 
 CSS Architecture
 ================
@@ -110,7 +120,7 @@ grouped and labelled by section:
 
 ### How hot reload works
 
-When `build-css.sh` recompiles `content/static/tailwind.css`, the Rust
-file watcher detects the change and signals the browser to refresh via
-WebSocket — no server restart needed. Bacon ignores changes to
-`content/static/tailwind.css` for exactly this reason.
+With `devloop`, CSS recompiles, content reloads, tunnel restarts, and
+URL publication are orchestrated from one supervisor. Without it, you
+would need to coordinate those loops yourself across separate terminal
+sessions.
