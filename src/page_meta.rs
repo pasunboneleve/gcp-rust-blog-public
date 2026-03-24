@@ -199,6 +199,7 @@ fn normalize_body_for_description(markdown: &str) -> String {
 
 fn append_html_text_content(out: &mut String, fragment: &str) {
     let html = Html::parse_fragment(fragment);
+    let mut fragments = Vec::new();
 
     for node in html.tree.root().descendants() {
         let Some(text) = node.value().as_text() else {
@@ -215,7 +216,11 @@ fn append_html_text_content(out: &mut String, fragment: &str) {
             continue;
         }
 
-        append_normalized_fragment(out, text);
+        fragments.push(text.to_string());
+    }
+
+    if !fragments.is_empty() {
+        append_normalized_fragment(out, &fragments.join(" "));
     }
 }
 
@@ -236,6 +241,9 @@ fn append_normalized_fragment(out: &mut String, fragment: &str) {
             }
             prev_space = true;
         } else {
+            if matches!(c, '.' | ',' | '!' | '?' | ';' | ':') && out.ends_with(' ') {
+                out.pop();
+            }
             out.push(c);
             prev_space = false;
         }
@@ -444,12 +452,19 @@ mod tests {
   <figure>
     <figcaption>Figure 1. This should not be included.</figcaption>
   </figure>
-</div>
+        </div>
 "#;
         let desc = build_social_description(None, body);
         assert!(desc.contains("Systems don't fail because they are slow."));
         assert!(desc.contains("They fail because they resist change."));
         assert!(!desc.contains("Figure 1."));
+    }
+
+    #[test]
+    fn social_description_separates_adjacent_html_blocks() {
+        let body = "<div>First block.</div><div>Second block.</div>";
+        let desc = build_social_description(None, body);
+        assert_eq!(desc, "First block. Second block.");
     }
 
     // ── build_post_meta ───────────────────────────────────────────────────────
