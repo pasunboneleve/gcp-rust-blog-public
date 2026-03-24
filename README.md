@@ -48,6 +48,7 @@ Recommended:
 
 - use the external `devloop` supervisor for the full Rust + CSS +
   content + cloudflared workflow
+- use the repo-local [`devloop.toml`](devloop.toml) as the working client config
 - keep repo-specific helper scripts in [`scripts/build-css.sh`](scripts/build-css.sh)
   and [`scripts/current-post-slug.sh`](scripts/current-post-slug.sh)
 

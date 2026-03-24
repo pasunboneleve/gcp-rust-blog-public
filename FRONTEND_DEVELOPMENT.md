@@ -10,6 +10,7 @@ Preferred workflow
 Use the external `devloop` tool against this repo for the integrated
 Rust + CSS + content + cloudflared loop. Repo-owned helper scripts:
 
+- [`devloop.toml`](devloop.toml)
 - [`scripts/build-css.sh`](scripts/build-css.sh)
 - [`scripts/current-post-slug.sh`](scripts/current-post-slug.sh)
 

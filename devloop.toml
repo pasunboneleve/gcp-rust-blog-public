@@ -1,0 +1,90 @@
+root = "."
+debounce_ms = 300
+state_file = "./.devloop/state.json"
+startup_workflows = ["startup"]
+
+[watch.rust]
+paths = ["src/**/*.rs", "Cargo.toml", "content/layout.html", "content/banner.html", "content/site.toml"]
+workflow = "rust"
+
+[watch.content]
+paths = ["content/**/*.md", "content/**/*.html"]
+workflow = "content"
+
+[watch.css]
+paths = ["tailwind.css"]
+workflow = "css"
+
+[process.css_watch]
+command = ["tailwindcss", "-i", "tailwind.css", "-o", "content/static/tailwind.css", "--watch=always"]
+cwd = "."
+autostart = false
+
+[process.server]
+command = ["cargo", "run"]
+cwd = "."
+autostart = false
+env = { PORT = "18080" }
+restart = "always"
+
+[process.server.readiness]
+kind = "http"
+url = "http://127.0.0.1:18080/"
+interval_ms = 500
+timeout_ms = 30000
+
+[process.tunnel]
+command = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:18080"]
+cwd = "."
+autostart = false
+restart = "always"
+output = { inherit = true, rules = [{ state_key = "tunnel_url", extract = "url_token" }] }
+
+[process.tunnel.readiness]
+kind = "state_key"
+key = "tunnel_url"
+interval_ms = 250
+timeout_ms = 30000
+
+[hook.build_css]
+command = ["./scripts/build-css.sh"]
+cwd = "."
+
+[hook.current_post_slug]
+command = ["./scripts/current-post-slug.sh"]
+cwd = "."
+capture = "text"
+state_key = "current_post_slug"
+
+[workflow.startup]
+steps = [
+  { action = "start_process", process = "css_watch" },
+  { action = "start_process", process = "server" },
+  { action = "wait_for_process", process = "server" },
+  { action = "run_hook", hook = "build_css" },
+  { action = "run_hook", hook = "current_post_slug" },
+  { action = "start_process", process = "tunnel" },
+  { action = "wait_for_process", process = "tunnel" },
+]
+
+[workflow.rust]
+steps = [
+  { action = "restart_process", process = "server" },
+  { action = "wait_for_process", process = "server" },
+  { action = "run_hook", hook = "build_css" },
+  { action = "run_hook", hook = "current_post_slug" },
+  { action = "restart_process", process = "tunnel" },
+  { action = "wait_for_process", process = "tunnel" },
+]
+
+[workflow.content]
+steps = [
+  { action = "run_hook", hook = "current_post_slug" },
+  { action = "restart_process", process = "tunnel" },
+  { action = "wait_for_process", process = "tunnel" },
+]
+
+[workflow.css]
+steps = [
+  { action = "run_hook", hook = "build_css" }
+]
