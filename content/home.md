@@ -1,6 +1,5 @@
 ---
-title: "Bon Élève Blog"
-subtitle: "Systems that are cheap to change"
+title: "Systems that are cheap to change"
 date: 2026-03-24
 slug: home
 image: "/static/us1948860a-page1-drawing-mid-yellow-card.png"
