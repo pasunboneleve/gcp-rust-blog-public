@@ -1,5 +1,6 @@
 use chrono::{DateTime, NaiveDate, SecondsFormat};
 use pulldown_cmark::{Event, Parser, Tag, TagEnd};
+use serde_json::Value;
 
 use crate::models::SiteConfig;
 
@@ -213,11 +214,26 @@ pub(crate) fn escape_html(input: &str) -> String {
 }
 
 fn site_url() -> String {
+    if let Some(url) = devloop_site_url() {
+        return url;
+    }
+
     std::env::var("SITE_URL")
         .ok()
         .map(|u| u.trim_end_matches('/').to_string())
         .filter(|u| !u.is_empty())
         .unwrap_or_else(|| DEFAULT_SITE_URL.to_string())
+}
+
+fn devloop_site_url() -> Option<String> {
+    let state_path = std::env::var("DEVLOOP_STATE").ok()?;
+    let raw = std::fs::read_to_string(state_path).ok()?;
+    let json: Value = serde_json::from_str(&raw).ok()?;
+    json.get("tunnel_url")
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(|value| value.trim_end_matches('/').to_string())
 }
 
 fn absolute_url(path_or_url: &str) -> String {
@@ -236,9 +252,10 @@ fn absolute_url(path_or_url: &str) -> String {
 mod tests {
     use super::{
         absolute_url, build_post_meta, build_social_description, default_home_meta, escape_html,
-        iso_published_time, PostMetaInput,
+        iso_published_time, site_url, PostMetaInput,
     };
     use crate::models::{FrontMatter, SiteConfig};
+    use std::time::{SystemTime, UNIX_EPOCH};
 
     fn front_matter_with(image: Option<&str>) -> FrontMatter {
         FrontMatter {
@@ -259,6 +276,14 @@ mod tests {
             description: "Configured description.".to_string(),
             og_site_name: "Configured OG Name".to_string(),
         }
+    }
+
+    fn unique_temp_path(name: &str) -> std::path::PathBuf {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time")
+            .as_nanos();
+        std::env::temp_dir().join(format!("{name}-{unique}.json"))
     }
 
     // ── build_social_description ──────────────────────────────────────────────
@@ -450,6 +475,23 @@ mod tests {
         assert_eq!(meta.title, "Configured Blog");
         assert_eq!(meta.author, "Configured Author");
         assert_eq!(meta.description, "Configured description.");
+    }
+
+    #[test]
+    fn site_url_prefers_devloop_state_when_present() {
+        let path = unique_temp_path("devloop-state");
+        std::fs::write(
+            &path,
+            r#"{"tunnel_url":"https://preview.example.trycloudflare.com"}"#,
+        )
+        .expect("write state");
+        std::env::set_var("DEVLOOP_STATE", &path);
+        std::env::remove_var("SITE_URL");
+
+        assert_eq!(site_url(), "https://preview.example.trycloudflare.com");
+
+        std::env::remove_var("DEVLOOP_STATE");
+        std::fs::remove_file(path).expect("cleanup state file");
     }
 
     #[test]
