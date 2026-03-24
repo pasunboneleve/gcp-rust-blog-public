@@ -8,14 +8,11 @@ slug: home
 
 <div class="patent-drawing-layout">
   <div class="patent-drawing-text">
-    <p>Systems don’t fail because they are slow. They fail because they resist change.</p>
-    <p>I’m a platform engineer focused on developer experience and system design.</p>
-    <p>Most software optimises for features, velocity, or cost.</p>
-    <p>This one is organised around a different question:</p>
-    <p><strong>How expensive is it to change the system when reality changes?</strong></p>
-    <p>This blog is both the argument and the example. The <a href="https://github.com/pasunboneleve/gcp-rust-blog-public"
-    target="_blank" rel="noopener noreferrer">code</a> is public. The infrastructure is declared. The process is visible.</p>
-    <p>The sidebar is the index. The posts are the argument.</p>
+    <p>Systems don’t fail because they are slow. They fail because they <strong>resist change</strong>.</p>
+    <p>I’ve built data platforms where the architecture was sound and the cloud bill was low, but changing anything took weeks of careful reconstruction.</p>
+    <p>I’ve watched engineers slow down not because they lost skill, but because they absorbed the complexity the organisation couldn’t see.</p>
+    <p>I write about <a href="/posts/2026-03-03-optimise-for-the-cheapest-change">that pattern here</a>.</p>
+    <p>I’m a platform engineer focused on developer experience and system design. This blog is built the same way: a small system, fully declared, and <a href="/posts/2026-03-03-optimise-for-the-cheapest-change"><strong>cheap to reshape</strong></a>.</p>
   </div>
   <figure class="patent-drawing-figure">
     <a href="https://patents.google.com/patent/US1948860A/en" target="_blank" rel="noopener noreferrer" class="patent-drawing-link">
