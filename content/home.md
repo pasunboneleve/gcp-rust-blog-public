@@ -6,6 +6,8 @@ slug: home
 
 This blog is about software systems that can evolve.
 
+I’m a platform engineer focused on developer experience and system design.
+
 Most software projects optimise for features, velocity, or cost.
 This one is organised around a different question:
 
