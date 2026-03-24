@@ -426,6 +426,12 @@ mod tests {
     };
     use crate::models::{Post, SiteConfig};
     use crate::page_meta::PageMeta;
+    use std::sync::{Mutex, OnceLock};
+
+    fn rust_log_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
 
     fn test_layout() -> &'static str {
         "<html><head><title>{{ page_title }}</title><meta name=\"description\" content=\"{{ page_description }}\" /><meta name=\"author\" content=\"{{ page_author }}\" /><meta property=\"og:title\" content=\"{{ page_title }}\" /><meta property=\"og:description\" content=\"{{ page_description }}\" /><meta property=\"og:url\" content=\"{{ page_url }}\" /><meta property=\"og:image\" content=\"{{ page_image }}\" />{{ page_published_time_meta }}{{ page_role_meta }}<meta name=\"twitter:title\" content=\"{{ page_title }}\" /><meta name=\"twitter:description\" content=\"{{ page_description }}\" /><meta name=\"twitter:image\" content=\"{{ page_image }}\" /></head><body>{{ banner }}<main>{{ content }}</main><ul>{{ posts }}</ul></body></html>"
@@ -595,12 +601,14 @@ mod tests {
 
     #[test]
     fn default_rust_log_uses_info_when_unset() {
+        let _guard = rust_log_lock().lock().expect("lock RUST_LOG test mutex");
         std::env::remove_var("RUST_LOG");
         assert_eq!(default_rust_log(), "info");
     }
 
     #[test]
     fn default_rust_log_respects_environment_override() {
+        let _guard = rust_log_lock().lock().expect("lock RUST_LOG test mutex");
         std::env::set_var("RUST_LOG", "warn,gcp_rust_blog=debug");
         assert_eq!(default_rust_log(), "warn,gcp_rust_blog=debug");
         std::env::remove_var("RUST_LOG");
