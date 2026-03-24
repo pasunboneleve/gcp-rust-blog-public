@@ -45,7 +45,6 @@ pub(crate) fn build_post_meta(
     site_config: &SiteConfig,
     input: PostMetaInput<'_>,
 ) -> PageMeta {
-    let base = site_url();
     let title = input
         .title
         .map(ToString::to_string)
@@ -67,12 +66,16 @@ pub(crate) fn build_post_meta(
     PageMeta {
         title,
         description,
-        url: format!("{base}{}", normalize_page_path(page_path)),
+        url: page_url(page_path),
         image: absolute_url(&image_path),
         author: site_config.author.clone(),
         published_time: input.date.and_then(iso_published_time),
         role: input.role.map(ToString::to_string),
     }
+}
+
+pub(crate) fn page_url(page_path: &str) -> String {
+    format!("{}{}", site_url(), normalize_page_path(page_path))
 }
 
 fn normalize_page_path(page_path: &str) -> String {
@@ -293,11 +296,10 @@ fn absolute_url(path_or_url: &str) -> String {
     if path_or_url.starts_with("http://") || path_or_url.starts_with("https://") {
         return path_or_url.to_string();
     }
-    let base = site_url();
     if path_or_url.starts_with('/') {
-        format!("{base}{path_or_url}")
+        format!("{}{path_or_url}", site_url())
     } else {
-        format!("{base}/{path_or_url}")
+        format!("{}/{}", site_url(), path_or_url)
     }
 }
 
@@ -305,6 +307,7 @@ fn absolute_url(path_or_url: &str) -> String {
 mod tests {
     use super::{
         absolute_url, build_post_meta, build_social_description, escape_html, iso_published_time,
+        page_url,
         site_url, PostMetaInput,
     };
     use crate::models::{FrontMatter, SiteConfig};
@@ -643,6 +646,20 @@ mod tests {
         let plain_relative = absolute_url("static/favicon.png");
         assert!(plain_relative.starts_with("https://") || plain_relative.starts_with("http://"));
         assert!(plain_relative.ends_with("/static/favicon.png"));
+    }
+
+    #[test]
+    fn page_url_expands_relative_page_paths() {
+        std::env::remove_var("DEVLOOP_STATE");
+        std::env::remove_var("SITE_URL");
+        std::env::set_var("RUST_ENV", "development");
+        std::env::set_var("PORT", "18080");
+
+        assert_eq!(page_url("/posts/example"), "http://127.0.0.1:18080/posts/example");
+        assert_eq!(page_url(""), "http://127.0.0.1:18080/");
+
+        std::env::remove_var("RUST_ENV");
+        std::env::remove_var("PORT");
     }
 
     #[test]

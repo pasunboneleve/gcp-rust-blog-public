@@ -24,7 +24,9 @@ use content_loader::load_content;
 use hot_reload::{start_content_watcher, ws_handler};
 use markdown::render_markdown_to_html;
 use models::{Post, SiteConfig};
-use page_meta::{build_post_meta, default_not_found_meta, escape_html, PageMeta, PostMetaInput};
+use page_meta::{
+    PageMeta, PostMetaInput, build_post_meta, default_not_found_meta, escape_html, page_url,
+};
 use state::{AppState, RouterState};
 
 // Load the hot reload script content at compile time
@@ -178,7 +180,11 @@ async fn set_current_path(State(state): State<Arc<AppState>>, body: Bytes) -> St
         return StatusCode::BAD_REQUEST;
     };
 
-    *state.current_browser_path.write().await = path;
+    {
+        let mut current_path = state.current_browser_path.write().await;
+        *current_path = path.clone();
+    }
+    info!("current browser url: {}", page_url(&path));
     StatusCode::NO_CONTENT
 }
 
