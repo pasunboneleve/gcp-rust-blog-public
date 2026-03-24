@@ -732,9 +732,6 @@
   .text-center {
     text-align: center;
   }
-  .text-justify {
-    text-align: justify;
-  }
   .font-sans {
     font-family: var(--font-sans);
   }
