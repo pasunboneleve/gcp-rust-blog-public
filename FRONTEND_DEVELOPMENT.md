@@ -4,6 +4,18 @@ Frontend Development
 Quickstart
 ==========
 
+Preferred workflow
+==================
+
+Use the external `devloop` tool against this repo for the integrated
+Rust + CSS + content + cloudflared loop. Repo-owned helper scripts:
+
+- [`scripts/build-css.sh`](scripts/build-css.sh)
+- [`scripts/current-post-slug.sh`](scripts/current-post-slug.sh)
+
+Fallback direct repo workflow
+=============================
+
 In one terminal
 
 ```sh
@@ -16,15 +28,10 @@ then
 bacon run
 ```
 
-This starts the Rust server through
-`./scripts/cloudflared-bacon-run.sh`, so each restart also replaces the
-Cloudflare tunnel and prints a fresh public post URL for social-card
-testing.
-
 In another terminal
 
 ```
-./scripts/tailwatch.sh
+./scripts/build-css.sh
 ```
 
 Dependencies
@@ -102,7 +109,7 @@ grouped and labelled by section:
 
 ### How hot reload works
 
-When `tailwatch.sh` recompiles `content/static/tailwind.css`, the Rust
+When `build-css.sh` recompiles `content/static/tailwind.css`, the Rust
 file watcher detects the change and signals the browser to refresh via
 WebSocket — no server restart needed. Bacon ignores changes to
 `content/static/tailwind.css` for exactly this reason.

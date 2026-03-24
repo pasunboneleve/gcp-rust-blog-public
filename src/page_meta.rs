@@ -218,11 +218,23 @@ fn site_url() -> String {
         return url;
     }
 
+    if let Some(url) = development_site_url() {
+        return url;
+    }
+
     std::env::var("SITE_URL")
         .ok()
         .map(|u| u.trim_end_matches('/').to_string())
         .filter(|u| !u.is_empty())
         .unwrap_or_else(|| DEFAULT_SITE_URL.to_string())
+}
+
+fn development_site_url() -> Option<String> {
+    if std::env::var("RUST_ENV").ok().as_deref() != Some("development") {
+        return None;
+    }
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+    Some(format!("http://127.0.0.1:{port}"))
 }
 
 fn devloop_site_url() -> Option<String> {
@@ -492,6 +504,19 @@ mod tests {
 
         std::env::remove_var("DEVLOOP_STATE");
         std::fs::remove_file(path).expect("cleanup state file");
+    }
+
+    #[test]
+    fn site_url_falls_back_to_localhost_in_development() {
+        std::env::remove_var("DEVLOOP_STATE");
+        std::env::remove_var("SITE_URL");
+        std::env::set_var("RUST_ENV", "development");
+        std::env::set_var("PORT", "18080");
+
+        assert_eq!(site_url(), "http://127.0.0.1:18080");
+
+        std::env::remove_var("RUST_ENV");
+        std::env::remove_var("PORT");
     }
 
     #[test]

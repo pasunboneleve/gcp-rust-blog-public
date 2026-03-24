@@ -13,23 +13,21 @@ small, testable, and Rust-idiomatic.
 
 ## Common Development Commands
 
-Local development requires **two parallel terminals**:
+Preferred local development uses the external `devloop` supervisor
+against this repository. Repo-specific helpers live in
+`scripts/build-css.sh` and `scripts/current-post-slug.sh`.
+
+Fallback direct-repo development requires **two parallel terminals**:
 
 ```bash
-# Terminal 1 — Rust server with restart-on-change and fresh cloudflared URL
+# Terminal 1 — Rust server with restart-on-change
 bacon run
 
-# Terminal 2 — Tailwind CSS watcher
-./scripts/tailwatch.sh
+# Terminal 2 — one-shot CSS build when needed
+./scripts/build-css.sh
 ```
 
-`bacon run` executes `./scripts/cloudflared-bacon-run.sh`, so each code-triggered restart also replaces the tunnel and prints a fresh public `/posts/<slug>` URL.
-
-Tailwind must be running alongside the server so that class changes in
-`src/**/*.rs` and `content/**/*.html` are compiled into
-`content/static/tailwind.css` automatically. Stopping `tailwatch.sh`
-means CSS changes (including new Tailwind classes added to generated
-HTML) will not appear in the browser.
+For the full tunnel/share-url workflow, use `devloop`, not `bacon`.
 
 ## Success criteria
 - New logic includes tests.
@@ -105,9 +103,9 @@ terraform apply \
 - **Logging**: Configured with `tracing` and `tracing-subscriber` for structured logging
 
 ### Dependencies
-- `axum 0.7` - Web framework
+- `axum 0.8` - Web framework
 - `tokio` - Async runtime with full features
-- `pulldown-cmark 0.10` - Markdown parser
+- `pulldown-cmark 0.13` - Markdown parser
 - `tracing` ecosystem - Logging and observability
 
 ### Deployment Architecture

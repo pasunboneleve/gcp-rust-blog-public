@@ -43,20 +43,28 @@ The focus is not the technology itself, but the shape of the system: making corr
    ⚠️ **Important**: Store this token securely - GitHub won't show it again!
 
 ### Local Development
+
+Recommended:
+
+- use the external `devloop` supervisor for the full Rust + CSS +
+  content + cloudflared workflow
+- keep repo-specific helper scripts in [`scripts/build-css.sh`](scripts/build-css.sh)
+  and [`scripts/current-post-slug.sh`](scripts/current-post-slug.sh)
+
+Fallback direct-repo workflow:
+
 ```bash
-# Terminal 1: Rust server with restart-on-change and fresh cloudflared URL
+# Terminal 1: Rust server with restart-on-change
 bacon run
 
-# Terminal 2: Tailwind watcher
-./scripts/tailwatch.sh
+# Terminal 2: one-shot CSS build when needed
+./scripts/build-css.sh
 
 # Check and format code
 cargo check
 cargo fmt
 cargo clippy
 ```
-
-`bacon run` launches [`scripts/cloudflared-bacon-run.sh`](/home/dmvianna/src/sandbox/iac/gcp-rust-blog-public/scripts/cloudflared-bacon-run.sh), so each restart also replaces the Cloudflare tunnel and prints a fresh public post URL for social-card testing.
 
 ### Content Management
 - **Blog posts**: Add Markdown files in `content/posts/` as `<slug>.md`
