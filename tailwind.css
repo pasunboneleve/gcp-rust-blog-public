@@ -93,6 +93,19 @@
     text-align: center;
 }
 
+.prose .patent-drawing-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.prose .patent-drawing-text {
+    min-width: 0;
+    text-align: justify;
+    text-justify: inter-word;
+}
+
 /* ── Page layout ──────────────────────────────────────────────────────── */
 
 @layer components {

@@ -13,8 +13,8 @@ Where teams still get stuck is what happens next. The first system works, but re
 
 ## The hidden failure mode
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1.25rem; align-items: start;">
-  <div style="min-width: 0; text-align: justify; text-justify: inter-word;">
+<div class="patent-drawing-layout">
+  <div class="patent-drawing-text">
     <p>A common sequence is straightforward:</p>
     <ol>
       <li>Avoid premature abstraction.</li>
