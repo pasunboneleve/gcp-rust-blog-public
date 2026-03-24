@@ -20,17 +20,17 @@ autostart = false
 command = ["cargo", "run"]
 cwd = "."
 autostart = false
-env = { PORT = "18080" }
+env = { PORT = "8080" }
 restart = "always"
 
 [process.server.readiness]
 kind = "http"
-url = "http://127.0.0.1:18080/"
+url = "http://127.0.0.1:8080/"
 interval_ms = 500
 timeout_ms = 30000
 
 [process.tunnel]
-command = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:18080"]
+command = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:8080"]
 cwd = "."
 autostart = false
 restart = "always"
