@@ -1,4 +1,4 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::{io, net::SocketAddr, sync::Arc};
 
 use axum::{
     body::Bytes,
@@ -377,7 +377,7 @@ fn setup_router(router_state: RouterState) -> Router {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> io::Result<()> {
     setup_logging();
 
     let router_state = initialize_state().await;
@@ -390,17 +390,15 @@ async fn main() {
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
     info!(%addr, "listening");
-    let listener = match TcpListener::bind(addr).await {
-        Ok(listener) => listener,
-        Err(e) => {
-            error!("Failed to bind to {}: {}", addr, e);
-            return;
-        }
-    };
+    let listener = TcpListener::bind(addr).await.map_err(|error| {
+        io::Error::new(error.kind(), format!("failed to bind to {addr}: {error}"))
+    })?;
 
-    if let Err(e) = axum::serve(listener, app).await {
-        error!("Server error: {}", e);
-    }
+    axum::serve(listener, app)
+        .await
+        .map_err(|error| io::Error::other(format!("server error while serving axum app: {error}")))?;
+
+    Ok(())
 }
 
 #[cfg(test)]
