@@ -13,10 +13,10 @@ I’m a platform engineer focused on developer experience and system design.
 
 <figure class="patent-drawing-figure">
   <a href="https://patents.google.com/patent/US1948860A/en" target="_blank" rel="noopener noreferrer" class="patent-drawing-link">
-    <img src="/static/us1948860a-page3-drawing-mid-yellow.png" alt="Patent drawing from US1948860A page 3" loading="lazy" class="patent-drawing-image" />
+    <img src="/static/us1948860a-page1-drawing-mid-yellow.png" alt="Patent drawing from US1948860A page 1" loading="lazy" class="patent-drawing-image" />
   </a>
   <figcaption class="patent-drawing-caption">
-    <strong>Figure 1.</strong> Patent drawing from US1948860A, page 3.
+    <strong>Figure 1.</strong> Patent drawing from US1948860A, page 1.
     Source: <a href="https://patents.google.com/patent/US1948860A/en" target="_blank" rel="noopener noreferrer">Google Patents</a>.
   </figcaption>
 </figure>
