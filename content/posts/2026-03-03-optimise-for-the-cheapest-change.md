@@ -25,11 +25,11 @@ Where teams still get stuck is what happens next. The first system works, but re
     <p>That does not always happen because the original design was wrong. It often happens because the <em>process</em> of change is costly: feedback loops are long, deployment is fragile, boundaries are fuzzy, and local edits trigger non-local consequences.</p>
     <p>The practical failure is not “we built something simple.” It is “we built something expensive to modify.”</p>
   </div>
-  <figure style="margin: 0;">
-    <a href="https://patents.google.com/patent/US5611544" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;">
-      <img src="/static/us5611544-page2-drawing-mid-yellow.png" alt="Patent drawing from US5611544 page 2" loading="lazy" style="display: block; width: 80%; height: auto; margin: 0 auto;" />
+  <figure class="patent-drawing-figure">
+    <a href="https://patents.google.com/patent/US5611544" target="_blank" rel="noopener noreferrer" class="patent-drawing-link">
+      <img src="/static/us5611544-page2-drawing-mid-yellow.png" alt="Patent drawing from US5611544 page 2" loading="lazy" class="patent-drawing-image" />
     </a>
-    <figcaption style="width: 80%; margin: 0.5rem auto 0; text-align: center;">
+    <figcaption class="patent-drawing-caption">
       <strong>Figure 1.</strong> Patent drawing from US5611544, page 2.
       Source: <a href="https://patents.google.com/patent/US5611544" target="_blank" rel="noopener noreferrer">Google Patents</a>.
     </figcaption>

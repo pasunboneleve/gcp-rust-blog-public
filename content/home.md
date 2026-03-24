@@ -11,11 +11,11 @@ They fail because they resist change.
 
 I’m a platform engineer focused on developer experience and system design.
 
-<figure style="margin: 0;">
-  <a href="https://patents.google.com/patent/US1948860A/en" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:0;">
-    <img src="/static/us1948860a-page3-drawing-mid-yellow.png" alt="Patent drawing from US1948860A page 3" loading="lazy" style="display: block; width: 80%; height: auto; margin: 0 auto;" />
+<figure class="patent-drawing-figure">
+  <a href="https://patents.google.com/patent/US1948860A/en" target="_blank" rel="noopener noreferrer" class="patent-drawing-link">
+    <img src="/static/us1948860a-page3-drawing-mid-yellow.png" alt="Patent drawing from US1948860A page 3" loading="lazy" class="patent-drawing-image" />
   </a>
-  <figcaption style="width: 80%; margin: 0.5rem auto 0; text-align: center;">
+  <figcaption class="patent-drawing-caption">
     <strong>Figure 1.</strong> Patent drawing from US1948860A, page 3.
     Source: <a href="https://patents.google.com/patent/US1948860A/en" target="_blank" rel="noopener noreferrer">Google Patents</a>.
   </figcaption>

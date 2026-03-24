@@ -70,6 +70,29 @@
     color: var(--color-cyan);
 }
 
+.prose .patent-drawing-figure {
+    margin: 0;
+}
+
+.prose .patent-drawing-link {
+    display: block;
+    border: 0;
+    text-decoration: none;
+}
+
+.prose .patent-drawing-image {
+    display: block;
+    width: 80%;
+    height: auto;
+    margin: 0 auto;
+}
+
+.prose .patent-drawing-caption {
+    width: 80%;
+    margin: 0.5rem auto 0;
+    text-align: center;
+}
+
 /* ── Page layout ──────────────────────────────────────────────────────── */
 
 @layer components {
