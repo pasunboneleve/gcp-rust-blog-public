@@ -312,11 +312,13 @@ async fn render_not_found_response(state: &Arc<AppState>, slug: &str) -> Respons
 
 fn setup_logging() {
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
-        ))
+        .with(tracing_subscriber::EnvFilter::new(default_rust_log()))
         .with(tracing_subscriber::fmt::layer())
         .init();
+}
+
+fn default_rust_log() -> String {
+    std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string())
 }
 
 async fn initialize_state() -> RouterState {
@@ -418,7 +420,10 @@ async fn main() -> io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_valid_post_slug, normalize_browser_path, render_post_list, render_with_layout};
+    use super::{
+        default_rust_log, is_valid_post_slug, normalize_browser_path, render_post_list,
+        render_with_layout,
+    };
     use crate::models::{Post, SiteConfig};
     use crate::page_meta::PageMeta;
 
@@ -586,6 +591,19 @@ mod tests {
         assert_eq!(normalize_browser_path("").as_deref(), None);
         assert_eq!(normalize_browser_path("posts/example").as_deref(), None);
         assert_eq!(normalize_browser_path("//example.com").as_deref(), None);
+    }
+
+    #[test]
+    fn default_rust_log_uses_info_when_unset() {
+        std::env::remove_var("RUST_LOG");
+        assert_eq!(default_rust_log(), "info");
+    }
+
+    #[test]
+    fn default_rust_log_respects_environment_override() {
+        std::env::set_var("RUST_LOG", "warn,gcp_rust_blog=debug");
+        assert_eq!(default_rust_log(), "warn,gcp_rust_blog=debug");
+        std::env::remove_var("RUST_LOG");
     }
 
     fn make_post(slug: &str, title: &str, role: Option<&str>, subtitle: Option<&str>) -> Post {
