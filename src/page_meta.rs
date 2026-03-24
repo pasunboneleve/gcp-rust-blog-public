@@ -1,5 +1,6 @@
 use chrono::{DateTime, NaiveDate, SecondsFormat};
 use pulldown_cmark::{Event, Parser, Tag, TagEnd};
+use scraper::{Html, Selector};
 use serde_json::Value;
 
 use crate::models::SiteConfig;
@@ -179,6 +180,11 @@ fn normalize_body_for_description(markdown: &str) -> String {
             {
                 append_normalized_fragment(&mut out, &text);
             }
+            Event::Html(fragment) | Event::InlineHtml(fragment)
+                if heading_depth == 0 && code_block_depth == 0 && image_depth == 0 =>
+            {
+                append_html_paragraph_text(&mut out, &fragment);
+            }
             Event::SoftBreak | Event::HardBreak
                 if heading_depth == 0 && code_block_depth == 0 && image_depth == 0 =>
             {
@@ -189,6 +195,17 @@ fn normalize_body_for_description(markdown: &str) -> String {
     }
 
     out.trim().to_string()
+}
+
+fn append_html_paragraph_text(out: &mut String, fragment: &str) {
+    let html = Html::parse_fragment(fragment);
+    let selector = Selector::parse("p").expect("valid paragraph selector");
+
+    for paragraph in html.select(&selector) {
+        let text = paragraph.text().collect::<Vec<_>>().join(" ");
+        append_normalized_fragment(out, &text);
+        append_normalized_fragment(out, " ");
+    }
 }
 
 fn append_normalized_fragment(out: &mut String, fragment: &str) {
@@ -396,6 +413,25 @@ mod tests {
         let body = "<5% of failures were random.>";
         let desc = build_social_description(None, body);
         assert_eq!(desc, "<5% of failures were random.>");
+    }
+
+    #[test]
+    fn social_description_extracts_text_from_html_paragraphs_only() {
+        let body = r#"
+<div class="patent-drawing-layout">
+  <div class="patent-drawing-text">
+    <p>Systems don't fail because they are slow.</p>
+    <p>They fail because they resist change.</p>
+  </div>
+  <figure>
+    <figcaption>Figure 1. This should not be included.</figcaption>
+  </figure>
+</div>
+"#;
+        let desc = build_social_description(None, body);
+        assert!(desc.contains("Systems don't fail because they are slow."));
+        assert!(desc.contains("They fail because they resist change."));
+        assert!(!desc.contains("Figure 1."));
     }
 
     // ── build_post_meta ───────────────────────────────────────────────────────
