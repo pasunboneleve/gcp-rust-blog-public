@@ -26,18 +26,6 @@ pub(crate) struct PostMetaInput<'a> {
     pub(crate) markdown_body: &'a str,
 }
 
-pub(crate) fn default_home_meta(site_config: &SiteConfig) -> PageMeta {
-    PageMeta {
-        title: site_config.title.clone(),
-        description: site_config.description.clone(),
-        url: site_url(),
-        image: absolute_url(DEFAULT_SOCIAL_IMAGE_PATH),
-        author: site_config.author.clone(),
-        published_time: None,
-        role: None,
-    }
-}
-
 pub(crate) fn default_not_found_meta(slug: &str, site_config: &SiteConfig) -> PageMeta {
     let base = site_url();
     PageMeta {
@@ -52,7 +40,7 @@ pub(crate) fn default_not_found_meta(slug: &str, site_config: &SiteConfig) -> Pa
 }
 
 pub(crate) fn build_post_meta(
-    slug: &str,
+    page_path: &str,
     site_config: &SiteConfig,
     input: PostMetaInput<'_>,
 ) -> PageMeta {
@@ -78,11 +66,21 @@ pub(crate) fn build_post_meta(
     PageMeta {
         title,
         description,
-        url: format!("{base}/posts/{slug}"),
+        url: format!("{base}{}", normalize_page_path(page_path)),
         image: absolute_url(&image_path),
         author: site_config.author.clone(),
         published_time: input.date.and_then(iso_published_time),
         role: input.role.map(ToString::to_string),
+    }
+}
+
+fn normalize_page_path(page_path: &str) -> String {
+    if page_path.is_empty() {
+        "/".to_string()
+    } else if page_path.starts_with('/') {
+        page_path.to_string()
+    } else {
+        format!("/{page_path}")
     }
 }
 
@@ -263,8 +261,8 @@ fn absolute_url(path_or_url: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        absolute_url, build_post_meta, build_social_description, default_home_meta, escape_html,
-        iso_published_time, site_url, PostMetaInput,
+        absolute_url, build_post_meta, build_social_description, escape_html, iso_published_time,
+        site_url, PostMetaInput,
     };
     use crate::models::{FrontMatter, SiteConfig};
     use std::time::{SystemTime, UNIX_EPOCH};
@@ -406,7 +404,7 @@ mod tests {
     fn build_post_meta_sets_title_url_image() {
         let fm = front_matter_with(Some("/static/custom.png"));
         let meta = build_post_meta(
-            "test-post",
+            "/posts/test-post",
             &test_site_config(),
             PostMetaInput {
                 title: Some(&fm.title),
@@ -427,7 +425,7 @@ mod tests {
     #[test]
     fn build_post_meta_description_comes_from_subtitle_and_body() {
         let meta = build_post_meta(
-            "test-post",
+            "/posts/test-post",
             &test_site_config(),
             PostMetaInput {
                 title: Some("Test Post"),
@@ -447,7 +445,7 @@ mod tests {
         let fm = front_matter_with(None);
         let markdown = "First line.\n\nSecond line.";
         let meta = build_post_meta(
-            "test-post",
+            "/posts/test-post",
             &test_site_config(),
             PostMetaInput {
                 title: Some(&fm.title),
@@ -467,7 +465,7 @@ mod tests {
         let mut fm = front_matter_with(None);
         fm.role = Some("mechanism".to_string());
         let meta = build_post_meta(
-            "test-post",
+            "/posts/test-post",
             &test_site_config(),
             PostMetaInput {
                 title: Some(&fm.title),
@@ -482,11 +480,24 @@ mod tests {
     }
 
     #[test]
-    fn default_home_meta_uses_site_config() {
-        let meta = default_home_meta(&test_site_config());
-        assert_eq!(meta.title, "Configured Blog");
+    fn build_post_meta_supports_home_page_paths() {
+        let meta = build_post_meta(
+            "/",
+            &test_site_config(),
+            PostMetaInput {
+                title: Some("Home"),
+                date: Some("2026-03-24"),
+                subtitle: Some("Home subtitle"),
+                role: None,
+                image: Some("/static/home-card.png"),
+                markdown_body: "Home body.",
+            },
+        );
+        assert_eq!(meta.title, "Home");
         assert_eq!(meta.author, "Configured Author");
-        assert_eq!(meta.description, "Configured description.");
+        assert_eq!(meta.url, format!("{}/", site_url()));
+        assert!(meta.image.ends_with("/static/home-card.png"));
+        assert_eq!(meta.published_time.as_deref(), Some("2026-03-24T00:00:00Z"));
     }
 
     #[test]

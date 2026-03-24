@@ -23,10 +23,7 @@ use content_loader::load_content;
 use hot_reload::{start_content_watcher, ws_handler};
 use markdown::render_markdown_to_html;
 use models::{Post, SiteConfig};
-use page_meta::{
-    build_post_meta, default_home_meta, default_not_found_meta, escape_html, PageMeta,
-    PostMetaInput,
-};
+use page_meta::{build_post_meta, default_not_found_meta, escape_html, PageMeta, PostMetaInput};
 use state::{AppState, RouterState};
 
 // Load the hot reload script content at compile time
@@ -154,14 +151,8 @@ fn inject_hot_reload_script(page: String) -> String {
 }
 
 async fn homepage(State(state): State<Arc<AppState>>) -> Html<String> {
-    let site_config = state.site_config.read().await;
-    let banner = state.banner_html.read().await;
-    let layout = state.layout_html.read().await;
-    let home = state.home_html.read().await;
-    let posts = state.posts.read().await;
-    let meta = default_home_meta(&site_config);
-
-    let page = render_with_layout(&layout, &banner, &home, &posts, &meta, state.is_development);
+    let home = state.home_post.read().await.clone();
+    let page = render_markdown_page(&state, &home, "/", false).await;
     Html(page)
 }
 
@@ -179,36 +170,51 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
         None => return render_not_found_response(&state, &slug).await,
     };
 
+    let page = render_markdown_page(&state, &post, &format!("/posts/{}", post.slug), true).await;
+    Html(page).into_response()
+}
+
+async fn render_markdown_page(
+    state: &Arc<AppState>,
+    post: &Post,
+    page_path: &str,
+    include_post_header: bool,
+) -> String {
     let html_out = render_markdown_to_html(&post.markdown_body);
-    let role_span = post
-        .role
-        .as_deref()
-        .map(|r| format!("<span class=\"post-role\">{}</span>", escape_html(r)))
-        .unwrap_or_default();
-    let subtitle_span = post
-        .subtitle
-        .as_deref()
-        .map(|s| {
-            format!(
-                "<span class=\"post-eyebrow-subtitle\">{}</span>",
-                escape_html(s)
-            )
-        })
-        .unwrap_or_default();
-    let eyebrow_html = if role_span.is_empty() && subtitle_span.is_empty() {
-        String::new()
+    let body = if include_post_header {
+        let role_span = post
+            .role
+            .as_deref()
+            .map(|r| format!("<span class=\"post-role\">{}</span>", escape_html(r)))
+            .unwrap_or_default();
+        let subtitle_span = post
+            .subtitle
+            .as_deref()
+            .map(|s| {
+                format!(
+                    "<span class=\"post-eyebrow-subtitle\">{}</span>",
+                    escape_html(s)
+                )
+            })
+            .unwrap_or_default();
+        let eyebrow_html = if role_span.is_empty() && subtitle_span.is_empty() {
+            String::new()
+        } else {
+            format!("<div class=\"post-eyebrow\">{role_span}{subtitle_span}</div>")
+        };
+        format!(
+            "<header class=\"post-header\">{eyebrow_html}<h1>{title}</h1><p class=\"post-date\">{date}</p></header>{content}",
+            title = escape_html(&post.title),
+            date = escape_html(&post.date),
+            content = html_out,
+        )
     } else {
-        format!("<div class=\"post-eyebrow\">{role_span}{subtitle_span}</div>")
+        html_out
     };
-    let body = format!(
-        "<header class=\"post-header\">{eyebrow_html}<h1>{title}</h1><p class=\"post-date\">{date}</p></header>{content}",
-        title = escape_html(&post.title),
-        date = escape_html(&post.date),
-        content = html_out,
-    );
+
     let site_config = state.site_config.read().await;
     let meta = build_post_meta(
-        &post.slug,
+        page_path,
         &site_config,
         PostMetaInput {
             title: Some(&post.title),
@@ -224,8 +230,7 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     let banner = state.banner_html.read().await;
     let posts = state.posts.read().await;
 
-    let page = render_with_layout(&layout, &banner, &body, &posts, &meta, state.is_development);
-    Html(page).into_response()
+    render_with_layout(&layout, &banner, &body, &posts, &meta, state.is_development)
 }
 
 fn is_valid_post_slug(slug: &str) -> bool {
@@ -265,7 +270,7 @@ async fn initialize_state() -> RouterState {
 
     info!("RUST_ENV is set to development: {}", is_development);
 
-    let (site_config, banner_html, layout_html, home_html, not_found_markdown, posts) =
+    let (site_config, banner_html, layout_html, home_post, not_found_markdown, posts) =
         match load_content().await {
             Ok(content) => content,
             Err(e) => {
@@ -274,7 +279,16 @@ async fn initialize_state() -> RouterState {
                     SiteConfig::default(),
                     String::new(),
                     "<!doctype html><html><body>{{ content }}</body></html>".to_string(),
-                    "<p>Content loading failed during startup.</p>".to_string(),
+                    Post {
+                        title: "Home".to_string(),
+                        slug: "home".to_string(),
+                        date: String::new(),
+                        description: None,
+                        image: None,
+                        role: None,
+                        subtitle: None,
+                        markdown_body: "Content loading failed during startup.".to_string(),
+                    },
                     "# Post not found\n\nNo post exists for slug `{{slug}}`.".to_string(),
                     Vec::new(),
                 )
@@ -285,7 +299,7 @@ async fn initialize_state() -> RouterState {
         site_config: RwLock::new(site_config),
         banner_html: RwLock::new(banner_html),
         layout_html: RwLock::new(layout_html),
-        home_html: RwLock::new(home_html),
+        home_post: RwLock::new(home_post),
         not_found_markdown: RwLock::new(not_found_markdown),
         posts: RwLock::new(posts),
         is_development,
