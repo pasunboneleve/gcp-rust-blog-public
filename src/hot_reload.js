@@ -1,5 +1,13 @@
 if (!window.__hotReloadController) {
     const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const reportCurrentPath = () => {
+        fetch("/__dev/current-path", {
+            method: "POST",
+            headers: { "content-type": "text/plain" },
+            body: window.location.pathname,
+            keepalive: true,
+        }).catch(() => {});
+    };
 
     const connect = () => {
         const socket = new WebSocket(protocol + window.location.host + "/ws");
@@ -21,5 +29,7 @@ if (!window.__hotReloadController) {
     };
 
     window.__hotReloadController = { socket: null };
+    reportCurrentPath();
+    window.addEventListener("popstate", reportCurrentPath);
     connect();
 }

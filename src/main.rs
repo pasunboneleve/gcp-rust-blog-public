@@ -1,6 +1,7 @@
 use std::{net::SocketAddr, sync::Arc};
 
 use axum::{
+    body::Bytes,
     extract::{Path, State},
     http::StatusCode,
     response::{Html, IntoResponse, Response},
@@ -156,6 +157,31 @@ async fn homepage(State(state): State<Arc<AppState>>) -> Html<String> {
     Html(page)
 }
 
+async fn get_current_path(State(state): State<Arc<AppState>>) -> Response {
+    if !state.is_development {
+        return StatusCode::NOT_FOUND.into_response();
+    }
+
+    let path = state.current_browser_path.read().await.clone();
+    (StatusCode::OK, path).into_response()
+}
+
+async fn set_current_path(State(state): State<Arc<AppState>>, body: Bytes) -> StatusCode {
+    if !state.is_development {
+        return StatusCode::NOT_FOUND;
+    }
+
+    let Ok(raw) = std::str::from_utf8(&body) else {
+        return StatusCode::BAD_REQUEST;
+    };
+    let Some(path) = normalize_browser_path(raw) else {
+        return StatusCode::BAD_REQUEST;
+    };
+
+    *state.current_browser_path.write().await = path;
+    StatusCode::NO_CONTENT
+}
+
 async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>>) -> Response {
     if !is_valid_post_slug(&slug) {
         return render_not_found_response(&state, &slug).await;
@@ -240,6 +266,21 @@ fn is_valid_post_slug(slug: &str) -> bool {
             .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
 }
 
+fn normalize_browser_path(path: &str) -> Option<String> {
+    let path = path.trim();
+    if path.is_empty() || !path.starts_with('/') || path.starts_with("//") {
+        return None;
+    }
+
+    let path = path.split(['?', '#']).next().unwrap_or(path);
+
+    if path.len() > 1 {
+        Some(path.trim_end_matches('/').to_string())
+    } else {
+        Some("/".to_string())
+    }
+}
+
 async fn render_not_found_response(state: &Arc<AppState>, slug: &str) -> Response {
     let not_found_markdown = state.not_found_markdown.read().await;
     let body = render_markdown_to_html(&not_found_markdown.replace("{{slug}}", slug));
@@ -300,6 +341,7 @@ async fn initialize_state() -> RouterState {
         banner_html: RwLock::new(banner_html),
         layout_html: RwLock::new(layout_html),
         home_post: RwLock::new(home_post),
+        current_browser_path: RwLock::new("/".to_string()),
         not_found_markdown: RwLock::new(not_found_markdown),
         posts: RwLock::new(posts),
         is_development,
@@ -326,6 +368,7 @@ fn setup_router(router_state: RouterState) -> Router {
     Router::new()
         .route("/", get(homepage))
         .route("/posts/{slug}", get(render_post))
+        .route("/__dev/current-path", get(get_current_path).post(set_current_path))
         .nest_service("/static", static_dir)
         .route_service("/favicon.ico", favicon_ico)
         .route_service("/favicon.png", favicon_png)
@@ -362,7 +405,7 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_valid_post_slug, render_post_list, render_with_layout};
+    use super::{is_valid_post_slug, normalize_browser_path, render_post_list, render_with_layout};
     use crate::models::{Post, SiteConfig};
     use crate::page_meta::PageMeta;
 
@@ -510,6 +553,26 @@ mod tests {
         assert!(!is_valid_post_slug("post/with/slash"));
         assert!(!is_valid_post_slug("UPPERCASE"));
         assert!(!is_valid_post_slug("bad_slug"));
+    }
+
+    #[test]
+    fn normalize_browser_path_accepts_root_and_post_paths() {
+        assert_eq!(normalize_browser_path("/").as_deref(), Some("/"));
+        assert_eq!(
+            normalize_browser_path("/posts/example-post").as_deref(),
+            Some("/posts/example-post")
+        );
+        assert_eq!(
+            normalize_browser_path("/posts/example-post/?x=1#frag").as_deref(),
+            Some("/posts/example-post")
+        );
+    }
+
+    #[test]
+    fn normalize_browser_path_rejects_invalid_inputs() {
+        assert_eq!(normalize_browser_path("").as_deref(), None);
+        assert_eq!(normalize_browser_path("posts/example").as_deref(), None);
+        assert_eq!(normalize_browser_path("//example.com").as_deref(), None);
     }
 
     fn make_post(slug: &str, title: &str, role: Option<&str>, subtitle: Option<&str>) -> Post {

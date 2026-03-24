@@ -10,6 +10,7 @@ pub struct AppState {
     pub banner_html: RwLock<String>,
     pub layout_html: RwLock<String>,
     pub home_post: RwLock<Post>,
+    pub current_browser_path: RwLock<String>,
     pub not_found_markdown: RwLock<String>, // supports {{slug}} placeholder
     pub posts: RwLock<Vec<Post>>,
     pub is_development: bool,
