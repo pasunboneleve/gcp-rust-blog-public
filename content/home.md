@@ -11,8 +11,8 @@ slug: home
     <p>Systems don’t fail because they are slow. They fail because they <strong>resist change</strong>.</p>
     <p>I’ve built data platforms where the architecture was sound and the cloud bill was low, but changing anything took weeks of careful reconstruction.</p>
     <p>I’ve watched engineers slow down not because they lost skill, but because they absorbed the complexity the organisation couldn’t see.</p>
-    <p>I write about <a href="/posts/2026-03-03-optimise-for-the-cheapest-change">that pattern here</a>.</p>
-    <p>I’m a platform engineer focused on developer experience and system design. This <a href="/posts/2026-03-02-how-this-blog-works">blog</a> is built the same way: a small system, fully declared, and <a href="/posts/2026-03-03-optimise-for-the-cheapest-change"><strong>cheap to change</strong></a>.</p>
+    <p>I write about that pattern <a href="/posts/2026-03-03-optimise-for-the-cheapest-change">here</a>.</p>
+    <p>I’m a platform engineer focused on developer experience and system design. <a href="/posts/2026-03-02-how-this-blog-works">This blog</a> is built the same way: a small system, fully declared, and <a href="/posts/2026-03-03-optimise-for-the-cheapest-change"><strong>cheap to change</strong></a>.</p>
   </div>
   <figure class="patent-drawing-figure">
     <a href="https://patents.google.com/patent/US1948860A/en" target="_blank" rel="noopener noreferrer" class="patent-drawing-link">
