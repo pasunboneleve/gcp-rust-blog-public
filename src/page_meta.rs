@@ -582,6 +582,8 @@ mod tests {
         .expect("write state");
         std::env::set_var("DEVLOOP_STATE", &path);
         std::env::remove_var("SITE_URL");
+        std::env::remove_var("RUST_ENV");
+        std::env::remove_var("PORT");
 
         assert_eq!(site_url(), "https://preview.example.trycloudflare.com");
 

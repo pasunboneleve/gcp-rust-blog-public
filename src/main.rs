@@ -34,6 +34,15 @@ const HOT_RELOAD_SCRIPT: &str = include_str!("hot_reload.js");
 const HOT_RELOAD_TAG_START: &str = "<script>";
 const HOT_RELOAD_TAG_END: &str = "</script>";
 
+fn log_boxed_banner(message: &str) {
+    let width = message.chars().count() + 4;
+    let border = format!("+{}+", "-".repeat(width));
+    let line = format!("|  {}  |", message);
+    info!("{}", border);
+    info!("{}", line);
+    info!("{}", border);
+}
+
 fn render_post_list(posts: &[Post]) -> String {
     // Single pass: collect ordered groups preserving first-seen role order.
     let mut groups: Vec<(Option<&str>, Vec<&Post>)> = Vec::new();
@@ -184,7 +193,7 @@ async fn set_current_path(State(state): State<Arc<AppState>>, body: Bytes) -> St
         let mut current_path = state.current_browser_path.write().await;
         *current_path = path.clone();
     }
-    info!("current browser url: {}", page_url(&path));
+    log_boxed_banner(&format!("current browser url: {}", page_url(&path)));
     StatusCode::NO_CONTENT
 }
 
