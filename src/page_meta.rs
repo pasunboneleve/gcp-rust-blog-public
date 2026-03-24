@@ -1,6 +1,6 @@
 use chrono::{DateTime, NaiveDate, SecondsFormat};
 use pulldown_cmark::{Event, Parser, Tag, TagEnd};
-use scraper::{Html, Selector};
+use scraper::Html;
 use serde_json::Value;
 
 use crate::models::SiteConfig;
@@ -183,7 +183,7 @@ fn normalize_body_for_description(markdown: &str) -> String {
             Event::Html(fragment) | Event::InlineHtml(fragment)
                 if heading_depth == 0 && code_block_depth == 0 && image_depth == 0 =>
             {
-                append_html_paragraph_text(&mut out, &fragment);
+                append_html_text_content(&mut out, &fragment);
             }
             Event::SoftBreak | Event::HardBreak
                 if heading_depth == 0 && code_block_depth == 0 && image_depth == 0 =>
@@ -197,15 +197,33 @@ fn normalize_body_for_description(markdown: &str) -> String {
     out.trim().to_string()
 }
 
-fn append_html_paragraph_text(out: &mut String, fragment: &str) {
+fn append_html_text_content(out: &mut String, fragment: &str) {
     let html = Html::parse_fragment(fragment);
-    let selector = Selector::parse("p").expect("valid paragraph selector");
 
-    for paragraph in html.select(&selector) {
-        let text = paragraph.text().collect::<Vec<_>>().join(" ");
-        append_normalized_fragment(out, &text);
-        append_normalized_fragment(out, " ");
+    for node in html.tree.root().descendants() {
+        let Some(text) = node.value().as_text() else {
+            continue;
+        };
+
+        if node.ancestors().any(|ancestor| {
+            ancestor
+                .value()
+                .as_element()
+                .map(|element| is_non_prose_element(element.name()))
+                .unwrap_or(false)
+        }) {
+            continue;
+        }
+
+        append_normalized_fragment(out, text);
     }
+}
+
+fn is_non_prose_element(name: &str) -> bool {
+    matches!(
+        name,
+        "figure" | "figcaption" | "script" | "style" | "svg" | "noscript"
+    )
 }
 
 fn append_normalized_fragment(out: &mut String, fragment: &str) {
@@ -416,12 +434,12 @@ mod tests {
     }
 
     #[test]
-    fn social_description_extracts_text_from_html_paragraphs_only() {
+    fn social_description_extracts_text_from_html_without_tag_whitelisting() {
         let body = r#"
 <div class="patent-drawing-layout">
   <div class="patent-drawing-text">
-    <p>Systems don't fail because they are slow.</p>
-    <p>They fail because they resist change.</p>
+    <div>Systems don't fail because they are <strong>slow</strong>.</div>
+    <div>They fail because they <a href="/x">resist change</a>.</div>
   </div>
   <figure>
     <figcaption>Figure 1. This should not be included.</figcaption>
