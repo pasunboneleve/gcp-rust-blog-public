@@ -15,6 +15,7 @@ workflow = "content"
 command = ["tailwindcss", "-i", "tailwind.css", "-o", "content/static/tailwind.css", "--watch=always"]
 cwd = "."
 autostart = false
+output = { body_style = "dim" }
 
 [process.server]
 command = ["cargo", "run"]
@@ -22,6 +23,7 @@ cwd = "."
 autostart = false
 env = { PORT = "8080" }
 restart = "always"
+output = { inherit = false }
 
 [process.server.readiness]
 kind = "http"
@@ -34,7 +36,7 @@ command = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:8080"]
 cwd = "."
 autostart = false
 restart = "always"
-output = { inherit = true, rules = [{ state_key = "tunnel_url", extract = "url_token" }] }
+output = { inherit = true, body_style = "dim", rules = [{ state_key = "tunnel_url", extract = "url_token" }] }
 
 [process.tunnel.readiness]
 kind = "state_key"
