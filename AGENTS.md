@@ -15,7 +15,7 @@ small, testable, and Rust-idiomatic.
 
 Preferred local development uses the external `devloop` supervisor
 against this repository. Repo-specific helpers live in
-`scripts/build-css.sh` and `scripts/current-post-slug.sh`. The working
+`scripts/build-css.sh` and `scripts/current-browser-path.sh`. The working
 client config lives at `devloop.toml` in the repository root.
 
 Fallback direct-repo development requires **two parallel terminals**:

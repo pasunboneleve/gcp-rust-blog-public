@@ -25,9 +25,9 @@ use hot_reload::{start_content_watcher, ws_handler};
 use markdown::render_markdown_to_html;
 use models::{Post, SiteConfig};
 use page_meta::{
-    PageMeta, PostMetaInput, build_post_meta, default_not_found_meta, escape_html, page_url,
+    build_post_meta, default_not_found_meta, escape_html, page_url, PageMeta, PostMetaInput,
 };
-use state::{AppState, RouterState};
+use state::{AppState, DevloopEventClient, RouterState};
 
 // Load the hot reload script content at compile time
 const HOT_RELOAD_SCRIPT: &str = include_str!("hot_reload.js");
@@ -193,6 +193,11 @@ async fn set_current_path(State(state): State<Arc<AppState>>, body: Bytes) -> St
         let mut current_path = state.current_browser_path.write().await;
         *current_path = path.clone();
     }
+    if let Some(client) = &state.devloop_event_client {
+        if let Err(error) = publish_browser_path_event(client, &path).await {
+            error!("failed to notify devloop browser path event: {}", error);
+        }
+    }
     log_boxed_banner(&format!("current browser url: {}", page_url(&path)));
     StatusCode::NO_CONTENT
 }
@@ -321,6 +326,31 @@ fn default_rust_log() -> String {
     std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string())
 }
 
+fn load_devloop_event_client() -> Option<DevloopEventClient> {
+    let browser_path_url = std::env::var("DEVLOOP_EVENT_BROWSER_PATH_URL").ok()?;
+    let token = std::env::var("DEVLOOP_EVENTS_TOKEN").ok()?;
+    Some(DevloopEventClient {
+        browser_path_url,
+        token,
+        client: reqwest::Client::new(),
+    })
+}
+
+async fn publish_browser_path_event(
+    client: &DevloopEventClient,
+    path: &str,
+) -> Result<(), reqwest::Error> {
+    client
+        .client
+        .post(&client.browser_path_url)
+        .bearer_auth(&client.token)
+        .json(&serde_json::json!({ "value": path }))
+        .send()
+        .await?
+        .error_for_status()?;
+    Ok(())
+}
+
 async fn initialize_state() -> RouterState {
     let is_development = std::env::var("RUST_ENV")
         .map(|v| v == "development")
@@ -359,6 +389,7 @@ async fn initialize_state() -> RouterState {
         layout_html: RwLock::new(layout_html),
         home_post: RwLock::new(home_post),
         current_browser_path: RwLock::new("/".to_string()),
+        devloop_event_client: load_devloop_event_client(),
         not_found_markdown: RwLock::new(not_found_markdown),
         posts: RwLock::new(posts),
         is_development,
@@ -385,7 +416,10 @@ fn setup_router(router_state: RouterState) -> Router {
     Router::new()
         .route("/", get(homepage))
         .route("/posts/{slug}", get(render_post))
-        .route("/__dev/current-path", get(get_current_path).post(set_current_path))
+        .route(
+            "/__dev/current-path",
+            get(get_current_path).post(set_current_path),
+        )
         .nest_service("/static", static_dir)
         .route_service("/favicon.ico", favicon_ico)
         .route_service("/favicon.png", favicon_png)
@@ -411,9 +445,9 @@ async fn main() -> io::Result<()> {
         io::Error::new(error.kind(), format!("failed to bind to {addr}: {error}"))
     })?;
 
-    axum::serve(listener, app)
-        .await
-        .map_err(|error| io::Error::other(format!("server error while serving axum app: {error}")))?;
+    axum::serve(listener, app).await.map_err(|error| {
+        io::Error::other(format!("server error while serving axum app: {error}"))
+    })?;
 
     Ok(())
 }
@@ -421,17 +455,34 @@ async fn main() -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::{
-        default_rust_log, is_valid_post_slug, normalize_browser_path, render_post_list,
-        render_with_layout,
+        default_rust_log, is_valid_post_slug, load_devloop_event_client, normalize_browser_path,
+        publish_browser_path_event, render_post_list, render_with_layout,
     };
     use crate::models::{Post, SiteConfig};
     use crate::page_meta::PageMeta;
-    use std::sync::{Mutex, OnceLock};
+    use crate::state::DevloopEventClient;
+    use axum::{
+        extract::State,
+        http::{HeaderMap, StatusCode},
+        routing::post,
+        Json, Router,
+    };
+    use serde_json::Value;
+    use std::sync::{Arc, Mutex, OnceLock};
+    use tokio::net::TcpListener;
+    use tokio::sync::oneshot;
 
     fn rust_log_lock() -> &'static Mutex<()> {
         static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
         LOCK.get_or_init(|| Mutex::new(()))
     }
+
+    fn devloop_env_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
+
+    type CapturedBrowserPathRequest = Arc<Mutex<Option<oneshot::Sender<(String, Value)>>>>;
 
     fn test_layout() -> &'static str {
         "<html><head><title>{{ page_title }}</title><meta name=\"description\" content=\"{{ page_description }}\" /><meta name=\"author\" content=\"{{ page_author }}\" /><meta property=\"og:title\" content=\"{{ page_title }}\" /><meta property=\"og:description\" content=\"{{ page_description }}\" /><meta property=\"og:url\" content=\"{{ page_url }}\" /><meta property=\"og:image\" content=\"{{ page_image }}\" />{{ page_published_time_meta }}{{ page_role_meta }}<meta name=\"twitter:title\" content=\"{{ page_title }}\" /><meta name=\"twitter:description\" content=\"{{ page_description }}\" /><meta name=\"twitter:image\" content=\"{{ page_image }}\" /></head><body>{{ banner }}<main>{{ content }}</main><ul>{{ posts }}</ul></body></html>"
@@ -612,6 +663,82 @@ mod tests {
         std::env::set_var("RUST_LOG", "warn,gcp_rust_blog=debug");
         assert_eq!(default_rust_log(), "warn,gcp_rust_blog=debug");
         std::env::remove_var("RUST_LOG");
+    }
+
+    #[test]
+    fn load_devloop_event_client_requires_url_and_token() {
+        let _guard = devloop_env_lock()
+            .lock()
+            .expect("lock devloop env test mutex");
+        std::env::remove_var("DEVLOOP_EVENT_BROWSER_PATH_URL");
+        std::env::remove_var("DEVLOOP_EVENTS_TOKEN");
+
+        assert!(load_devloop_event_client().is_none());
+
+        std::env::set_var(
+            "DEVLOOP_EVENT_BROWSER_PATH_URL",
+            "http://127.0.0.1:1/events/browser_path",
+        );
+        assert!(load_devloop_event_client().is_none());
+
+        std::env::set_var("DEVLOOP_EVENTS_TOKEN", "secret");
+        let client = load_devloop_event_client().expect("load client");
+        assert_eq!(
+            client.browser_path_url,
+            "http://127.0.0.1:1/events/browser_path"
+        );
+        assert_eq!(client.token, "secret");
+
+        std::env::remove_var("DEVLOOP_EVENT_BROWSER_PATH_URL");
+        std::env::remove_var("DEVLOOP_EVENTS_TOKEN");
+    }
+
+    #[tokio::test]
+    async fn publish_browser_path_event_sends_bearer_token_and_json_body() {
+        async fn capture_request(
+            State(tx): State<CapturedBrowserPathRequest>,
+            headers: HeaderMap,
+            Json(body): Json<Value>,
+        ) -> StatusCode {
+            let auth = headers
+                .get(axum::http::header::AUTHORIZATION)
+                .and_then(|value| value.to_str().ok())
+                .unwrap_or("")
+                .to_string();
+            if let Some(sender) = tx.lock().expect("lock capture sender").take() {
+                let _ = sender.send((auth, body));
+            }
+            StatusCode::NO_CONTENT
+        }
+
+        let (tx, rx) = oneshot::channel();
+        let shared_tx = Arc::new(Mutex::new(Some(tx)));
+        let app = Router::new()
+            .route("/events/browser_path", post(capture_request))
+            .with_state(shared_tx);
+        let listener = TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("bind test listener");
+        let addr = listener.local_addr().expect("listener addr");
+        let server = tokio::spawn(async move {
+            axum::serve(listener, app).await.expect("serve test app");
+        });
+
+        let client = DevloopEventClient {
+            browser_path_url: format!("http://{addr}/events/browser_path"),
+            token: "secret".into(),
+            client: reqwest::Client::new(),
+        };
+
+        publish_browser_path_event(&client, "/posts/example-post")
+            .await
+            .expect("publish browser path event");
+
+        let (auth, body) = rx.await.expect("receive request");
+        assert_eq!(auth, "Bearer secret");
+        assert_eq!(body["value"], Value::String("/posts/example-post".into()));
+
+        server.abort();
     }
 
     fn make_post(slug: &str, title: &str, role: Option<&str>, subtitle: Option<&str>) -> Post {

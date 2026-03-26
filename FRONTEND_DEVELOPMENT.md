@@ -32,7 +32,7 @@ Repo-owned helper files:
 
 - [`devloop.toml`](devloop.toml)
 - [`scripts/build-css.sh`](scripts/build-css.sh)
-- [`scripts/current-post-slug.sh`](scripts/current-post-slug.sh)
+- [`scripts/current-browser-path.sh`](scripts/current-browser-path.sh)
 
 Fallback direct repo workflow
 =============================
