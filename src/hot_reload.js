@@ -1,5 +1,5 @@
 if (!window.__hotReloadController) {
-    const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const devloopEventsUrl = __DEVLOOP_BROWSER_EVENTS_URL__;
     const reportCurrentPath = () => {
         fetch("/__dev/current-path", {
             method: "POST",
@@ -10,43 +10,29 @@ if (!window.__hotReloadController) {
     };
 
     const connect = () => {
+        if (!devloopEventsUrl) {
+            return;
+        }
+
         const controller = window.__hotReloadController;
-        const socket = new WebSocket(protocol + window.location.host + "/ws");
-        controller.socket = socket;
+        const source = new EventSource(devloopEventsUrl);
+        controller.eventSource = source;
 
-        socket.onopen = () => {
-            const shouldReload = controller.hasConnected && controller.reloadOnReconnect;
-            controller.hasConnected = true;
-            if (shouldReload) {
-                controller.reloadOnReconnect = false;
-                window.location.reload();
-            }
-        };
-
-        socket.onmessage = (event) => {
+        source.onmessage = (event) => {
             if (event.data === "reload") {
-                controller.reloadOnReconnect = false;
                 window.location.reload();
             }
         };
 
-        socket.onclose = () => {
-            if (controller.hasConnected) {
-                controller.reloadOnReconnect = true;
-            }
-            controller.socket = null;
+        source.onerror = () => {
+            source.close();
+            controller.eventSource = null;
             window.setTimeout(connect, 500);
-        };
-
-        socket.onerror = () => {
-            socket.close();
         };
     };
 
     window.__hotReloadController = {
-        socket: null,
-        hasConnected: false,
-        reloadOnReconnect: false,
+        eventSource: null,
     };
     reportCurrentPath();
     window.addEventListener("popstate", reportCurrentPath);

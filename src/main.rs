@@ -29,8 +29,9 @@ use page_meta::{
 };
 use state::{AppState, DevloopEventClient, RouterState};
 
-// Load the hot reload script content at compile time
+// Load the hot reload script template at compile time.
 const HOT_RELOAD_SCRIPT: &str = include_str!("hot_reload.js");
+const HOT_RELOAD_EVENTS_URL_PLACEHOLDER: &str = "__DEVLOOP_BROWSER_EVENTS_URL__";
 const HOT_RELOAD_TAG_START: &str = "<script>";
 const HOT_RELOAD_TAG_END: &str = "</script>";
 
@@ -150,16 +151,28 @@ fn render_with_layout(
 }
 
 fn inject_hot_reload_script(page: String) -> String {
-    if page.contains(HOT_RELOAD_SCRIPT) {
+    if page.contains("window.__hotReloadController") {
         return page;
     }
 
-    let script_tag = format!("{HOT_RELOAD_TAG_START}{HOT_RELOAD_SCRIPT}{HOT_RELOAD_TAG_END}");
+    let script_tag = format!(
+        "{HOT_RELOAD_TAG_START}{}{HOT_RELOAD_TAG_END}",
+        render_hot_reload_script()
+    );
     if let Some((head, tail)) = page.rsplit_once("</body>") {
         format!("{head}{script_tag}</body>{tail}")
     } else {
         format!("{page}{script_tag}")
     }
+}
+
+fn render_hot_reload_script() -> String {
+    let events_url = std::env::var("DEVLOOP_BROWSER_EVENTS_URL").ok();
+    let replacement = events_url
+        .filter(|value| !value.trim().is_empty())
+        .map(|value| serde_json::to_string(&value).unwrap_or_else(|_| "null".to_string()))
+        .unwrap_or_else(|| "null".to_string());
+    HOT_RELOAD_SCRIPT.replace(HOT_RELOAD_EVENTS_URL_PLACEHOLDER, &replacement)
 }
 
 async fn homepage(State(state): State<Arc<AppState>>) -> Html<String> {
@@ -456,7 +469,8 @@ async fn main() -> io::Result<()> {
 mod tests {
     use super::{
         default_rust_log, is_valid_post_slug, load_devloop_event_client, normalize_browser_path,
-        publish_browser_path_event, render_post_list, render_with_layout, HOT_RELOAD_SCRIPT,
+        publish_browser_path_event, render_hot_reload_script, render_post_list,
+        render_with_layout, HOT_RELOAD_SCRIPT,
     };
     use crate::models::{Post, SiteConfig};
     use crate::page_meta::PageMeta;
@@ -545,16 +559,15 @@ mod tests {
             &test_meta(),
             true,
         );
-        assert_eq!(page.matches("new WebSocket").count(), 1);
+        assert_eq!(page.matches("new EventSource").count(), 1);
         assert_eq!(page.matches("<script>").count(), 1);
     }
 
     #[test]
-    fn hot_reload_script_reloads_after_server_restart_reconnect() {
-        assert!(HOT_RELOAD_SCRIPT.contains("socket.onopen = () =>"));
-        assert!(HOT_RELOAD_SCRIPT.contains("hasConnected"));
-        assert!(HOT_RELOAD_SCRIPT.contains("reloadOnReconnect"));
+    fn hot_reload_script_uses_devloop_event_stream_listener() {
+        assert!(HOT_RELOAD_SCRIPT.contains("new EventSource(devloopEventsUrl)"));
         assert!(HOT_RELOAD_SCRIPT.contains("window.location.reload();"));
+        assert!(HOT_RELOAD_SCRIPT.contains("reportCurrentPath"));
     }
 
     #[test]
@@ -569,7 +582,7 @@ mod tests {
             true,
         );
         assert!(page.ends_with("</script>"));
-        assert_eq!(page.matches("new WebSocket").count(), 1);
+        assert_eq!(page.matches("new EventSource").count(), 1);
     }
 
     #[test]
@@ -582,7 +595,37 @@ mod tests {
             &test_meta(),
             false,
         );
-        assert_eq!(page.matches("new WebSocket").count(), 0);
+        assert_eq!(page.matches("new EventSource").count(), 0);
+    }
+
+    #[test]
+    fn render_hot_reload_script_injects_devloop_events_url_when_present() {
+        let _guard = devloop_env_lock()
+            .lock()
+            .expect("lock devloop env test mutex");
+        std::env::set_var(
+            "DEVLOOP_BROWSER_EVENTS_URL",
+            "http://127.0.0.1:4455/browser-events",
+        );
+
+        let script = render_hot_reload_script();
+
+        assert!(script.contains("\"http://127.0.0.1:4455/browser-events\""));
+        assert!(!script.contains("__DEVLOOP_BROWSER_EVENTS_URL__"));
+
+        std::env::remove_var("DEVLOOP_BROWSER_EVENTS_URL");
+    }
+
+    #[test]
+    fn render_hot_reload_script_falls_back_to_null_when_devloop_events_url_is_missing() {
+        let _guard = devloop_env_lock()
+            .lock()
+            .expect("lock devloop env test mutex");
+        std::env::remove_var("DEVLOOP_BROWSER_EVENTS_URL");
+
+        let script = render_hot_reload_script();
+
+        assert!(script.contains("const devloopEventsUrl = null;"));
     }
 
     #[test]

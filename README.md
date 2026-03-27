@@ -80,8 +80,8 @@ devloop run
 ```
 
 That gives you one supervised loop for Rust rebuilds, CSS recompilation,
-content reloads, cloudflared restarts, and copy/paste-ready public post
-URLs for card validation.
+content reloads, browser refresh notifications, cloudflared restarts,
+and copy/paste-ready public post URLs for card validation.
 
 Fallback direct-repo workflow:
 
