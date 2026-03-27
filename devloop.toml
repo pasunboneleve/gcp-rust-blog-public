@@ -15,10 +15,6 @@ workflow = "content"
 paths = ["tailwind.css"]
 workflow = "css_source"
 
-[watch.css_output]
-paths = ["content/static/tailwind.css"]
-workflow = "css_output"
-
 [process.server]
 command = ["cargo", "run"]
 cwd = "."
@@ -86,23 +82,24 @@ steps = [
   { action = "run_hook", hook = "current_browser_path" },
   { action = "restart_process", process = "tunnel" },
   { action = "run_workflow", workflow = "publish_post_url" },
-  { action = "notify_reload" },
 ]
+triggers = ["browser_reload"]
 
 [workflow.content]
 steps = [
   { action = "run_hook", hook = "current_browser_path" },
   { action = "restart_process", process = "tunnel" },
   { action = "run_workflow", workflow = "publish_post_url" },
-  { action = "notify_reload" },
 ]
+triggers = ["browser_reload"]
 
 [workflow.css_source]
 steps = [
   { action = "run_hook", hook = "build_css" },
 ]
+triggers = ["browser_reload"]
 
-[workflow.css_output]
+[workflow.browser_reload]
 steps = [
   { action = "notify_reload" },
 ]
