@@ -1,4 +1,4 @@
-use std::{io, net::SocketAddr, sync::Arc};
+use std::{io, net::SocketAddr, path::Path as StdPath, sync::Arc, time::UNIX_EPOCH};
 
 use axum::{
     body::Bytes,
@@ -10,7 +10,7 @@ use axum::{
 };
 use tokio::{net::TcpListener, sync::RwLock};
 use tower_http::services::{ServeDir, ServeFile};
-use tracing::{error, info};
+use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod content_loader;
@@ -34,6 +34,7 @@ const HOT_RELOAD_SCRIPT: &str = include_str!("hot_reload.js");
 const HOT_RELOAD_EVENTS_URL_PLACEHOLDER: &str = "__DEVLOOP_BROWSER_EVENTS_URL__";
 const HOT_RELOAD_TAG_START: &str = "<script>";
 const HOT_RELOAD_TAG_END: &str = "</script>";
+const DEV_STYLESHEET_HREF: &str = "/static/tailwind.css";
 
 fn log_boxed_banner(message: &str) {
     let width = message.chars().count() + 4;
@@ -144,10 +145,34 @@ fn render_with_layout(
         .replace("{{ content }}", content);
 
     if is_development {
+        page = inject_dev_stylesheet_version(page);
         page = inject_hot_reload_script(page);
     }
 
     page
+}
+
+fn inject_dev_stylesheet_version(page: String) -> String {
+    let stylesheet_path =
+        StdPath::new(env!("CARGO_MANIFEST_DIR")).join("content/static/tailwind.css");
+    let version = std::fs::metadata(&stylesheet_path)
+        .ok()
+        .and_then(|metadata| metadata.modified().ok())
+        .and_then(|modified| modified.duration_since(UNIX_EPOCH).ok())
+        .map(|duration| duration.as_millis().to_string())
+        .unwrap_or_else(|| "dev".to_string());
+    let needle = format!("href=\"{DEV_STYLESHEET_HREF}\"");
+    if !page.contains(&needle) {
+        warn!(
+            stylesheet = DEV_STYLESHEET_HREF,
+            stylesheet_path = %stylesheet_path.display(),
+            "development stylesheet href not found for cache busting"
+        );
+        return page;
+    }
+
+    let versioned_href = format!("href=\"{DEV_STYLESHEET_HREF}?v={version}\"");
+    page.replace(&needle, &versioned_href)
 }
 
 fn inject_hot_reload_script(page: String) -> String {
@@ -502,6 +527,10 @@ mod tests {
         "<html><head><title>{{ page_title }}</title><meta name=\"description\" content=\"{{ page_description }}\" /><meta name=\"author\" content=\"{{ page_author }}\" /><meta property=\"og:title\" content=\"{{ page_title }}\" /><meta property=\"og:description\" content=\"{{ page_description }}\" /><meta property=\"og:url\" content=\"{{ page_url }}\" /><meta property=\"og:image\" content=\"{{ page_image }}\" />{{ page_published_time_meta }}{{ page_role_meta }}<meta name=\"twitter:title\" content=\"{{ page_title }}\" /><meta name=\"twitter:description\" content=\"{{ page_description }}\" /><meta name=\"twitter:image\" content=\"{{ page_image }}\" /></head><body>{{ banner }}<main>{{ content }}</main><ul>{{ posts }}</ul></body></html>"
     }
 
+    fn content_layout() -> &'static str {
+        include_str!("../content/layout.html")
+    }
+
     #[test]
     fn content_layout_contains_new_meta_placeholders() {
         let layout = include_str!("../content/layout.html");
@@ -552,7 +581,7 @@ mod tests {
     #[test]
     fn injects_hot_reload_script_once_in_development() {
         let page = render_with_layout(
-            test_layout(),
+            content_layout(),
             "<header>banner</header>",
             "content",
             &test_posts(),
@@ -560,13 +589,15 @@ mod tests {
             true,
         );
         assert_eq!(page.matches("new EventSource").count(), 1);
-        assert_eq!(page.matches("<script>").count(), 1);
+        assert!(page.contains("window.__hotReloadController"));
+        assert!(page.contains("/static/tailwind.css?v="));
     }
 
     #[test]
     fn hot_reload_script_uses_devloop_event_stream_listener() {
         assert!(HOT_RELOAD_SCRIPT.contains("new EventSource(devloopEventsUrl)"));
-        assert!(HOT_RELOAD_SCRIPT.contains("window.location.reload();"));
+        assert!(HOT_RELOAD_SCRIPT.contains("new WebSocket(websocketUrl)"));
+        assert!(HOT_RELOAD_SCRIPT.contains("triggerReload()"));
         assert!(HOT_RELOAD_SCRIPT.contains("reportCurrentPath"));
     }
 
@@ -588,7 +619,7 @@ mod tests {
     #[test]
     fn does_not_inject_script_in_non_development() {
         let page = render_with_layout(
-            test_layout(),
+            content_layout(),
             "banner",
             "content",
             &test_posts(),
@@ -596,6 +627,21 @@ mod tests {
             false,
         );
         assert_eq!(page.matches("new EventSource").count(), 0);
+        assert!(page.contains("href=\"/static/tailwind.css\""));
+    }
+
+    #[test]
+    fn development_pages_cache_bust_tailwind_stylesheet() {
+        let page = render_with_layout(
+            content_layout(),
+            "banner",
+            "content",
+            &test_posts(),
+            &test_meta(),
+            true,
+        );
+
+        assert!(page.contains("href=\"/static/tailwind.css?v="));
     }
 
     #[test]

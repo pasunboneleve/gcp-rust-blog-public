@@ -15,6 +15,10 @@ workflow = "content"
 paths = ["tailwind.css"]
 workflow = "css_source"
 
+[watch.css_output]
+paths = ["content/static/tailwind.css"]
+workflow = "css_output"
+
 [process.server]
 command = ["cargo", "run"]
 cwd = "."
@@ -96,5 +100,9 @@ steps = [
 [workflow.css_source]
 steps = [
   { action = "run_hook", hook = "build_css" },
+]
+
+[workflow.css_output]
+steps = [
   { action = "notify_reload" },
 ]

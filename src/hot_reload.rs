@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Duration};
+use std::{path::Path, sync::Arc, time::Duration};
 
 use axum::{
     extract::{
@@ -18,6 +18,7 @@ use crate::content_loader::reload_content;
 use crate::state::{AppState, RefreshBroadcaster};
 
 const CONTENT_DIR: &str = "content";
+const COMPILED_TAILWIND_PATH: &str = "content/static/tailwind.css";
 
 pub async fn ws_handler(
     ws: WebSocketUpgrade,
@@ -56,25 +57,7 @@ pub fn start_content_watcher(tx: RefreshBroadcaster, app_state: Arc<AppState>) {
                     // Filter out events that are just metadata changes or temporary files
                     let relevant_events: Vec<&DebouncedEvent> = events
                         .iter()
-                        .filter(|event| {
-                            // Check if the event type is relevant (modify, create, remove)
-                            let is_relevant_kind = event.kind.is_modify()
-                                || event.kind.is_create()
-                                || event.kind.is_remove();
-
-                            if !is_relevant_kind {
-                                return false;
-                            }
-
-                            // Check paths for temporary files (Emacs: .#*, ~ backups)
-                            let is_temp_file = event.event.paths.iter().any(|path| {
-                                path.file_name()
-                                    .and_then(|name| name.to_str())
-                                    .is_some_and(|s| s.starts_with(".#") || s.ends_with('~'))
-                            });
-
-                            !is_temp_file
-                        })
+                        .filter(|event| is_relevant_content_event(event))
                         .collect();
 
                     if !relevant_events.is_empty() {
@@ -116,4 +99,52 @@ pub fn start_content_watcher(tx: RefreshBroadcaster, app_state: Arc<AppState>) {
             }
         }
     });
+}
+
+fn is_relevant_content_event(event: &DebouncedEvent) -> bool {
+    let is_relevant_kind = event.kind.is_modify() || event.kind.is_create() || event.kind.is_remove();
+    if !is_relevant_kind {
+        return false;
+    }
+
+    !event.event.paths.iter().any(|path| {
+        let is_temp_file = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|s| s.starts_with(".#") || s.ends_with('~'));
+        let is_compiled_tailwind = path.ends_with(Path::new(COMPILED_TAILWIND_PATH));
+        is_temp_file || is_compiled_tailwind
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use notify_debouncer_full::notify::{Event, EventKind, event::ModifyKind};
+    use std::path::PathBuf;
+
+    fn debounced_event(path: &str) -> DebouncedEvent {
+        DebouncedEvent {
+            event: Event {
+                kind: EventKind::Modify(ModifyKind::Any),
+                paths: vec![PathBuf::from(path)],
+                attrs: Default::default(),
+            },
+            time: std::time::Instant::now(),
+        }
+    }
+
+    #[test]
+    fn ignores_compiled_tailwind_output_events() {
+        assert!(!is_relevant_content_event(&debounced_event(
+            "content/static/tailwind.css"
+        )));
+    }
+
+    #[test]
+    fn keeps_regular_content_events() {
+        assert!(is_relevant_content_event(&debounced_event(
+            "content/posts/example.md"
+        )));
+    }
 }
