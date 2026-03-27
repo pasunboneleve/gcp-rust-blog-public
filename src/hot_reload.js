@@ -10,16 +10,31 @@ if (!window.__hotReloadController) {
     };
 
     const connect = () => {
+        const controller = window.__hotReloadController;
         const socket = new WebSocket(protocol + window.location.host + "/ws");
-        window.__hotReloadController.socket = socket;
+        controller.socket = socket;
+
+        socket.onopen = () => {
+            const shouldReload = controller.hasConnected && controller.reloadOnReconnect;
+            controller.hasConnected = true;
+            if (shouldReload) {
+                controller.reloadOnReconnect = false;
+                window.location.reload();
+            }
+        };
 
         socket.onmessage = (event) => {
             if (event.data === "reload") {
+                controller.reloadOnReconnect = false;
                 window.location.reload();
             }
         };
 
         socket.onclose = () => {
+            if (controller.hasConnected) {
+                controller.reloadOnReconnect = true;
+            }
+            controller.socket = null;
             window.setTimeout(connect, 500);
         };
 
@@ -28,7 +43,11 @@ if (!window.__hotReloadController) {
         };
     };
 
-    window.__hotReloadController = { socket: null };
+    window.__hotReloadController = {
+        socket: null,
+        hasConnected: false,
+        reloadOnReconnect: false,
+    };
     reportCurrentPath();
     window.addEventListener("popstate", reportCurrentPath);
     connect();

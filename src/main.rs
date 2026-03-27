@@ -456,7 +456,7 @@ async fn main() -> io::Result<()> {
 mod tests {
     use super::{
         default_rust_log, is_valid_post_slug, load_devloop_event_client, normalize_browser_path,
-        publish_browser_path_event, render_post_list, render_with_layout,
+        publish_browser_path_event, render_post_list, render_with_layout, HOT_RELOAD_SCRIPT,
     };
     use crate::models::{Post, SiteConfig};
     use crate::page_meta::PageMeta;
@@ -547,6 +547,14 @@ mod tests {
         );
         assert_eq!(page.matches("new WebSocket").count(), 1);
         assert_eq!(page.matches("<script>").count(), 1);
+    }
+
+    #[test]
+    fn hot_reload_script_reloads_after_server_restart_reconnect() {
+        assert!(HOT_RELOAD_SCRIPT.contains("socket.onopen = () =>"));
+        assert!(HOT_RELOAD_SCRIPT.contains("hasConnected"));
+        assert!(HOT_RELOAD_SCRIPT.contains("reloadOnReconnect"));
+        assert!(HOT_RELOAD_SCRIPT.contains("window.location.reload();"));
     }
 
     #[test]

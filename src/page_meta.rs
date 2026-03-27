@@ -311,6 +311,7 @@ mod tests {
         site_url, PostMetaInput,
     };
     use crate::models::{FrontMatter, SiteConfig};
+    use std::sync::{Mutex, OnceLock};
     use std::time::{SystemTime, UNIX_EPOCH};
 
     fn front_matter_with(image: Option<&str>) -> FrontMatter {
@@ -340,6 +341,11 @@ mod tests {
             .expect("system time")
             .as_nanos();
         std::env::temp_dir().join(format!("{name}-{unique}.json"))
+    }
+
+    fn site_env_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
     }
 
     // ── build_social_description ──────────────────────────────────────────────
@@ -574,6 +580,7 @@ mod tests {
 
     #[test]
     fn site_url_prefers_devloop_state_when_present() {
+        let _guard = site_env_lock().lock().expect("lock site env test mutex");
         let path = unique_temp_path("devloop-state");
         std::fs::write(
             &path,
@@ -593,6 +600,7 @@ mod tests {
 
     #[test]
     fn site_url_falls_back_to_localhost_in_development() {
+        let _guard = site_env_lock().lock().expect("lock site env test mutex");
         std::env::remove_var("DEVLOOP_STATE");
         std::env::remove_var("SITE_URL");
         std::env::set_var("RUST_ENV", "development");
@@ -652,6 +660,7 @@ mod tests {
 
     #[test]
     fn page_url_expands_relative_page_paths() {
+        let _guard = site_env_lock().lock().expect("lock site env test mutex");
         std::env::remove_var("DEVLOOP_STATE");
         std::env::remove_var("SITE_URL");
         std::env::set_var("RUST_ENV", "development");
