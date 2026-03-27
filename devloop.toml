@@ -80,15 +80,15 @@ steps = [
   { action = "restart_process", process = "server" },
   { action = "wait_for_process", process = "server" },
   { action = "run_hook", hook = "current_browser_path" },
-  { action = "restart_process", process = "tunnel" },
   { action = "run_workflow", workflow = "publish_post_url" },
 ]
 triggers = ["browser_reload"]
 
 [workflow.content]
 steps = [
+  { action = "restart_process", process = "server" },
+  { action = "wait_for_process", process = "server" },
   { action = "run_hook", hook = "current_browser_path" },
-  { action = "restart_process", process = "tunnel" },
   { action = "run_workflow", workflow = "publish_post_url" },
 ]
 triggers = ["browser_reload"]

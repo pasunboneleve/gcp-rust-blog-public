@@ -14,14 +14,12 @@ use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod content_loader;
-mod hot_reload;
 mod markdown;
 mod models;
 mod page_meta;
 mod state;
 
 use content_loader::load_content;
-use hot_reload::{start_content_watcher, ws_handler};
 use markdown::render_markdown_to_html;
 use models::{Post, SiteConfig};
 use page_meta::{
@@ -433,17 +431,11 @@ async fn initialize_state() -> RouterState {
         is_development,
     });
 
-    let (tx, _rx) = tokio::sync::broadcast::channel(1);
-
     if is_development {
-        info!("Hot reload enabled. Check logs for file change events.");
-        start_content_watcher(tx.clone(), state.clone());
+        info!("Development reloads are managed by devloop.");
     }
 
-    state::RouterState {
-        app_state: state,
-        broadcaster: tx,
-    }
+    state::RouterState { app_state: state }
 }
 
 fn setup_router(router_state: RouterState) -> Router {
@@ -461,7 +453,6 @@ fn setup_router(router_state: RouterState) -> Router {
         .nest_service("/static", static_dir)
         .route_service("/favicon.ico", favicon_ico)
         .route_service("/favicon.png", favicon_png)
-        .route("/ws", get(ws_handler))
         .with_state(router_state)
 }
 
@@ -494,8 +485,8 @@ async fn main() -> io::Result<()> {
 mod tests {
     use super::{
         default_rust_log, is_valid_post_slug, load_devloop_event_client, normalize_browser_path,
-        publish_browser_path_event, render_hot_reload_script, render_post_list,
-        render_with_layout, HOT_RELOAD_SCRIPT,
+        publish_browser_path_event, render_hot_reload_script, render_post_list, render_with_layout,
+        HOT_RELOAD_SCRIPT,
     };
     use crate::models::{Post, SiteConfig};
     use crate::page_meta::PageMeta;
@@ -596,7 +587,6 @@ mod tests {
     #[test]
     fn hot_reload_script_uses_devloop_event_stream_listener() {
         assert!(HOT_RELOAD_SCRIPT.contains("new EventSource(devloopEventsUrl)"));
-        assert!(HOT_RELOAD_SCRIPT.contains("new WebSocket(websocketUrl)"));
         assert!(HOT_RELOAD_SCRIPT.contains("triggerReload()"));
         assert!(HOT_RELOAD_SCRIPT.contains("reportCurrentPath"));
     }

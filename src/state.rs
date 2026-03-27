@@ -1,9 +1,7 @@
 use std::sync::Arc;
-use tokio::sync::{broadcast, RwLock};
+use tokio::sync::RwLock;
 
 use crate::models::{Post, SiteConfig};
-
-pub type RefreshBroadcaster = broadcast::Sender<()>;
 
 #[derive(Clone)]
 pub struct DevloopEventClient {
@@ -27,17 +25,10 @@ pub struct AppState {
 #[derive(Clone)]
 pub struct RouterState {
     pub app_state: Arc<AppState>,
-    pub broadcaster: RefreshBroadcaster,
 }
 
 impl axum::extract::FromRef<RouterState> for Arc<AppState> {
     fn from_ref(state: &RouterState) -> Self {
         state.app_state.clone()
-    }
-}
-
-impl axum::extract::FromRef<RouterState> for RefreshBroadcaster {
-    fn from_ref(state: &RouterState) -> Self {
-        state.broadcaster.clone()
     }
 }

@@ -1,9 +1,8 @@
 use gray_matter::{engine::YAML, Matter};
 use tokio::fs;
-use tracing::{error, info};
+use tracing::error;
 
 use crate::models::{FrontMatter, Post, SiteConfig};
-use crate::state::AppState;
 
 const CONTENT_DIR: &str = "content";
 
@@ -42,24 +41,6 @@ pub async fn load_content(
         not_found_markdown,
         posts,
     ))
-}
-
-pub async fn reload_content(app_state: &AppState) {
-    info!("Reloading application content...");
-    match load_content().await {
-        Ok((site_config, banner, layout, home, not_found, posts)) => {
-            *app_state.site_config.write().await = site_config;
-            *app_state.banner_html.write().await = banner;
-            *app_state.layout_html.write().await = layout;
-            *app_state.home_post.write().await = home;
-            *app_state.not_found_markdown.write().await = not_found;
-            *app_state.posts.write().await = posts;
-            info!("Content successfully reloaded.");
-        }
-        Err(e) => {
-            error!("Failed to reload content: {}", e);
-        }
-    }
 }
 
 async fn load_site_config() -> Result<SiteConfig, std::io::Error> {

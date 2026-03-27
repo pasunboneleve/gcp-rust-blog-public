@@ -79,9 +79,9 @@ direnv allow
 devloop run
 ```
 
-That gives you one supervised loop for Rust rebuilds, CSS recompilation,
-content reloads, browser refresh notifications, cloudflared restarts,
-and copy/paste-ready public post URLs for card validation.
+That gives you one supervised loop for Rust rebuilds, content-triggered
+server restarts, CSS recompilation, browser refresh notifications, and
+copy/paste-ready public post URLs for card validation.
 
 Fallback direct-repo workflow:
 
