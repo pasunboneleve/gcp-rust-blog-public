@@ -307,8 +307,7 @@ fn absolute_url(path_or_url: &str) -> String {
 mod tests {
     use super::{
         absolute_url, build_post_meta, build_social_description, escape_html, iso_published_time,
-        page_url,
-        site_url, PostMetaInput,
+        page_url, site_url, PostMetaInput,
     };
     use crate::models::{FrontMatter, SiteConfig};
     use std::sync::{Mutex, OnceLock};
@@ -666,7 +665,10 @@ mod tests {
         std::env::set_var("RUST_ENV", "development");
         std::env::set_var("PORT", "18080");
 
-        assert_eq!(page_url("/posts/example"), "http://127.0.0.1:18080/posts/example");
+        assert_eq!(
+            page_url("/posts/example"),
+            "http://127.0.0.1:18080/posts/example"
+        );
         assert_eq!(page_url(""), "http://127.0.0.1:18080/");
 
         std::env::remove_var("RUST_ENV");
