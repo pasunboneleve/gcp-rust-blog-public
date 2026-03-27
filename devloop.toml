@@ -4,7 +4,7 @@ state_file = "./.devloop/state.json"
 startup_workflows = ["startup"]
 
 [watch.rust]
-paths = ["src/**/*.rs", "Cargo.toml", "content/layout.html", "content/banner.html", "content/site.toml"]
+paths = ["src/**/*.rs", "Cargo.toml", "content/banner.html", "content/site.toml"]
 workflow = "rust"
 
 [watch.content]
