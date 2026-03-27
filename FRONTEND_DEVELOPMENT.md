@@ -23,8 +23,8 @@ What you get:
 
 - Rust rebuilds and restarts in order when `src/**/*.rs` changes
 - Tailwind recompiles when CSS-relevant files change
-- Markdown and HTML content reload without manual server restarts
-- `cloudflared` is restarted when the workflow needs a fresh public URL
+- Markdown and HTML content changes restart the server through `devloop`,
+  so the browser sees the same state as a fresh startup
 - the current browsed post URL is printed in a copy/paste-friendly form
   for LinkedIn, Slack, or X card validation
 
@@ -65,8 +65,8 @@ CSS Architecture
 Rust generates HTML structure and emits **semantic class names only**.
 All visual decisions — spacing, colour, size, weight — live in
 `tailwind.css`. This means you can change how any element looks by
-editing `tailwind.css` alone, with changes visible immediately in the
-browser via hot reload (no server restart, no Rust recompile).
+editing `tailwind.css` alone. `devloop` recompiles the stylesheet and
+then tells the browser to refresh, without a Rust recompile.
 
 ### The rule
 
@@ -111,7 +111,9 @@ grouped and labelled by section:
 
 ### How hot reload works
 
-With `devloop`, CSS recompiles, content reloads, tunnel restarts, and
-URL publication are orchestrated from one supervisor. Without it, you
-would need to coordinate those loops yourself across separate terminal
-sessions.
+With `devloop`, CSS recompiles, content-triggered server restarts,
+browser refresh notifications, and URL publication are orchestrated from
+one supervisor. The browser listens to `devloop`'s SSE reload stream;
+the app no longer runs its own content watcher or reload websocket.
+Without `devloop`, you would need to coordinate those loops yourself
+across separate terminal sessions.

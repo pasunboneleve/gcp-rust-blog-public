@@ -56,28 +56,28 @@ Everything else exists to support that moment.
 flowchart TD
 
   EDIT["✍️ Edit src/* or content/*"]
-  RUN["🦀 cargo run<br/>(RUST_ENV=development)"]
-  WATCH["👀 File watcher"]
-  WS["🔌 Websocket reload signal"]
+  DEVLOOP["🔁 devloop supervisor"]
+  SERVER["🦀 cargo run<br/>(managed process)"]
+  SSE["📡 Browser reload event stream"]
   BROWSER["💻 Local browser refresh"]
 
-  EDIT --> RUN
-  RUN --> WATCH
-  WATCH --> WS
-  WS --> BROWSER
+  EDIT --> DEVLOOP
+  DEVLOOP --> SERVER
+  DEVLOOP --> SSE
+  SSE --> BROWSER
 ```
 
 In development mode:
 
-- A file watcher monitors `content/`
-- Changes trigger in-memory reload
-- A WebSocket broadcasts `"reload"`
-- The browser refreshes automatically
+- `devloop` watches Rust, content, and CSS source changes
+- Rust and content changes restart the server and wait for readiness
+- CSS changes rebuild the compiled stylesheet and then notify the browser
+- Browser refresh is driven by `devloop`'s local SSE reload stream
 
 Edit. Save. See the change.
 
 No manual restart.
-No rebuild for content tweaks.
+No separate in-app watcher logic.
 
 Feedback loops stay short.
 
@@ -119,7 +119,7 @@ Rendering is deliberately simple:
 
 No ORM.\
 No CMS.\
-No runtime mutation.
+No runtime content mutation.
 
 Constraint keeps surface area small.
 
