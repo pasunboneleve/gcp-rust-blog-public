@@ -2,7 +2,7 @@ use std::{io, net::SocketAddr, path::Path as StdPath, sync::Arc, time::UNIX_EPOC
 
 use axum::{
     body::Bytes,
-    extract::{Path, State},
+    extract::{OriginalUri, Path, State},
     http::StatusCode,
     response::{Html, IntoResponse, Response},
     routing::{get, get_service},
@@ -256,6 +256,13 @@ async fn render_post(Path(slug): Path<String>, State(state): State<Arc<AppState>
     Html(page).into_response()
 }
 
+async fn fallback_not_found(
+    OriginalUri(uri): OriginalUri,
+    State(state): State<Arc<AppState>>,
+) -> Response {
+    render_not_found_response(&state, uri.path()).await
+}
+
 async fn render_markdown_page(
     state: &Arc<AppState>,
     post: &Post,
@@ -453,6 +460,7 @@ fn setup_router(router_state: RouterState) -> Router {
         .nest_service("/static", static_dir)
         .route_service("/favicon.ico", favicon_ico)
         .route_service("/favicon.png", favicon_png)
+        .fallback(fallback_not_found)
         .with_state(router_state)
 }
 
@@ -486,21 +494,23 @@ mod tests {
     use super::{
         default_rust_log, is_valid_post_slug, load_devloop_event_client, normalize_browser_path,
         publish_browser_path_event, render_hot_reload_script, render_post_list, render_with_layout,
-        HOT_RELOAD_SCRIPT,
+        setup_router, HOT_RELOAD_SCRIPT,
     };
     use crate::models::{Post, SiteConfig};
     use crate::page_meta::PageMeta;
-    use crate::state::DevloopEventClient;
+    use crate::state::{AppState, DevloopEventClient, RouterState};
     use axum::{
+        body::{to_bytes, Body},
         extract::State,
-        http::{HeaderMap, StatusCode},
+        http::{HeaderMap, Request, StatusCode},
         routing::post,
         Json, Router,
     };
     use serde_json::Value;
     use std::sync::{Arc, Mutex, OnceLock};
     use tokio::net::TcpListener;
-    use tokio::sync::oneshot;
+    use tokio::sync::{oneshot, RwLock};
+    use tower::ServiceExt;
 
     fn rust_log_lock() -> &'static Mutex<()> {
         static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
@@ -841,6 +851,33 @@ mod tests {
         }
     }
 
+    fn test_router_state() -> RouterState {
+        let state = Arc::new(AppState {
+            site_config: RwLock::new(SiteConfig::default()),
+            banner_html: RwLock::new("<header>banner</header>".to_string()),
+            layout_html: RwLock::new(test_layout().to_string()),
+            home_post: RwLock::new(Post {
+                title: "Home".to_string(),
+                slug: "home".to_string(),
+                date: "2026-03-24".to_string(),
+                description: None,
+                image: None,
+                role: None,
+                subtitle: None,
+                markdown_body: "# Home".to_string(),
+            }),
+            current_browser_path: RwLock::new("/".to_string()),
+            devloop_event_client: None,
+            not_found_markdown: RwLock::new(
+                "# Terra incognita\n\nThis path is not mapped.".to_string(),
+            ),
+            posts: RwLock::new(test_posts()),
+            is_development: false,
+        });
+
+        RouterState { app_state: state }
+    }
+
     #[test]
     fn groups_posts_by_role_in_first_seen_order() {
         let posts = vec![
@@ -882,5 +919,69 @@ mod tests {
         let html = render_post_list(&posts);
         assert!(!html.contains("sidebar-group-header"));
         assert!(html.contains("/posts/no-role"));
+    }
+
+    #[tokio::test]
+    async fn missing_root_path_uses_not_found_page() {
+        let app = setup_router(test_router_state());
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/missing")
+                    .body(Body::empty())
+                    .expect("build request"),
+            )
+            .await
+            .expect("serve request");
+
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let body = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("read body");
+        let body = String::from_utf8(body.to_vec()).expect("utf8 body");
+        assert!(body.contains("Terra incognita"));
+        assert!(body.contains("This path is not mapped."));
+    }
+
+    #[tokio::test]
+    async fn missing_nested_path_uses_not_found_page() {
+        let app = setup_router(test_router_state());
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/any/other/path")
+                    .body(Body::empty())
+                    .expect("build request"),
+            )
+            .await
+            .expect("serve request");
+
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let body = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("read body");
+        let body = String::from_utf8(body.to_vec()).expect("utf8 body");
+        assert!(body.contains("Terra incognita"));
+    }
+
+    #[tokio::test]
+    async fn missing_post_slug_still_uses_not_found_page() {
+        let app = setup_router(test_router_state());
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/posts/does-not-exist")
+                    .body(Body::empty())
+                    .expect("build request"),
+            )
+            .await
+            .expect("serve request");
+
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let body = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("read body");
+        let body = String::from_utf8(body.to_vec()).expect("utf8 body");
+        assert!(body.contains("Terra incognita"));
     }
 }
