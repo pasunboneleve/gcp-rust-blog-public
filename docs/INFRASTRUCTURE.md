@@ -89,11 +89,9 @@ graph TB
 - **URL**: `https://blog-{SERVICE_HASH}-{REGION_CODE}.a.run.app`
 - **Configuration**:
   - Port: `8080`
-  - CPU: 1 vCPU
-  - Memory: 512 MiB
-  - Concurrency: 80 requests per instance
-  - Min instances: 0 (scales to zero)
-  - Max instances: 100
+  - Public access granted via `roles/run.invoker` to `allUsers`
+  - Deployed from GitHub Actions with Workload Identity Federation
+  - Fronted by a global HTTPS load balancer through a serverless NEG
 
 ### 2. Artifact Registry
 - **Repository**: `blog`
@@ -136,7 +134,7 @@ infra/
 - **Backend**: Google Cloud Storage
 - **Bucket**: Configured when bootstrapping the backend
 - **Path**: Controlled by the `prefix` passed to `tofu init`
-- **Locking**: Enabled
+- **Consistency**: Managed by the GCS backend; no separate lock resource is defined in this repo
 - **Versioning**: Enabled with 30-day retention
 
 ### Resource Dependencies
@@ -217,16 +215,19 @@ sequenceDiagram
 ```
 
 ### Build Process
-1. **Change scope detection** determines whether a push is content-only (`content/**`) or includes code/infrastructure.
-2. **Full build path** (code/infrastructure changes, or missing base image):
+1. **Workflow trigger**: the deploy workflow runs on pushes to `main`,
+   excluding top-level Markdown, `docs/**`, `infra/**`, and `scripts/**`.
+2. **Change scope detection** determines whether a triggered push is
+   content-only (`content/**`) or includes application code.
+3. **Full build path** (application changes, or missing base image):
    - Build `runtime-base` image (`:app-base`) with runtime dependencies and compiled binary.
    - Build full runtime image with `/app/content`.
-3. **Content-only path** (only `content/**` changed and `:app-base` exists):
+4. **Content-only path** (only `content/**` changed and `:app-base` exists):
    - Build overlay image from `:app-base`.
    - Copy only `content/` into `/app/content`.
-4. **Image push** to Artifact Registry with commit SHA tag (`:${GITHUB_SHA}`).
-5. **Cloud Run deployment** with the new commit-tagged image.
-6. **Bootstrap fallback**: if `:app-base` does not exist yet, workflow automatically runs the full build path and publishes it for future content-only deploys.
+5. **Image push** to Artifact Registry with commit SHA tag (`:${GITHUB_SHA}`).
+6. **Cloud Run deployment** with the new commit-tagged image.
+7. **Bootstrap fallback**: if `:app-base` does not exist yet, workflow automatically runs the full build path and publishes it for future content-only deploys.
 
 ## DNS Configuration
 

@@ -3,7 +3,8 @@
 This folder provisions:
 - Workload Identity Pool and Provider for GitHub OIDC
 - IAM binding to let your GitHub repo impersonate the deploy service account
-- Project roles for the deploy service account (Cloud Run, Artifact Registry, Cloud Build)
+- Project roles for the deploy service account (Cloud Run, IAM service-account use, Artifact Registry, Service Usage, Load Balancer Admin)
+- Artifact Registry, Cloud DNS, load balancer resources, and GitHub Actions secrets
 
 ## Prereqs
 - gcloud (authenticated to the target project)
@@ -30,6 +31,7 @@ Set values matching your environment:
 terraform apply \
   -var="project_id=<PROJECT_ID>" \
   -var="project_number=<PROJECT_NUMBER>" \
+  -var="region=<REGION>" \
   -var="organization_id=<ORGANIZATION_ID>" \
   -var="pool_id=github-pool" \
   -var="provider_id=github-provider" \
@@ -38,7 +40,9 @@ terraform apply \
   -var="service_name=blog" \
   -var="domain_name=<DOMAIN_NAME>" \
   -var="dns_zone_name=<DNS_ZONE_NAME>" \
-  -var="admin_user_email=<ADMIN_USER_EMAIL>"
+  -var="admin_user_email=<ADMIN_USER_EMAIL>" \
+  -var="cloud_run_url=<CLOUD_RUN_HOSTNAME>" \
+  -var="github_token=<GITHUB_PAT>"
 ```
 
 Notes:

@@ -27,7 +27,7 @@ The project implements a **least-privilege, multi-service-account architecture**
   - `roles/serviceusage.serviceUsageAdmin` - API management
 
 ### 3. Cloud Run Runtime (Default)
-- **Runtime**: Uses default Cloud Run service account
+- **Runtime**: Uses Cloud Run's configured runtime identity; this repo does not provision a dedicated runtime service account
 - **Purpose**: Application execution only
 - **Permissions**: None (application doesn't need GCP API access)
 
@@ -52,20 +52,12 @@ GitHub OIDC Token → Google STS → Service Account Impersonation → GCP Resou
 - **Audience**: `sts.googleapis.com`
 - **Condition**: `attribute.repository == '{github_owner}/{github_repo}'`
 
-## Organization Policies
+## Organization-Level Access
 
-### IAM Policy Member Domains
-**Purpose**: Control which principals can be added to IAM policies
-
-```yaml
-constraint: constraints/iam.allowedPolicyMemberDomains
-listPolicy:
-  allowedValues:
-  - C0470p88y  # Organization customer ID
-  - allUsers   # Required for public blog access
-```
-
-**Security Impact**: Prevents unauthorized external principals while allowing public access to the blog.
+This repository provisions org-level IAM roles for the
+`infrastructure-admin` service account so an operator can manage
+organization policy and related admin tasks. It does not itself define
+organization policy resources.
 
 ## Container Security
 
@@ -84,7 +76,6 @@ FROM debian:bookworm-slim
 ✅ **Non-root execution** - Container runs as `appuser`
 ✅ **Minimal attack surface** - Only application binary and dependencies
 ✅ **No build tools** - Compiler and build dependencies removed
-✅ **Read-only filesystem** - Application doesn't write to filesystem
 
 ## Network Security
 
@@ -148,11 +139,11 @@ gcloud resource-manager org-policies set-policy policy.yaml \
 ### ✅ Implemented
 - [x] Least-privilege service accounts
 - [x] Workload Identity Federation (keyless CI/CD)
-- [x] Organization policies for IAM restrictions
+- [x] Organization-level IAM roles for the admin service account
 - [x] Non-root container execution
 - [x] HTTPS-only with managed certificates
 - [x] Infrastructure as Code (immutable infrastructure)
-- [x] Automated security updates via GitHub Actions
+- [x] Automated test and deploy checks via GitHub Actions
 
 ### 🔄 Recommended Future Enhancements
 - [ ] Container image vulnerability scanning

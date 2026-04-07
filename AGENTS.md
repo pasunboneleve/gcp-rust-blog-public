@@ -9,7 +9,7 @@ small, testable, and Rust-idiomatic.
 - Scope: code changes for this repository, tests, and docs tied to
   implementation.
 - Non-scope: product strategy changes and architecture rewrites that
-  conflict with `README.md` and `PLAN.md` without explicit approval.
+  conflict with the tracked project documentation without explicit approval.
 
 ## Common Development Commands
 
@@ -32,13 +32,13 @@ For the full tunnel/share-url workflow, use `devloop`, not `bacon`.
 
 ## Success criteria
 - New logic includes tests.
-- Work is delivered as small, reviewable increments aligned with
-  `PLAN.md` sequential steps.
+- Work is delivered as small, reviewable increments aligned with the
+  current staged intent in the tracked docs.
 - `cargo clippy` and `cargo test` pass before proposing changes.
 
 ## Project overview
-Read `README.md` for product goals and `PLAN.md` for staged
-execution.
+Read `README.md` and the docs under `docs/` for product goals,
+architecture, and deployment context.
 
 ### Content Management
 - Blog posts are stored as Markdown files in `content/posts/`
@@ -81,26 +81,39 @@ terraform init -backend-config="bucket={{YOUR_TF_STATE_BUCKET}}" -backend-config
 terraform apply \
   -var="project_id={{GCP_PROJECT_ID}}" \
   -var="project_number={{GCP_PROJECT_NUMBER}}" \
+  -var="region={{GCP_REGION}}" \
+  -var="organization_id={{GCP_ORGANIZATION_ID}}" \
   -var="pool_id={{GCP_WORKLOAD_IDENTITY_POOL}}" \
   -var="provider_id={{GCP_WORKLOAD_IDENTITY_PROVIDER}}" \
   -var="github_owner=<github_owner>" \
   -var="github_repo=gcp-rust-blog" \
-  -var="cloud_run_url={{CLOUD_RUN_SERVICE_URL}}"
+  -var="service_name=blog" \
+  -var="domain_name={{DOMAIN_NAME}}" \
+  -var="dns_zone_name={{DNS_ZONE_NAME}}" \
+  -var="admin_user_email={{ADMIN_USER_EMAIL}}" \
+  -var="cloud_run_url={{CLOUD_RUN_SERVICE_URL}}" \
+  -var="github_token={{GITHUB_PAT}}"
 ```
 
 ## Architecture Overview
 
 ### Application Structure
-- **Single-file web server**: `src/main.rs` contains the entire Axum-based web application
+- **Modular web server**: the Axum app is split across `src/main.rs`,
+  `src/content_loader.rs`, `src/markdown.rs`, `src/page_meta.rs`,
+  `src/models.rs`, and `src/state.rs`
 - **Static content**: Uses Rust's axum framework to serve HTML and render Markdown posts
 - **Content-driven**: Blog posts are Markdown files that get converted to HTML at request time
-- **Minimal state**: Only loads banner HTML on startup, posts are read from filesystem per request
+- **Startup-loaded content**: site config, layout, banner, home page,
+  404 page, and posts are loaded during startup
 
 ### Key Components
 - **Axum router**: Handles HTTP routing with two main routes:
   - `/` - Homepage with welcome message and post links
   - `/posts/:slug` - Dynamic post rendering from Markdown files
 - **Markdown processing**: Uses `pulldown-cmark` for Markdown to HTML conversion
+- **Page metadata**: Builds Open Graph and Twitter metadata from post content
+- **Development integration**: Publishes current browser path and injects
+  a hot-reload script when `RUST_ENV=development`
 - **Logging**: Configured with `tracing` and `tracing-subscriber` for structured logging
 
 ### Dependencies
@@ -129,8 +142,12 @@ The `infra/` directory contains Terraform configuration for:
 ```
 content/
 ├── banner.html          # Site header with navigation
+├── home.md              # Home page content
+├── layout.html          # Shared page shell
+├── site.toml            # Site metadata
+├── static/              # Compiled CSS and image assets
 └── posts/
-    └── first-post.md    # Example blog post
+    └── <slug>.md        # Blog post content
 ```
 
 ## Environment Configuration

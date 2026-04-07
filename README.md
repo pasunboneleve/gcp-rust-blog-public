@@ -38,12 +38,14 @@ The focus is not the technology itself, but the shape of the system: making corr
 
 ### Configuration Setup
 
-1. **Set up environment variables**:
+1. **Prepare deployment variables if you need them locally**:
    ```bash
    cp .env.template .env
    # Edit .env with your actual GCP project values
    ```
-   📝 **Template file**: [`.env.template`](.env.template)
+   The checked-in `.envrc` does not automatically load `.env`. Use this
+   file as a template for manual exports or extend your local `direnv`
+   setup if you want it loaded automatically.
 
 2. **Configure infrastructure variables**:
    ```bash
@@ -105,27 +107,35 @@ cargo clippy
 
 ## Project Structure
 ```
-├── src/main.rs              # Single-file Axum web server
+├── src/                     # Axum app, content loading, markdown, metadata
 ├── content/
 │   ├── banner.html          # Site header with navigation
+│   ├── layout.html          # Shared page shell
+│   ├── home.md              # Home page content
 │   └── posts/
-│       └── first-post.md    # Example blog post
+│       └── <slug>.md        # Blog post content
 ├── infra/                   # OpenTofu/Terraform infrastructure
 ├── .github/workflows/       # CI/CD automation
-└── Dockerfile              # Multi-stage container build
+└── Dockerfile               # Multi-stage container build
 ```
 
 ## Architecture
 
 This project implements a **cloud-native, security-first architecture**:
 
-- **Application**: Single-file Rust web server using Axum framework
+- **Application**: Modular Rust web server using Axum
 - **Content**: File-based blog posts in Markdown format
+- **Rendering**: Markdown, KaTeX math, Mermaid diagrams, and social metadata
 - **Infrastructure**: Fully managed with OpenTofu/Terraform
 - **Deployment**: Automated CI/CD with GitHub Actions and Workload Identity
   Federation
-- **Security**: Least-privilege service accounts and organization policies
+- **Security**: Least-privilege service accounts and non-root containers
 - **DNS**: Managed through Google Cloud DNS with OpenTofu
+
+At startup, the app loads site configuration, HTML templates, the home
+page, the 404 page, and post Markdown from `content/`. Requests are
+served from that loaded content plus static assets under
+`content/static/`.
 
 ## Getting Started
 

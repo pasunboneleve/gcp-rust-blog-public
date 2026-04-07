@@ -14,7 +14,7 @@ If you discover a security vulnerability, please report it privately by:
 
 - `infra/prod.tfvars` - Contains project IDs and configuration
 - `infra/*.auto.tfvars` - Auto-loaded variable files
-- `.env` or `.envrc` - Environment variables
+- `.env` - Local environment variables
 - `*.json` - Service account key files
 - Any file containing API keys, passwords, or credentials
 
@@ -35,8 +35,9 @@ When contributing:
 
 1. **Use the template files** - Copy `.template` files and fill in your values
 2. **Check your commits** - Ensure no sensitive data is included
-3. **Use GitHub Secrets** - Store sensitive values in repository secrets
-4. **Follow least privilege** - Request minimal permissions needed
+3. **Do not treat the tracked `.envrc` as a secret** - It is part of the repository's development workflow
+4. **Use GitHub Secrets** - Store sensitive values in repository secrets
+5. **Follow least privilege** - Request minimal permissions needed
 
 ## Production Security
 
@@ -46,6 +47,6 @@ The deployed application follows security best practices:
 - **Least privilege IAM** - Minimal permissions for each service account
 - **HTTPS only** - All traffic encrypted in transit
 - **Container security** - Non-root execution, minimal attack surface
-- **Organization policies** - Additional security controls at GCP org level
+- **Organization-level admin access** - Administrative tasks routed through a dedicated admin service account
 
 For detailed security architecture, see [docs/SECURITY.md](docs/SECURITY.md).
