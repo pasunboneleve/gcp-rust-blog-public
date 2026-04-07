@@ -438,10 +438,6 @@ async fn initialize_state() -> RouterState {
         is_development,
     });
 
-    if is_development {
-        info!("Development reloads are managed by devloop.");
-    }
-
     state::RouterState { app_state: state }
 }
 
