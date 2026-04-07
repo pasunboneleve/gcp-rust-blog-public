@@ -36,7 +36,9 @@ infra/*.auto.tfvars
 
 # AI droppings
 .aider*
+.codex
 .beads/
+docs/DRIFT_REPORT.md
 
 # Node
 node_modules/
