@@ -171,6 +171,10 @@ defined component classes.
 - No global state unless there is a clear documented need.
 - No hardcoded configuration. Keep configuration in config files.
 - NEVER vendor software.
+- When tests must mutate process-global state such as environment
+  variables, isolate the unsafe operation in a small helper, serialize
+  access with a shared lock, and document the safety rationale instead
+  of scattering raw unsafe calls through test bodies.
 
 ## Aesthetic rules for adding content
 - Read the recent posts before changing a new one so the new piece matches the established visual and editorial pattern.

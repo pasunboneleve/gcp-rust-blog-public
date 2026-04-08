@@ -310,7 +310,7 @@ mod tests {
         page_url, site_url, PostMetaInput,
     };
     use crate::models::{FrontMatter, SiteConfig};
-    use std::sync::{Mutex, OnceLock};
+    use crate::test_support::TestEnvGuard;
     use std::time::{SystemTime, UNIX_EPOCH};
 
     fn front_matter_with(image: Option<&str>) -> FrontMatter {
@@ -340,11 +340,6 @@ mod tests {
             .expect("system time")
             .as_nanos();
         std::env::temp_dir().join(format!("{name}-{unique}.json"))
-    }
-
-    fn site_env_lock() -> &'static Mutex<()> {
-        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
-        LOCK.get_or_init(|| Mutex::new(()))
     }
 
     // ── build_social_description ──────────────────────────────────────────────
@@ -579,36 +574,35 @@ mod tests {
 
     #[test]
     fn site_url_prefers_devloop_state_when_present() {
-        let _guard = site_env_lock().lock().expect("lock site env test mutex");
         let path = unique_temp_path("devloop-state");
         std::fs::write(
             &path,
             r#"{"tunnel_url":"https://preview.example.trycloudflare.com"}"#,
         )
         .expect("write state");
-        std::env::set_var("DEVLOOP_STATE", &path);
-        std::env::remove_var("SITE_URL");
-        std::env::remove_var("RUST_ENV");
-        std::env::remove_var("PORT");
+        let path_string = path.to_string_lossy().into_owned();
+        let _guard = TestEnvGuard::set([
+            ("DEVLOOP_STATE", Some(path_string.as_str())),
+            ("SITE_URL", None),
+            ("RUST_ENV", None),
+            ("PORT", None),
+        ]);
 
         assert_eq!(site_url(), "https://preview.example.trycloudflare.com");
 
-        std::env::remove_var("DEVLOOP_STATE");
         std::fs::remove_file(path).expect("cleanup state file");
     }
 
     #[test]
     fn site_url_falls_back_to_localhost_in_development() {
-        let _guard = site_env_lock().lock().expect("lock site env test mutex");
-        std::env::remove_var("DEVLOOP_STATE");
-        std::env::remove_var("SITE_URL");
-        std::env::set_var("RUST_ENV", "development");
-        std::env::set_var("PORT", "18080");
+        let _guard = TestEnvGuard::set([
+            ("DEVLOOP_STATE", None),
+            ("SITE_URL", None),
+            ("RUST_ENV", Some("development")),
+            ("PORT", Some("18080")),
+        ]);
 
         assert_eq!(site_url(), "http://127.0.0.1:18080");
-
-        std::env::remove_var("RUST_ENV");
-        std::env::remove_var("PORT");
     }
 
     #[test]
@@ -659,20 +653,18 @@ mod tests {
 
     #[test]
     fn page_url_expands_relative_page_paths() {
-        let _guard = site_env_lock().lock().expect("lock site env test mutex");
-        std::env::remove_var("DEVLOOP_STATE");
-        std::env::remove_var("SITE_URL");
-        std::env::set_var("RUST_ENV", "development");
-        std::env::set_var("PORT", "18080");
+        let _guard = TestEnvGuard::set([
+            ("DEVLOOP_STATE", None),
+            ("SITE_URL", None),
+            ("RUST_ENV", Some("development")),
+            ("PORT", Some("18080")),
+        ]);
 
         assert_eq!(
             page_url("/posts/example"),
             "http://127.0.0.1:18080/posts/example"
         );
         assert_eq!(page_url(""), "http://127.0.0.1:18080/");
-
-        std::env::remove_var("RUST_ENV");
-        std::env::remove_var("PORT");
     }
 
     #[test]

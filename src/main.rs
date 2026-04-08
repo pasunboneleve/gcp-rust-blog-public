@@ -18,6 +18,8 @@ mod markdown;
 mod models;
 mod page_meta;
 mod state;
+#[cfg(test)]
+mod test_support;
 
 use content_loader::load_content;
 use markdown::render_markdown_to_html;
@@ -495,6 +497,7 @@ mod tests {
     use crate::models::{Post, SiteConfig};
     use crate::page_meta::PageMeta;
     use crate::state::{AppState, DevloopEventClient, RouterState};
+    use crate::test_support::TestEnvGuard;
     use axum::{
         body::{to_bytes, Body},
         extract::State,
@@ -503,20 +506,10 @@ mod tests {
         Json, Router,
     };
     use serde_json::Value;
-    use std::sync::{Arc, Mutex, OnceLock};
+    use std::sync::{Arc, Mutex};
     use tokio::net::TcpListener;
     use tokio::sync::{oneshot, RwLock};
     use tower::ServiceExt;
-
-    fn rust_log_lock() -> &'static Mutex<()> {
-        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
-        LOCK.get_or_init(|| Mutex::new(()))
-    }
-
-    fn devloop_env_lock() -> &'static Mutex<()> {
-        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
-        LOCK.get_or_init(|| Mutex::new(()))
-    }
 
     type CapturedBrowserPathRequest = Arc<Mutex<Option<oneshot::Sender<(String, Value)>>>>;
 
@@ -642,28 +635,20 @@ mod tests {
 
     #[test]
     fn render_hot_reload_script_injects_devloop_events_url_when_present() {
-        let _guard = devloop_env_lock()
-            .lock()
-            .expect("lock devloop env test mutex");
-        std::env::set_var(
+        let _guard = TestEnvGuard::set([(
             "DEVLOOP_BROWSER_EVENTS_URL",
-            "http://127.0.0.1:4455/browser-events",
-        );
+            Some("http://127.0.0.1:4455/browser-events"),
+        )]);
 
         let script = render_hot_reload_script();
 
         assert!(script.contains("\"http://127.0.0.1:4455/browser-events\""));
         assert!(!script.contains("__DEVLOOP_BROWSER_EVENTS_URL__"));
-
-        std::env::remove_var("DEVLOOP_BROWSER_EVENTS_URL");
     }
 
     #[test]
     fn render_hot_reload_script_falls_back_to_null_when_devloop_events_url_is_missing() {
-        let _guard = devloop_env_lock()
-            .lock()
-            .expect("lock devloop env test mutex");
-        std::env::remove_var("DEVLOOP_BROWSER_EVENTS_URL");
+        let _guard = TestEnvGuard::set([("DEVLOOP_BROWSER_EVENTS_URL", None)]);
 
         let script = render_hot_reload_script();
 
@@ -745,45 +730,54 @@ mod tests {
 
     #[test]
     fn default_rust_log_uses_info_when_unset() {
-        let _guard = rust_log_lock().lock().expect("lock RUST_LOG test mutex");
-        std::env::remove_var("RUST_LOG");
+        let _guard = TestEnvGuard::set([("RUST_LOG", None)]);
         assert_eq!(default_rust_log(), "info");
     }
 
     #[test]
     fn default_rust_log_respects_environment_override() {
-        let _guard = rust_log_lock().lock().expect("lock RUST_LOG test mutex");
-        std::env::set_var("RUST_LOG", "warn,gcp_rust_blog=debug");
+        let _guard = TestEnvGuard::set([("RUST_LOG", Some("warn,gcp_rust_blog=debug"))]);
         assert_eq!(default_rust_log(), "warn,gcp_rust_blog=debug");
-        std::env::remove_var("RUST_LOG");
     }
 
     #[test]
     fn load_devloop_event_client_requires_url_and_token() {
-        let _guard = devloop_env_lock()
-            .lock()
-            .expect("lock devloop env test mutex");
-        std::env::remove_var("DEVLOOP_EVENT_BROWSER_PATH_URL");
-        std::env::remove_var("DEVLOOP_EVENTS_TOKEN");
+        {
+            let _guard = TestEnvGuard::set([
+                ("DEVLOOP_EVENT_BROWSER_PATH_URL", None),
+                ("DEVLOOP_EVENTS_TOKEN", None),
+            ]);
 
-        assert!(load_devloop_event_client().is_none());
+            assert!(load_devloop_event_client().is_none());
+        }
 
-        std::env::set_var(
-            "DEVLOOP_EVENT_BROWSER_PATH_URL",
-            "http://127.0.0.1:1/events/browser_path",
-        );
-        assert!(load_devloop_event_client().is_none());
+        {
+            let _guard = TestEnvGuard::set([
+                (
+                    "DEVLOOP_EVENT_BROWSER_PATH_URL",
+                    Some("http://127.0.0.1:1/events/browser_path"),
+                ),
+                ("DEVLOOP_EVENTS_TOKEN", None),
+            ]);
 
-        std::env::set_var("DEVLOOP_EVENTS_TOKEN", "secret");
-        let client = load_devloop_event_client().expect("load client");
-        assert_eq!(
-            client.browser_path_url,
-            "http://127.0.0.1:1/events/browser_path"
-        );
-        assert_eq!(client.token, "secret");
+            assert!(load_devloop_event_client().is_none());
+        }
 
-        std::env::remove_var("DEVLOOP_EVENT_BROWSER_PATH_URL");
-        std::env::remove_var("DEVLOOP_EVENTS_TOKEN");
+        {
+            let _guard = TestEnvGuard::set([
+                (
+                    "DEVLOOP_EVENT_BROWSER_PATH_URL",
+                    Some("http://127.0.0.1:1/events/browser_path"),
+                ),
+                ("DEVLOOP_EVENTS_TOKEN", Some("secret")),
+            ]);
+            let client = load_devloop_event_client().expect("load client");
+            assert_eq!(
+                client.browser_path_url,
+                "http://127.0.0.1:1/events/browser_path"
+            );
+            assert_eq!(client.token, "secret");
+        }
     }
 
     #[tokio::test]
