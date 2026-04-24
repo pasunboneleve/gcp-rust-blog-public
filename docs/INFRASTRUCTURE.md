@@ -334,7 +334,7 @@ Configure these secrets in **GitHub Repository Settings → Secrets and Variable
 | `GCP_PROJECT_NUMBER` | Your GCP Project Number | `123456789012` |
 | `GCP_REGION` | Deployment region | `us-central1` |
 | `GCP_SERVICE_NAME` | Cloud Run service name | `blog` |
-| `GCP_REPO` | Artifact Registry repository | `blog` |
+| `GCP_REPOSITORY_ID` | Artifact Registry repository | `blog` |
 | `GCP_WORKLOAD_IDENTITY_POOL` | WIF Pool ID | `github-pool` |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | WIF Provider ID | `github-provider` |
 | `GCP_SERVICE_ACCOUNT` | Deploy service account email | `github-actions-deploy@my-project.iam.gserviceaccount.com` |

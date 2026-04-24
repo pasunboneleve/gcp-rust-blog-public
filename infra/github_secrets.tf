@@ -37,11 +37,11 @@ resource "github_actions_secret" "gcp_service_name" {
   plaintext_value = var.service_name
 }
 
-resource "github_actions_secret" "gcp_repo" {
+resource "github_actions_secret" "gcp_repository_id" {
   count = local.manage_production_only_resources ? 1 : 0
 
   repository      = var.github_repo
-  secret_name     = "GCP_REPO"
+  secret_name     = "GCP_REPOSITORY_ID"
   plaintext_value = var.repository_id
 }
 

@@ -52,18 +52,18 @@ Set required environment variables first:
 export PROJECT_ID={{GCP_PROJECT_ID}}
 export GCP_REGION={{GCP_REGION}}
 export SERVICE_NAME=blog
-export REPO=blog
+export GCP_REPOSITORY_ID=blog
 ```
 
 Build and deploy to Cloud Run:
 ```bash
 # Build and push with Cloud Build
 gcloud builds submit --project $PROJECT_ID \
-  --tag $GCP_REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$SERVICE_NAME:latest
+  --tag $GCP_REGION-docker.pkg.dev/$PROJECT_ID/$GCP_REPOSITORY_ID/$SERVICE_NAME:latest
 
 # Deploy to Cloud Run
 gcloud run deploy $SERVICE_NAME \
-  --image $GCP_REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$SERVICE_NAME:latest \
+  --image $GCP_REGION-docker.pkg.dev/$PROJECT_ID/$GCP_REPOSITORY_ID/$SERVICE_NAME:latest \
   --region $GCP_REGION --platform managed --allow-unauthenticated \
   --port 8080 --ingress all --project $PROJECT_ID
 ```
