@@ -41,26 +41,20 @@ The focus is not the technology itself, but the shape of the system: making corr
 1. **Prepare deployment variables if you need them locally**:
    ```bash
    cp .env.template .env
-   # Edit .env with your actual GCP project values
+   direnv allow
    ```
-   The checked-in `.envrc` does not automatically load `.env`. Use this
-   file as a template for manual exports or extend your local `direnv`
-   setup if you want it loaded automatically.
+   Edit `.env` with your actual GCP project values. The checked-in
+   `.envrc` loads `.env`, exports Terraform inputs as `TF_VAR_*`, and
+   renders `infra/backend.auto.hcl`.
 
-2. **Configure infrastructure variables**:
-   ```bash
-   cp infra/prod.tfvars.template infra/prod.tfvars
-   # Edit infra/prod.tfvars with your GCP project details
-   ```
-   📝 **Template file**: [`infra/prod.tfvars.template`](infra/prod.tfvars.template)
-
-3. **Create GitHub Personal Access Token**:
+2. **Create GitHub Personal Access Token**:
    - Go to [GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens)
    - Click **"Generate new token (classic)"**
    - Set **Expiration** as needed (e.g., 90 days)
    - Select **repo** scope (full control of private repositories)
    - Click **"Generate token"** and copy the token
-   - Add the token to your `infra/prod.tfvars` file as `github_token`
+   - Add the token to your `.env` file as `GITHUB_TOKEN`, or authenticate
+     with `gh auth login` and let `.envrc` refresh it
 
    ⚠️ **Important**: Store this token securely - GitHub won't show it again!
 
@@ -144,14 +138,14 @@ To deploy your own instance:
 1. **Fork this repository**
 2. **Configure infrastructure**:
    ```bash
-   cp infra/prod.tfvars.template infra/prod.tfvars
-   # Edit infra/prod.tfvars with your GCP project details and GitHub token
+   cp .env.template .env
+   direnv allow
    ```
 3. **Deploy infrastructure**:
    ```bash
    cd infra
    tofu init
-   tofu apply -var-file="prod.tfvars"
+   tofu apply
    ```
    This automatically:
    - Sets up GCP Workload Identity Federation

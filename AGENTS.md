@@ -71,28 +71,16 @@ gcloud run deploy $SERVICE_NAME \
 ### Infrastructure Management
 Bootstrap Terraform state (one-time):
 ```bash
-PROJECT_ID={{GCP_PROJECT_ID}} GCS_BUCKET={{YOUR_TF_STATE_BUCKET}} ./scripts/bootstrap-tf-state.sh
+cp .env.template .env
+direnv allow
+./scripts/bootstrap-tf-state.sh
 ```
 
 Apply infrastructure:
 ```bash
 cd infra
-terraform init -backend-config="bucket={{YOUR_TF_STATE_BUCKET}}" -backend-config="prefix=gcp-rust-blog/infra"
-terraform apply \
-  -var="project_id={{GCP_PROJECT_ID}}" \
-  -var="project_number={{GCP_PROJECT_NUMBER}}" \
-  -var="region={{GCP_REGION}}" \
-  -var="organization_id={{GCP_ORGANIZATION_ID}}" \
-  -var="pool_id={{GCP_WORKLOAD_IDENTITY_POOL}}" \
-  -var="provider_id={{GCP_WORKLOAD_IDENTITY_PROVIDER}}" \
-  -var="github_owner=<github_owner>" \
-  -var="github_repo=gcp-rust-blog" \
-  -var="service_name=blog" \
-  -var="domain_name={{DOMAIN_NAME}}" \
-  -var="dns_zone_name={{DNS_ZONE_NAME}}" \
-  -var="admin_user_email={{ADMIN_USER_EMAIL}}" \
-  -var="cloud_run_url={{CLOUD_RUN_SERVICE_URL}}" \
-  -var="github_token={{GITHUB_PAT}}"
+tofu init
+tofu apply
 ```
 
 ## Architecture Overview

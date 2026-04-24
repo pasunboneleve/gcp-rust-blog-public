@@ -10,44 +10,43 @@ This folder provisions:
 - gcloud (authenticated to the target project)
 - Terraform/OpenTofu 1.5+
 
-## 1) Create a remote state bucket (one-time)
+## 1) Create a root environment file
+
 ```bash
-export PROJECT_ID=<your-project-id>
-export GCS_BUCKET=<globally-unique-bucket-name>
+cp .env.template .env
+direnv allow
+```
+
+Update `.env` with the project, GitHub, domain, and organisation values.
+This file is the local source of truth for Terraform inputs. `.envrc`
+exports them as `TF_VAR_*` values and renders `infra/backend.auto.hcl`.
+Keep `GCP_TF_STATE_PREFIX=gcp-rust-blog/infra` unless you intentionally
+migrate or create a separate Terraform state path.
+
+If you do not use direnv, source `.env` and run
+`scripts/render-backend-config.sh` before `tofu init`.
+
+## 2) Create a remote state bucket (one-time)
+```bash
 ./scripts/bootstrap-tf-state.sh
 ```
 
-## 2) Init with GCS backend
+## 3) Init with GCS backend
 ```bash
 cd infra
-terraform init \
-  -backend-config="bucket=$GCS_BUCKET" \
-  -backend-config="prefix=gcp-rust-blog/infra"
+tofu init
 ```
 
-## 3) Apply
-Set values matching your environment:
+## 4) Apply
 ```bash
-terraform apply \
-  -var="project_id=<PROJECT_ID>" \
-  -var="project_number=<PROJECT_NUMBER>" \
-  -var="region=<REGION>" \
-  -var="organization_id=<ORGANIZATION_ID>" \
-  -var="pool_id=github-pool" \
-  -var="provider_id=github-provider" \
-  -var="github_owner=<GITHUB_OWNER>" \
-  -var="github_repo=<GITHUB_REPO>" \
-  -var="service_name=blog" \
-  -var="domain_name=<DOMAIN_NAME>" \
-  -var="dns_zone_name=<DNS_ZONE_NAME>" \
-  -var="admin_user_email=<ADMIN_USER_EMAIL>" \
-  -var="cloud_run_url=<CLOUD_RUN_HOSTNAME>" \
-  -var="github_token=<GITHUB_PAT>"
+tofu apply
 ```
 
 Notes:
 - `domain_name` is the public domain (e.g., `boneleve.blog`).
 - `dns_zone_name` is the GCP managed-zone identifier (e.g., `boneleve-blog`) and must not contain dots.
 - The DNS managed zone is protected with `prevent_destroy` to avoid accidental production DNS deletion.
+- Do not use `prod.tfvars` or any other tfvars file. Add or change inputs
+  in `.env.template`, `.envrc`, and `infra/variables.tf`.
 
 Outputs will include the WIF resource names.

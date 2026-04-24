@@ -100,8 +100,8 @@ graph TB
 - **Images**: Tagged with GitHub commit SHA
 
 ### 3. Google Cloud DNS
-- **Zone**: Configured via `dns_zone_name` in `infra/prod.tfvars`
-- **Domain**: Configured via `domain_name` in `infra/prod.tfvars`
+- **Zone**: Configured via `DNS_ZONE_NAME` in the root `.env`
+- **Domain**: Configured via `DOMAIN_NAME` in the root `.env`
 - **Records**:
   - `www.<domain_name>` → A record → Global Load Balancer IP
   - `<domain_name>` → A record → Global Load Balancer IP
@@ -126,14 +126,14 @@ infra/
 ├── versions.tf         # Provider versions
 ├── backend.tf          # GCS backend configuration
 ├── providers.tf        # GCP provider setup
-├── prod.tfvars         # Production variable values
+├── backend.auto.hcl    # Generated backend config, ignored by git
 └── README.md          # Infrastructure-specific docs
 ```
 
 ### State Management
 - **Backend**: Google Cloud Storage
 - **Bucket**: Configured when bootstrapping the backend
-- **Path**: Controlled by the `prefix` passed to `tofu init`
+- **Path**: Generated into `infra/backend.auto.hcl` from the root `.env`
 - **Consistency**: Managed by the GCS backend; no separate lock resource is defined in this repo
 - **Versioning**: Enabled with 30-day retention
 
@@ -321,18 +321,13 @@ tofu output workload_identity_pool_name
 tofu output workload_identity_provider_name
 ```
 
-### OpenTofu Variables (prod.tfvars)
-```hcl
-project_id      = "your-gcp-project-id"
-project_number  = "your-project-number"
-region          = "your-preferred-region"  # e.g., us-central1, europe-west1
-organization_id = "your-organization-id"   # Find with: gcloud organizations list
-pool_id         = "github-pool"
-provider_id     = "github-provider"
-github_owner    = "your-github-username"
-github_repo     = "your-repo-name"
-# Note: service_account_email is automatically constructed from project_id
-```
+### OpenTofu variables
+
+The root `.env` file is the local source of truth. `.envrc` exports
+Terraform inputs as `TF_VAR_*` variables and renders
+`infra/backend.auto.hcl`. Keep `GCP_TF_STATE_PREFIX=gcp-rust-blog/infra`
+unless you intentionally migrate or create a separate Terraform state path.
+Do not use `prod.tfvars` or other tfvars files.
 
 ## Deployment Procedures
 
@@ -340,25 +335,24 @@ github_repo     = "your-repo-name"
 
 1. **Configure your environment**:
 ```bash
-# Copy template and fill in your values
-cp infra/prod.tfvars.template infra/prod.tfvars
-# Edit infra/prod.tfvars with your project details
+cp .env.template .env
+direnv allow
 ```
 
 2. **Bootstrap GCS backend** (one-time):
 ```bash
-PROJECT_ID=your-project-id BUCKET=your-tf-state-bucket ./scripts/bootstrap-tf-state.sh
+./scripts/bootstrap-tf-state.sh
 ```
 
 3. **Initialize OpenTofu**:
 ```bash
 cd infra
-tofu init -backend-config="bucket=your-tf-state-bucket" -backend-config="prefix=your-project/infra"
+tofu init
 ```
 
 4. **Apply infrastructure**:
 ```bash
-tofu apply -var-file="prod.tfvars"
+tofu apply
 ```
 
 ### Administrative Operations
