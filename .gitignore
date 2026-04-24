@@ -8,6 +8,7 @@ Cargo.lock
 
 # Terraform/OpenTofu
 infra/.terraform/
+infra/**/.terraform/
 infra/*.tfstate
 infra/*.tfstate.*
 infra/.terraform.lock.hcl
@@ -16,6 +17,7 @@ infra/prod.tfvars
 infra/dev.tfvars
 infra/*.auto.tfvars
 infra/backend.auto.hcl
+infra/**/backend.auto.hcl
 
 # Service account keys (if any)
 *.json

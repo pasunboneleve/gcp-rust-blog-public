@@ -120,20 +120,25 @@ graph TB
 
 ```bash
 infra/
-├── main.tf              # Core resources and service accounts
-├── variables.tf         # Input variables
-├── outputs.tf          # Resource outputs
-├── versions.tf         # Provider versions
-├── backend.tf          # GCS backend configuration
-├── providers.tf        # GCP provider setup
-├── backend.auto.hcl    # Generated backend config, ignored by git
-└── README.md          # Infrastructure-specific docs
+├── immutable/           # Non-rehearseable production resources
+│   ├── backend.tf
+│   ├── main.tf
+│   ├── variables.tf
+│   └── ...
+├── testable/            # Rehearseable production resources and dress template
+│   ├── backend.tf
+│   ├── main.tf
+│   ├── variables.tf
+│   └── ...
+└── README.md            # Infrastructure-specific docs
 ```
 
 ### State Management
 - **Backend**: Google Cloud Storage
 - **Bucket**: Configured when bootstrapping the backend
-- **Path**: Generated into `infra/backend.auto.hcl` from the root `.env`
+- **Paths**:
+  - `gcp-rust-blog/immutable` for non-rehearseable production resources
+  - `gcp-rust-blog/testable` for production resources that can be rehearsed
 - **Consistency**: Managed by the GCS backend; no separate lock resource is defined in this repo
 - **Versioning**: Enabled with 30-day retention
 
@@ -196,9 +201,13 @@ uses run-local state, and injects:
 - `TF_VAR_is_dress_rehearsal=true`
 - `TF_VAR_dress_run_id=<run-id>`
 
-The Terraform code uses those inputs to create run-scoped names for
-resources that are cheap to create and destroy. It skips resources that
-are unsafe or misleading to rehearse:
+`dress` runs against `infra/testable`, not the whole `infra/` tree. The
+`infra/testable` remote state owns the production instances of rehearseable
+resources. In isolated mode, `dress` copies that root, forces local state, and
+uses `dress_run_id` to create and destroy alternate-named resources. It does
+not touch the remote production `infra/testable` state.
+
+`infra/immutable` owns resources that are unsafe or misleading to rehearse:
 
 - Workload Identity pools and providers are skipped because GCP
   tombstones deleted IDs.
@@ -215,6 +224,8 @@ Cloud Run is deployed by CI in this repository rather than created by
 Terraform. Rehearsals can still create serverless NEG and load-balancer
 scaffolding with a run-scoped service name, but a full request path needs
 an independently deployed rehearsal service.
+
+Do not use `dress --disable-isolation` for this repository.
 
 ## Deployment Pipeline
 
@@ -356,10 +367,9 @@ tofu output workload_identity_provider_name
 ### OpenTofu variables
 
 The root `.env` file is the local source of truth. `.envrc` exports
-Terraform inputs as `TF_VAR_*` variables and renders
-`infra/backend.auto.hcl`. Keep `GCP_TF_STATE_PREFIX=gcp-rust-blog/infra`
-unless you intentionally migrate or create a separate Terraform state path.
-Do not use `prod.tfvars` or other tfvars files.
+Terraform inputs as `TF_VAR_*` variables and renders backend config for
+`infra/immutable` and `infra/testable`. Do not use `prod.tfvars` or other
+tfvars files.
 
 ## Deployment Procedures
 
@@ -379,12 +389,14 @@ direnv allow
 3. **Initialize OpenTofu**:
 ```bash
 cd infra
-tofu init
+tofu -chdir=immutable init -backend-config=backend.auto.hcl
+tofu -chdir=testable init -backend-config=backend.auto.hcl
 ```
 
 4. **Apply infrastructure**:
 ```bash
-tofu apply
+tofu -chdir=testable apply
+tofu -chdir=immutable apply
 ```
 
 ### Administrative Operations

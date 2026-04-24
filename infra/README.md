@@ -1,10 +1,14 @@
 # Infrastructure (OpenTofu/Terraform)
 
-This folder provisions:
-- Workload Identity Pool and Provider for GitHub OIDC
-- IAM binding to let your GitHub repo impersonate the deploy service account
-- Project roles for the deploy service account (Cloud Run, IAM service-account use, Artifact Registry, Service Usage, Load Balancer Admin)
-- Artifact Registry, Cloud DNS, load balancer resources, and GitHub Actions secrets
+This folder has two Terraform/OpenTofu roots:
+
+- `immutable/` owns production resources that are not safe to create and
+  destroy in rehearsals.
+- `testable/` owns the production instances of resources that can be
+  rehearsed with alternate names in isolated `dress` runs.
+
+`dress` must run against `infra/testable` only, in its default isolated mode.
+Do not use `dress --disable-isolation` for this repository.
 
 ## Prereqs
 - gcloud (authenticated to the target project)
@@ -19,9 +23,10 @@ direnv allow
 
 Update `.env` with the project, GitHub, domain, and organisation values.
 This file is the local source of truth for Terraform inputs. `.envrc`
-exports them as `TF_VAR_*` values and renders `infra/backend.auto.hcl`.
-Keep `GCP_TF_STATE_PREFIX=gcp-rust-blog/infra` unless you intentionally
-migrate or create a separate Terraform state path.
+exports them as `TF_VAR_*` values and renders:
+
+- `infra/immutable/backend.auto.hcl`
+- `infra/testable/backend.auto.hcl`
 
 If you do not use direnv, source `.env` and run
 `scripts/render-backend-config.sh` before `tofu init`.
@@ -31,15 +36,16 @@ If you do not use direnv, source `.env` and run
 ./scripts/bootstrap-tf-state.sh
 ```
 
-## 3) Init with GCS backend
+## 3) Init remote states
 ```bash
-cd infra
-tofu init
+tofu -chdir=infra/immutable init -backend-config=backend.auto.hcl
+tofu -chdir=infra/testable init -backend-config=backend.auto.hcl
 ```
 
-## 4) Apply
+## 4) Apply production state
 ```bash
-tofu apply
+tofu -chdir=infra/testable apply
+tofu -chdir=infra/immutable apply
 ```
 
 Notes:
@@ -47,21 +53,22 @@ Notes:
 - `dns_zone_name` is the GCP managed-zone identifier (e.g., `boneleve-blog`) and must not contain dots.
 - The DNS managed zone is protected with `prevent_destroy` to avoid accidental production DNS deletion.
 - Do not use `prod.tfvars` or any other tfvars file. Add or change inputs
-  in `.env.template`, `.envrc`, and `infra/variables.tf`.
+  in `.env.template`, `.envrc`, and the root-specific `variables.tf`.
 
 Outputs will include the WIF resource names.
 
 ## Dress rehearsals
 
-Run isolated infrastructure rehearsals from this directory:
+Run isolated infrastructure rehearsals against the testable root:
 
 ```bash
 dress
 ```
 
-`dress` injects `is_dress_rehearsal=true` and a unique `dress_run_id`
-into the child Terraform/OpenTofu process. The HCL uses those values to
-give disposable resources run-scoped names.
+`.envrc` sets `DRESS_DEPLOYMENT_ROOT=infra/testable`. In default isolated
+mode, `dress` copies that root, forces local state, injects
+`is_dress_rehearsal=true` and `dress_run_id`, applies, collects outputs, and
+destroys only the alternate-named rehearsal resources.
 
 Rehearsals intentionally skip resources that are not safe to create and
 destroy:
@@ -75,8 +82,15 @@ destroy:
   control plane outside a disposable test run.
 - Managed SSL certificates, because they validate real public domains.
 
-The rehearsal path still exercises run-scoped service accounts, project
-IAM bindings, Artifact Registry, and load-balancer scaffolding. Cloud Run
-itself is deployed by CI rather than Terraform, so the serverless NEG uses
-a run-scoped service name during rehearsals but does not create an
-application service.
+The `infra/testable` remote state still owns the production instances of those
+resources. The isolated `dress` run does not touch that remote state.
+
+## State migration
+
+This split uses two remote backend prefixes:
+
+- `gcp-rust-blog/immutable`
+- `gcp-rust-blog/testable`
+
+Import existing production resources into the matching root. Do not apply the
+new roots against empty remote state until imports have been reviewed.

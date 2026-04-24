@@ -45,7 +45,7 @@ The focus is not the technology itself, but the shape of the system: making corr
    ```
    Edit `.env` with your actual GCP project values. The checked-in
    `.envrc` loads `.env`, exports Terraform inputs as `TF_VAR_*`, and
-   renders `infra/backend.auto.hcl`.
+   renders backend config for `infra/immutable` and `infra/testable`.
 
 2. **Create GitHub Personal Access Token**:
    - Go to [GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens)
@@ -143,9 +143,10 @@ To deploy your own instance:
    ```
 3. **Deploy infrastructure**:
    ```bash
-   cd infra
-   tofu init
-   tofu apply
+   tofu -chdir=infra/testable init -backend-config=backend.auto.hcl
+   tofu -chdir=infra/immutable init -backend-config=backend.auto.hcl
+   tofu -chdir=infra/testable apply
+   tofu -chdir=infra/immutable apply
    ```
    This automatically:
    - Sets up GCP Workload Identity Federation
