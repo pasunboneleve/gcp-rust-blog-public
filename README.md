@@ -145,13 +145,13 @@ To deploy your own instance:
    ```bash
    tofu -chdir=infra/testable init -backend-config=backend.auto.hcl
    tofu -chdir=infra/immutable init -backend-config=backend.auto.hcl
-   tofu -chdir=infra/testable apply
-   tofu -chdir=infra/immutable apply
+   tofu -chdir=infra/testable plan
+   tofu -chdir=infra/immutable plan
    ```
-   This automatically:
-   - Sets up GCP Workload Identity Federation
-   - Configures all required GitHub repository secrets
-   - Provisions infrastructure components
+   For this production project, import existing resources into the matching
+   root before applying. `infra/immutable` owns resources that must not be
+   destroyed and recreated. `infra/testable` owns resources that can be
+   rehearsed with alternate names through `scripts/dress-testable.sh`.
 4. **Deploy**: Push to main branch triggers automatic deployment
 
 ### CI/CD Build Modes

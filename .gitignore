@@ -12,6 +12,8 @@ infra/**/.terraform/
 infra/*.tfstate
 infra/*.tfstate.*
 infra/.terraform.lock.hcl
+infra/**/.terraform.lock.hcl
+infra/**/.dress-runs/
 infra/terraform.tfvars
 infra/prod.tfvars
 infra/dev.tfvars

@@ -195,17 +195,14 @@ graph TD
 
 Infrastructure rehearsals use
 [`dress-rehearsal`](https://github.com/pasunboneleve/dress-rehearsal) in
-isolated mode. `dress` copies the Terraform/OpenTofu deployment root,
-uses run-local state, and injects:
+isolated mode. Run them through `scripts/dress-testable.sh`, not raw `dress`.
+The wrapper points `dress` at `infra/testable`, exports alternate
+`TF_VAR_*` names, and then lets `dress` copy the root, force local state,
+apply, collect outputs, and destroy the alternate-named resources. It does not
+touch the remote production `infra/testable` state.
 
-- `TF_VAR_is_dress_rehearsal=true`
-- `TF_VAR_dress_run_id=<run-id>`
-
-`dress` runs against `infra/testable`, not the whole `infra/` tree. The
-`infra/testable` remote state owns the production instances of rehearseable
-resources. In isolated mode, `dress` copies that root, forces local state, and
-uses `dress_run_id` to create and destroy alternate-named resources. It does
-not touch the remote production `infra/testable` state.
+The HCL does not branch on rehearsal flags. The safety boundary is the root
+split: a resource belongs to either `immutable/` or `testable/`, never both.
 
 `infra/immutable` owns resources that are unsafe or misleading to rehearse:
 
@@ -219,6 +216,10 @@ not touch the remote production `infra/testable` state.
   organisation policy.
 - Managed SSL certificates are skipped because they require real domain
   validation.
+- Production service accounts and their IAM grants are skipped when destroying
+  them would break GitHub authentication, deployment, or operator access. A
+  service account may live in `testable/` only when every dependent path is
+  also safe to destroy and recreate.
 
 Cloud Run is deployed by CI in this repository rather than created by
 Terraform. Rehearsals can still create serverless NEG and load-balancer
@@ -226,6 +227,26 @@ scaffolding with a run-scoped service name, but a full request path needs
 an independently deployed rehearsal service.
 
 Do not use `dress --disable-isolation` for this repository.
+
+### State ownership
+
+Import existing production resources into the new remote states before any
+apply:
+
+- `infra/immutable`: project services, Workload Identity Federation,
+  production service accounts, deployment IAM, public Cloud Run invoker IAM,
+  public DNS, managed SSL certificate, organisation IAM, and GitHub Actions
+  secrets.
+- `infra/testable`: Artifact Registry and load-balancer scaffolding whose
+  names are explicit variables and can be replaced for rehearsals.
+
+The old `gcp-rust-blog/infra` state is a migration source only after the split.
+Do not use it for new applies.
+
+`LOAD_BALANCER_IP` is required. Immutable DNS records should not appear or
+disappear based on an empty string. During migration, import the existing
+global address into `infra/testable`, write its IP to `.env`, then import and
+plan `infra/immutable`.
 
 ## Deployment Pipeline
 
@@ -348,16 +369,14 @@ Configure these secrets in **GitHub Repository Settings → Secrets and Variable
 | `GCP_REPOSITORY_ID` | Artifact Registry repository | `blog` |
 | `GCP_WORKLOAD_IDENTITY_POOL` | WIF Pool ID | `github-pool` |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | WIF Provider ID | `github-provider` |
-| `GCP_SERVICE_ACCOUNT` | Deploy service account email | `github-actions-deploy@my-project.iam.gserviceaccount.com` |
 
 **How to find these values:**
 ```bash
 # Project ID and Number
 gcloud projects list
 
-# After running OpenTofu, get service account email
-cd infra
-tofu output impersonated_service_account
+# After importing immutable state, get the deploy service account email
+tofu -chdir=infra/immutable output deploy_service_account_email
 
 # Workload Identity Pool and Provider names
 tofu output workload_identity_pool_name
@@ -393,11 +412,10 @@ tofu -chdir=immutable init -backend-config=backend.auto.hcl
 tofu -chdir=testable init -backend-config=backend.auto.hcl
 ```
 
-4. **Apply infrastructure**:
-```bash
-tofu -chdir=testable apply
-tofu -chdir=immutable apply
-```
+4. **Import and plan infrastructure**:
+Import existing production resources into the matching root before any apply.
+Then run `tofu plan` for each root and apply only after the plan matches the
+intended ownership map.
 
 ### Administrative Operations
 

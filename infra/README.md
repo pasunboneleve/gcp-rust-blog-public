@@ -7,7 +7,8 @@ This folder has two Terraform/OpenTofu roots:
 - `testable/` owns the production instances of resources that can be
   rehearsed with alternate names in isolated `dress` runs.
 
-`dress` must run against `infra/testable` only, in its default isolated mode.
+Run rehearsals through `scripts/dress-testable.sh`. The wrapper points `dress`
+at `infra/testable` and gives every create/destroy resource an alternate name.
 Do not use `dress --disable-isolation` for this repository.
 
 ## Prereqs
@@ -43,10 +44,8 @@ tofu -chdir=infra/testable init -backend-config=backend.auto.hcl
 ```
 
 ## 4) Apply production state
-```bash
-tofu -chdir=infra/testable apply
-tofu -chdir=infra/immutable apply
-```
+Import existing production resources before the first apply. Then apply each
+root only after its state matches the resources it owns.
 
 Notes:
 - `domain_name` is the public domain (e.g., `boneleve.blog`).
@@ -62,13 +61,13 @@ Outputs will include the WIF resource names.
 Run isolated infrastructure rehearsals against the testable root:
 
 ```bash
-dress
+./scripts/dress-testable.sh
 ```
 
-`.envrc` sets `DRESS_DEPLOYMENT_ROOT=infra/testable`. In default isolated
-mode, `dress` copies that root, forces local state, injects
-`is_dress_rehearsal=true` and `dress_run_id`, applies, collects outputs, and
-destroys only the alternate-named rehearsal resources.
+The script sets `DRESS_DEPLOYMENT_ROOT=infra/testable`, exports run-scoped
+`TF_VAR_*` names, then invokes `dress` in its default isolated mode. The HCL
+does not contain rehearsal conditionals. A resource belongs to exactly one
+root.
 
 Rehearsals intentionally skip resources that are not safe to create and
 destroy:
@@ -81,6 +80,10 @@ destroy:
 - Organisation IAM bindings, because they mutate an organisation-level
   control plane outside a disposable test run.
 - Managed SSL certificates, because they validate real public domains.
+- Production service accounts and their IAM grants, because destroying them
+  can break GitHub authentication, deployment, or operator access. A service
+  account may live in `testable/` only when all resources depending on it are
+  also safe to destroy and recreate.
 
 The `infra/testable` remote state still owns the production instances of those
 resources. The isolated `dress` run does not touch that remote state.
@@ -94,3 +97,31 @@ This split uses two remote backend prefixes:
 
 Import existing production resources into the matching root. Do not apply the
 new roots against empty remote state until imports have been reviewed.
+
+`LOAD_BALANCER_IP` is required because immutable DNS records must not appear or
+disappear based on an empty string. During migration, import the existing
+global address into `infra/testable`, put its IP in `.env`, then import and
+plan `infra/immutable`.
+
+Initial ownership map:
+
+- `immutable/`
+  - Google project services
+  - Workload Identity pool and provider
+  - Deploy and admin service accounts
+  - WIF impersonation binding
+  - Project IAM bindings for the deploy service account
+  - Admin service account impersonation bindings
+  - Cloud Run public invoker binding
+  - Cloud DNS zone and A records
+  - Managed SSL certificate
+  - Organisation IAM bindings
+  - GitHub Actions secrets
+- `testable/`
+  - Artifact Registry repository
+  - Global address, serverless NEG, backend service, URL maps, proxies, and
+    forwarding rules
+
+`testable/` resources use production names during normal remote-state applies
+and alternate names from `scripts/dress-testable.sh` during isolated `dress`
+runs.
