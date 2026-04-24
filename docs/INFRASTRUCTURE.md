@@ -395,13 +395,13 @@ Use the dedicated admin service account for organization-level tasks:
 # Organization policy management
 gcloud resource-manager org-policies set-policy policy.yaml \
   --organization={ORGANIZATION_ID} \
-  --impersonate-service-account=infrastructure-admin@{PROJECT_ID}.iam.gserviceaccount.com
+  --impersonate-service-account=infrastructure-admin@{GCP_PROJECT_ID}.iam.gserviceaccount.com
 
 # DNS management
 gcloud dns record-sets transaction start \
   --zone=<DNS_ZONE_NAME> \
-  --project={PROJECT_ID} \
-  --impersonate-service-account=infrastructure-admin@{PROJECT_ID}.iam.gserviceaccount.com
+  --project={GCP_PROJECT_ID} \
+  --impersonate-service-account=infrastructure-admin@{GCP_PROJECT_ID}.iam.gserviceaccount.com
 ```
 
 ## Security Considerations
