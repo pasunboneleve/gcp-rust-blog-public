@@ -2,11 +2,11 @@
 set -euo pipefail
 
 # Required env vars: PROJECT_ID, GCP_REGION
-# Optional: SERVICE_NAME (default gcp-rust-blog), REPO (default blog)
+# Optional: GCP_SERVICE_NAME/SERVICE_NAME and GCP_REPO/GCP_REPOSITORY_ID/REPO
 : "${PROJECT_ID:?Set PROJECT_ID}"
 : "${GCP_REGION:?Set GCP_REGION}"
-SERVICE_NAME=${SERVICE_NAME:-gcp-rust-blog}
-REPO=${REPO:-blog}
+SERVICE_NAME=${GCP_SERVICE_NAME:-${SERVICE_NAME:-blog}}
+REPO=${GCP_REPO:-${GCP_REPOSITORY_ID:-${REPO:-blog}}}
 
 IMAGE="${GCP_REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${SERVICE_NAME}:$(git rev-parse --short HEAD 2>/dev/null || echo latest)"
 

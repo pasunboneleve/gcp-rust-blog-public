@@ -13,8 +13,8 @@ on:
 env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GCP_REGION: ${{ secrets.GCP_REGION }}
-  GCP_SERVICE_NAME: blog
-  GCP_REPO: blog
+  GCP_SERVICE_NAME: ${{ secrets.GCP_SERVICE_NAME }}
+  GCP_REPO: ${{ secrets.GCP_REPO }}
 
 jobs:
   deploy:

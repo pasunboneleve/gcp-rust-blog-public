@@ -13,6 +13,28 @@ variable "region" {
   type        = string
 }
 
+variable "repository_id" {
+  description = "Artifact Registry repository name used by the deploy workflow"
+  type        = string
+}
+
+variable "is_dress_rehearsal" {
+  description = "True when dress is running an isolated rehearsal and production-only resources should be skipped."
+  type        = bool
+  default     = false
+}
+
+variable "dress_run_id" {
+  description = "Run identifier injected by dress-rehearsal for rehearsal-scoped resource names."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = !var.is_dress_rehearsal || length(var.dress_run_id) > 0
+    error_message = "dress_run_id is required when is_dress_rehearsal is true."
+  }
+}
+
 variable "pool_id" {
   description = "Workload Identity Pool ID (e.g., github-pool)"
   type        = string
@@ -36,6 +58,18 @@ variable "github_repo" {
 variable "service_name" {
   description = "Cloud Run service name"
   type        = string
+}
+
+variable "container_port" {
+  description = "Container port exposed by the application."
+  type        = number
+  default     = 8080
+}
+
+variable "cloud_run_image_tag" {
+  description = "Container image tag used by deployment workflows."
+  type        = string
+  default     = "latest"
 }
 
 variable "domain_name" {
@@ -77,4 +111,6 @@ variable "github_token" {
   description = "GitHub Personal Access Token with repo scope for managing repository secrets"
   type        = string
   sensitive   = true
+  default     = null
+  nullable    = true
 }

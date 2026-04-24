@@ -50,3 +50,33 @@ Notes:
   in `.env.template`, `.envrc`, and `infra/variables.tf`.
 
 Outputs will include the WIF resource names.
+
+## Dress rehearsals
+
+Run isolated infrastructure rehearsals from this directory:
+
+```bash
+dress
+```
+
+`dress` injects `is_dress_rehearsal=true` and a unique `dress_run_id`
+into the child Terraform/OpenTofu process. The HCL uses those values to
+give disposable resources run-scoped names.
+
+Rehearsals intentionally skip resources that are not safe to create and
+destroy:
+
+- Workload Identity pools and providers, because deleted IDs enter a
+  provider-side tombstone period and cannot be recreated immediately.
+- GitHub Actions secrets, because they mutate the real repository.
+- Cloud DNS managed zones and records, because they control the public
+  production domain.
+- Organisation IAM bindings, because they mutate an organisation-level
+  control plane outside a disposable test run.
+- Managed SSL certificates, because they validate real public domains.
+
+The rehearsal path still exercises run-scoped service accounts, project
+IAM bindings, Artifact Registry, and load-balancer scaffolding. Cloud Run
+itself is deployed by CI rather than Terraform, so the serverless NEG uses
+a run-scoped service name during rehearsals but does not create an
+application service.

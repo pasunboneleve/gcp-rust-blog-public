@@ -1,4 +1,11 @@
 locals {
+  rehearsal_suffix = substr(replace(lower(var.dress_run_id), "/[^a-z0-9-]/", "-"), 0, 12)
+
+  deploy_service_account_id = var.is_dress_rehearsal ? "dr-${local.rehearsal_suffix}-deploy" : "github-actions-deploy"
+  admin_service_account_id  = var.is_dress_rehearsal ? "dr-${local.rehearsal_suffix}-admin" : "infrastructure-admin"
+  artifact_repository_id    = var.is_dress_rehearsal ? "blog-${local.rehearsal_suffix}" : var.repository_id
+  cloud_run_service_name    = var.is_dress_rehearsal ? "blog-${local.rehearsal_suffix}" : var.service_name
+
   # Roles the deploy SA needs at the project level
   sa_roles = [
     "roles/run.admin",
@@ -25,6 +32,15 @@ locals {
 
   # GitHub repository selector (owner/repo)
   github_repo_attr = "${var.github_owner}/${var.github_repo}"
+
+  # Workload Identity resources enter a provider-side soft-delete tombstone
+  # after deletion. Dress rehearsals must skip them because a create/destroy
+  # cycle can block the same IDs from being recreated for production tests.
+  manage_wif_resources = !var.is_dress_rehearsal
+
+  # Public DNS and organization IAM mutate production control planes that are
+  # not owned by a disposable rehearsal run.
+  manage_production_only_resources = !var.is_dress_rehearsal
 }
 
 # Enable required Google Cloud APIs
@@ -38,6 +54,8 @@ resource "google_project_service" "apis" {
 }
 
 resource "google_iam_workload_identity_pool" "github" {
+  count = local.manage_wif_resources ? 1 : 0
+
   project                   = var.project_id
   workload_identity_pool_id = var.pool_id
   display_name              = var.pool_id
@@ -46,8 +64,10 @@ resource "google_iam_workload_identity_pool" "github" {
 }
 
 resource "google_iam_workload_identity_pool_provider" "github" {
+  count = local.manage_wif_resources ? 1 : 0
+
   project                            = var.project_id
-  workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github[count.index].workload_identity_pool_id
   workload_identity_pool_provider_id = var.provider_id
   display_name                       = var.provider_id
 
@@ -71,7 +91,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 # Create the service account for GitHub Actions
 resource "google_service_account" "github_actions" {
   project      = var.project_id
-  account_id   = "github-actions-deploy"
+  account_id   = local.deploy_service_account_id
   display_name = "GitHub Actions Deploy"
   description  = "Service account for GitHub Actions deployments"
 
@@ -81,7 +101,7 @@ resource "google_service_account" "github_actions" {
 # Create administrative service account for organization-level tasks
 resource "google_service_account" "admin" {
   project      = var.project_id
-  account_id   = "infrastructure-admin"
+  account_id   = local.admin_service_account_id
   display_name = "Infrastructure Admin"
   description  = "Service account for administrative and organization policy tasks"
 
@@ -92,7 +112,7 @@ resource "google_service_account" "admin" {
 resource "google_artifact_registry_repository" "blog" {
   project       = var.project_id
   location      = var.region
-  repository_id = "blog"
+  repository_id = local.artifact_repository_id
   description   = "Blog container images"
   format        = "DOCKER"
 
@@ -101,6 +121,8 @@ resource "google_artifact_registry_repository" "blog" {
 
 # Create the service account for GitHub Actions
 resource "google_service_account_iam_binding" "wif_impersonation" {
+  count = local.manage_wif_resources ? 1 : 0
+
   service_account_id = google_service_account.github_actions.id
   role               = "roles/iam.workloadIdentityUser"
   members = [
@@ -118,6 +140,8 @@ resource "google_project_iam_member" "sa_roles" {
 
 # DNS Zone for boneleve.blog
 resource "google_dns_managed_zone" "boneleve_blog" {
+  count = local.manage_production_only_resources ? 1 : 0
+
   project     = var.project_id
   name        = var.dns_zone_name
   dns_name    = "${var.domain_name}."
@@ -132,8 +156,10 @@ resource "google_dns_managed_zone" "boneleve_blog" {
 
 # A record pointing to load balancer for www subdomain
 resource "google_dns_record_set" "blog_www_a_record" {
+  count = local.manage_production_only_resources ? 1 : 0
+
   project      = var.project_id
-  managed_zone = google_dns_managed_zone.boneleve_blog.name
+  managed_zone = google_dns_managed_zone.boneleve_blog[count.index].name
   name         = "www.${var.domain_name}."
   type         = "A"
   ttl          = 300
@@ -144,6 +170,8 @@ resource "google_dns_record_set" "blog_www_a_record" {
 
 # Allow public access to the blog service
 resource "google_cloud_run_service_iam_member" "public_access" {
+  count = local.manage_production_only_resources ? 1 : 0
+
   location = var.region
   project  = var.project_id
   service  = var.service_name
@@ -155,18 +183,24 @@ resource "google_cloud_run_service_iam_member" "public_access" {
 
 # Organization-level roles for administrative service account
 resource "google_organization_iam_member" "admin_org_policy" {
+  count = local.manage_production_only_resources ? 1 : 0
+
   org_id = var.organization_id
   role   = "roles/orgpolicy.policyAdmin"
   member = "serviceAccount:${google_service_account.admin.email}"
 }
 
 resource "google_organization_iam_member" "admin_security" {
+  count = local.manage_production_only_resources ? 1 : 0
+
   org_id = var.organization_id
   role   = "roles/securitycenter.adminViewer"
   member = "serviceAccount:${google_service_account.admin.email}"
 }
 
 resource "google_organization_iam_member" "admin_service_usage" {
+  count = local.manage_production_only_resources ? 1 : 0
+
   org_id = var.organization_id
   role   = "roles/serviceusage.serviceUsageAdmin"
   member = "serviceAccount:${google_service_account.admin.email}"
@@ -191,8 +225,10 @@ resource "google_service_account_iam_binding" "admin_user" {
 
 # A record for apex domain pointing to load balancer
 resource "google_dns_record_set" "blog_apex_a_record" {
+  count = local.manage_production_only_resources ? 1 : 0
+
   project      = var.project_id
-  managed_zone = google_dns_managed_zone.boneleve_blog.name
+  managed_zone = google_dns_managed_zone.boneleve_blog[count.index].name
   name         = "${var.domain_name}."
   type         = "A"
   ttl          = 300

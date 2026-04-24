@@ -1,9 +1,11 @@
 output "workload_identity_pool_name" {
-  value = local.wif_pool_name
+  description = "Configured production WIF pool name. The resource itself is skipped during dress rehearsals because WIF IDs are tombstoned on delete."
+  value       = local.wif_pool_name
 }
 
 output "workload_identity_provider_name" {
-  value = local.wif_provider_name
+  description = "Configured production WIF provider name. The resource itself is skipped during dress rehearsals because WIF IDs are tombstoned on delete."
+  value       = local.wif_provider_name
 }
 
 output "impersonated_service_account" {

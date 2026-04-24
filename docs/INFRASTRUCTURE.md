@@ -186,6 +186,36 @@ graph TD
     class AR,DNS,RECORDS,CR infra
 ```
 
+## Dress rehearsal boundaries
+
+Infrastructure rehearsals use
+[`dress-rehearsal`](https://github.com/pasunboneleve/dress-rehearsal) in
+isolated mode. `dress` copies the Terraform/OpenTofu deployment root,
+uses run-local state, and injects:
+
+- `TF_VAR_is_dress_rehearsal=true`
+- `TF_VAR_dress_run_id=<run-id>`
+
+The Terraform code uses those inputs to create run-scoped names for
+resources that are cheap to create and destroy. It skips resources that
+are unsafe or misleading to rehearse:
+
+- Workload Identity pools and providers are skipped because GCP
+  tombstones deleted IDs.
+- GitHub Actions secrets are skipped because they mutate the real
+  repository.
+- Cloud DNS zones and records are skipped because they control the
+  production domain.
+- Organisation IAM bindings are skipped because they affect shared
+  organisation policy.
+- Managed SSL certificates are skipped because they require real domain
+  validation.
+
+Cloud Run is deployed by CI in this repository rather than created by
+Terraform. Rehearsals can still create serverless NEG and load-balancer
+scaffolding with a run-scoped service name, but a full request path needs
+an independently deployed rehearsal service.
+
 ## Deployment Pipeline
 
 ### GitHub Actions Workflow
@@ -303,6 +333,8 @@ Configure these secrets in **GitHub Repository Settings → Secrets and Variable
 | `GCP_PROJECT_ID` | Your GCP Project ID | `my-blog-project-123` |
 | `GCP_PROJECT_NUMBER` | Your GCP Project Number | `123456789012` |
 | `GCP_REGION` | Deployment region | `us-central1` |
+| `GCP_SERVICE_NAME` | Cloud Run service name | `blog` |
+| `GCP_REPO` | Artifact Registry repository | `blog` |
 | `GCP_WORKLOAD_IDENTITY_POOL` | WIF Pool ID | `github-pool` |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | WIF Provider ID | `github-provider` |
 | `GCP_SERVICE_ACCOUNT` | Deploy service account email | `github-actions-deploy@my-project.iam.gserviceaccount.com` |
