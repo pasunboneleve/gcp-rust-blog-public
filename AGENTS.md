@@ -49,50 +49,38 @@ architecture, and deployment context.
 ### GCP Deployment Commands
 Set required environment variables first:
 ```bash
-export PROJECT_ID={{GCP_PROJECT_ID}}
+export GCP_PROJECT_ID={{GCP_PROJECT_ID}}
 export GCP_REGION={{GCP_REGION}}
 export SERVICE_NAME=blog
-export REPO=blog
+export GCP_REPOSITORY_ID=blog
 ```
 
 Build and deploy to Cloud Run:
 ```bash
 # Build and push with Cloud Build
-gcloud builds submit --project $PROJECT_ID \
-  --tag $GCP_REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$SERVICE_NAME:latest
+gcloud builds submit --project $GCP_PROJECT_ID \
+  --tag $GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/$GCP_REPOSITORY_ID/$SERVICE_NAME:latest
 
 # Deploy to Cloud Run
 gcloud run deploy $SERVICE_NAME \
-  --image $GCP_REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$SERVICE_NAME:latest \
+  --image $GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/$GCP_REPOSITORY_ID/$SERVICE_NAME:latest \
   --region $GCP_REGION --platform managed --allow-unauthenticated \
-  --port 8080 --ingress all --project $PROJECT_ID
+  --port 8080 --ingress all --project $GCP_PROJECT_ID
 ```
 
 ### Infrastructure Management
 Bootstrap Terraform state (one-time):
 ```bash
-PROJECT_ID={{GCP_PROJECT_ID}} GCS_BUCKET={{YOUR_TF_STATE_BUCKET}} ./scripts/bootstrap-tf-state.sh
+cp .env.template .env
+direnv allow
+./scripts/bootstrap-tf-state.sh
 ```
 
 Apply infrastructure:
 ```bash
 cd infra
-terraform init -backend-config="bucket={{YOUR_TF_STATE_BUCKET}}" -backend-config="prefix=gcp-rust-blog/infra"
-terraform apply \
-  -var="project_id={{GCP_PROJECT_ID}}" \
-  -var="project_number={{GCP_PROJECT_NUMBER}}" \
-  -var="region={{GCP_REGION}}" \
-  -var="organization_id={{GCP_ORGANIZATION_ID}}" \
-  -var="pool_id={{GCP_WORKLOAD_IDENTITY_POOL}}" \
-  -var="provider_id={{GCP_WORKLOAD_IDENTITY_PROVIDER}}" \
-  -var="github_owner=<github_owner>" \
-  -var="github_repo=gcp-rust-blog" \
-  -var="service_name=blog" \
-  -var="domain_name={{DOMAIN_NAME}}" \
-  -var="dns_zone_name={{DNS_ZONE_NAME}}" \
-  -var="admin_user_email={{ADMIN_USER_EMAIL}}" \
-  -var="cloud_run_url={{CLOUD_RUN_SERVICE_URL}}" \
-  -var="github_token={{GITHUB_PAT}}"
+tofu init
+tofu apply
 ```
 
 ## Architecture Overview

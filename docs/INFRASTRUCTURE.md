@@ -100,8 +100,8 @@ graph TB
 - **Images**: Tagged with GitHub commit SHA
 
 ### 3. Google Cloud DNS
-- **Zone**: Configured via `dns_zone_name` in `infra/prod.tfvars`
-- **Domain**: Configured via `domain_name` in `infra/prod.tfvars`
+- **Zone**: Configured via `DNS_ZONE_NAME` in the root `.env`
+- **Domain**: Configured via `DOMAIN_NAME` in the root `.env`
 - **Records**:
   - `www.<domain_name>` → A record → Global Load Balancer IP
   - `<domain_name>` → A record → Global Load Balancer IP
@@ -120,20 +120,26 @@ graph TB
 
 ```bash
 infra/
-├── main.tf              # Core resources and service accounts
-├── variables.tf         # Input variables
-├── outputs.tf          # Resource outputs
-├── versions.tf         # Provider versions
-├── backend.tf          # GCS backend configuration
-├── providers.tf        # GCP provider setup
-├── prod.tfvars         # Production variable values
-└── README.md          # Infrastructure-specific docs
+├── immutable/           # Resources unsafe to destroy and recreate
+│   ├── backend.tf
+│   ├── main.tf
+│   ├── variables.tf
+│   └── ...
+├── testable/            # Rehearseable resources with variable names
+│   ├── backend.tf
+│   ├── main.tf
+│   ├── variables.tf
+│   └── ...
+└── README.md            # Infrastructure-specific docs
 ```
 
 ### State Management
 - **Backend**: Google Cloud Storage
 - **Bucket**: Configured when bootstrapping the backend
-- **Path**: Controlled by the `prefix` passed to `tofu init`
+- **Paths**:
+  - `gcp-rust-blog/immutable` for resources unsafe to destroy and recreate
+  - `gcp-rust-blog/testable` for resources that can be rehearsed with
+    alternate names
 - **Consistency**: Managed by the GCS backend; no separate lock resource is defined in this repo
 - **Versioning**: Enabled with 30-day retention
 
@@ -185,6 +191,65 @@ graph TD
     class SA1,SA2,WIP,WIPROV,IAM identity
     class AR,DNS,RECORDS,CR infra
 ```
+
+## Dress rehearsal boundaries
+
+Infrastructure rehearsals use
+[`dress-rehearsal`](https://github.com/pasunboneleve/dress-rehearsal) in
+isolated mode. Dress applies a deployment root, records outputs, and destroys
+the same root while using local run state instead of the production backend.
+Run it through `scripts/dress-testable.sh`, not raw `dress`. The wrapper points
+dress at `infra/testable`, exports alternate `TF_VAR_*` names, and then lets
+dress copy the root, force local state, apply, collect outputs, and destroy the
+alternate-named resources. It does not touch the remote production
+`infra/testable` state.
+
+The HCL does not branch on rehearsal flags. The safety boundary is the root
+split: a resource belongs to either `immutable/` or `testable/`, never both.
+
+`infra/immutable` owns resources that are unsafe or misleading to rehearse:
+
+- Workload Identity pools and providers are skipped because GCP
+  tombstones deleted IDs.
+- GitHub Actions secrets are skipped because they mutate the real
+  repository.
+- Cloud DNS zones and records are skipped because they control the
+  production domain.
+- Organisation IAM bindings are skipped because they affect shared
+  organisation policy.
+- Managed SSL certificates are skipped because they require real domain
+  validation.
+- Production service accounts and their IAM grants are skipped when destroying
+  them would break GitHub authentication, deployment, or operator access. A
+  service account may live in `testable/` only when every dependent path is
+  also safe to destroy and recreate.
+
+Cloud Run is deployed by CI in this repository rather than created by
+Terraform. Rehearsals can still create serverless NEG and load-balancer
+scaffolding with a run-scoped service name, but a full request path needs
+an independently deployed rehearsal service.
+
+Do not use `dress --disable-isolation` for this repository.
+
+### State ownership
+
+Import existing production resources into the new remote states before any
+apply:
+
+- `infra/immutable`: project services, Workload Identity Federation,
+  production service accounts, deployment IAM, public Cloud Run invoker IAM,
+  public DNS, managed SSL certificate, organisation IAM, and GitHub Actions
+  secrets.
+- `infra/testable`: Artifact Registry and load-balancer scaffolding whose
+  names are explicit variables and can be replaced for rehearsals.
+
+The old `gcp-rust-blog/infra` state has been retired. Do not use it for new
+applies.
+
+`LOAD_BALANCER_IP` is required. Immutable DNS records should not appear or
+disappear based on an empty string. During migration, import the existing
+global address into `infra/testable`, write its IP to `.env`, then import and
+plan `infra/immutable`.
 
 ## Deployment Pipeline
 
@@ -303,36 +368,30 @@ Configure these secrets in **GitHub Repository Settings → Secrets and Variable
 | `GCP_PROJECT_ID` | Your GCP Project ID | `my-blog-project-123` |
 | `GCP_PROJECT_NUMBER` | Your GCP Project Number | `123456789012` |
 | `GCP_REGION` | Deployment region | `us-central1` |
+| `GCP_SERVICE_NAME` | Cloud Run service name | `blog` |
+| `GCP_REPOSITORY_ID` | Artifact Registry repository | `blog` |
 | `GCP_WORKLOAD_IDENTITY_POOL` | WIF Pool ID | `github-pool` |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | WIF Provider ID | `github-provider` |
-| `GCP_SERVICE_ACCOUNT` | Deploy service account email | `github-actions-deploy@my-project.iam.gserviceaccount.com` |
 
 **How to find these values:**
 ```bash
 # Project ID and Number
 gcloud projects list
 
-# After running OpenTofu, get service account email
-cd infra
-tofu output impersonated_service_account
+# After importing immutable state, get the deploy service account email
+tofu -chdir=infra/immutable output deploy_service_account_email
 
 # Workload Identity Pool and Provider names
 tofu output workload_identity_pool_name
 tofu output workload_identity_provider_name
 ```
 
-### OpenTofu Variables (prod.tfvars)
-```hcl
-project_id      = "your-gcp-project-id"
-project_number  = "your-project-number"
-region          = "your-preferred-region"  # e.g., us-central1, europe-west1
-organization_id = "your-organization-id"   # Find with: gcloud organizations list
-pool_id         = "github-pool"
-provider_id     = "github-provider"
-github_owner    = "your-github-username"
-github_repo     = "your-repo-name"
-# Note: service_account_email is automatically constructed from project_id
-```
+### OpenTofu variables
+
+The root `.env` file is the local source of truth. `.envrc` exports
+Terraform inputs as `TF_VAR_*` variables and renders backend config for
+`infra/immutable` and `infra/testable`. Do not use `prod.tfvars` or other
+tfvars files.
 
 ## Deployment Procedures
 
@@ -340,26 +399,26 @@ github_repo     = "your-repo-name"
 
 1. **Configure your environment**:
 ```bash
-# Copy template and fill in your values
-cp infra/prod.tfvars.template infra/prod.tfvars
-# Edit infra/prod.tfvars with your project details
+cp .env.template .env
+direnv allow
 ```
 
 2. **Bootstrap GCS backend** (one-time):
 ```bash
-PROJECT_ID=your-project-id BUCKET=your-tf-state-bucket ./scripts/bootstrap-tf-state.sh
+./scripts/bootstrap-tf-state.sh
 ```
 
 3. **Initialize OpenTofu**:
 ```bash
 cd infra
-tofu init -backend-config="bucket=your-tf-state-bucket" -backend-config="prefix=your-project/infra"
+tofu -chdir=immutable init -backend-config=backend.auto.hcl
+tofu -chdir=testable init -backend-config=backend.auto.hcl
 ```
 
-4. **Apply infrastructure**:
-```bash
-tofu apply -var-file="prod.tfvars"
-```
+4. **Import and plan infrastructure**:
+Import existing production resources into the matching root before any apply.
+Then run `tofu plan` for each root and apply only after the plan matches the
+intended ownership map.
 
 ### Administrative Operations
 
@@ -369,13 +428,13 @@ Use the dedicated admin service account for organization-level tasks:
 # Organization policy management
 gcloud resource-manager org-policies set-policy policy.yaml \
   --organization={ORGANIZATION_ID} \
-  --impersonate-service-account=infrastructure-admin@{PROJECT_ID}.iam.gserviceaccount.com
+  --impersonate-service-account=infrastructure-admin@{GCP_PROJECT_ID}.iam.gserviceaccount.com
 
 # DNS management
 gcloud dns record-sets transaction start \
   --zone=<DNS_ZONE_NAME> \
-  --project={PROJECT_ID} \
-  --impersonate-service-account=infrastructure-admin@{PROJECT_ID}.iam.gserviceaccount.com
+  --project={GCP_PROJECT_ID} \
+  --impersonate-service-account=infrastructure-admin@{GCP_PROJECT_ID}.iam.gserviceaccount.com
 ```
 
 ## Security Considerations

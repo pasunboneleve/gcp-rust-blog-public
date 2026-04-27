@@ -14,12 +14,12 @@ variable "region" {
 }
 
 variable "pool_id" {
-  description = "Workload Identity Pool ID (e.g., github-pool)"
+  description = "Workload Identity Pool ID"
   type        = string
 }
 
 variable "provider_id" {
-  description = "Workload Identity Provider ID (e.g., github-provider)"
+  description = "Workload Identity Provider ID"
   type        = string
 }
 
@@ -34,12 +34,29 @@ variable "github_repo" {
 }
 
 variable "service_name" {
-  description = "Cloud Run service name"
+  description = "Cloud Run service name used by the deploy workflow"
   type        = string
 }
 
+variable "repository_id" {
+  description = "Artifact Registry repository name used by the deploy workflow"
+  type        = string
+}
+
+variable "deploy_service_account_id" {
+  description = "Production deploy service account ID. Immutable because destroying it interrupts GitHub Actions deployment."
+  type        = string
+  default     = "github-actions-deploy"
+}
+
+variable "admin_service_account_id" {
+  description = "Production administrative service account ID. Immutable because org IAM and operator access depend on it."
+  type        = string
+  default     = "infrastructure-admin"
+}
+
 variable "domain_name" {
-  description = "Primary domain name (without trailing dot), e.g. example.com"
+  description = "Primary domain name without trailing dot"
   type        = string
 
   validation {
@@ -54,12 +71,17 @@ variable "dns_zone_name" {
 
   validation {
     condition     = can(regex("^[a-z]([-a-z0-9]*[a-z0-9])?$", var.dns_zone_name)) && length(var.dns_zone_name) <= 63
-    error_message = "dns_zone_name must use letters, numbers, and hyphens only (no dots), start with a letter, and be at most 63 chars."
+    error_message = "dns_zone_name must use letters, numbers, and hyphens only, start with a letter, and be at most 63 chars."
   }
 }
 
 variable "organization_id" {
-  description = "Google Cloud Organization ID (for org-level policies)"
+  description = "Google Cloud Organization ID for org-level IAM"
+  type        = string
+}
+
+variable "load_balancer_ip" {
+  description = "Production global load balancer IP from infra/testable."
   type        = string
 }
 
@@ -68,13 +90,10 @@ variable "admin_user_email" {
   type        = string
 }
 
-variable "cloud_run_url" {
-  description = "Cloud Run service URL for CNAME record. Find this in Google Cloud Console: Cloud Run > [service-name] > copy the URL from the service details page (e.g., service-name-hash.region.run.app)"
-  type        = string
-}
-
 variable "github_token" {
   description = "GitHub Personal Access Token with repo scope for managing repository secrets"
   type        = string
   sensitive   = true
+  default     = null
+  nullable    = true
 }

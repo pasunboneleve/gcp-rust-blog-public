@@ -7,7 +7,7 @@ This document outlines the security posture and best practices implemented in th
 The project implements a **least-privilege, multi-service-account architecture** for different operational concerns:
 
 ### 1. GitHub Actions Deployment Service Account
-- **Email**: `github-actions-deploy@{PROJECT_ID}.iam.gserviceaccount.com`
+- **Email**: `github-actions-deploy@{GCP_PROJECT_ID}.iam.gserviceaccount.com`
 - **Purpose**: Automated deployment from GitHub Actions
 - **Authentication**: Workload Identity Federation (keyless)
 - **Permissions**:
@@ -18,7 +18,7 @@ The project implements a **least-privilege, multi-service-account architecture**
   - `roles/compute.loadBalancerAdmin` - Manage load balancer resources
 
 ### 2. Administrative Service Account
-- **Email**: `infrastructure-admin@{PROJECT_ID}.iam.gserviceaccount.com`
+- **Email**: `infrastructure-admin@{GCP_PROJECT_ID}.iam.gserviceaccount.com`
 - **Purpose**: Organization-level administrative tasks
 - **Authentication**: User impersonation with `gcloud --impersonate-service-account`
 - **Organization-level permissions**:
@@ -112,7 +112,7 @@ If secrets become necessary:
 # Use dedicated admin service account for org-level tasks
 gcloud resource-manager org-policies set-policy policy.yaml \
   --organization={ORGANIZATION_ID} \
-  --impersonate-service-account=infrastructure-admin@{PROJECT_ID}.iam.gserviceaccount.com
+  --impersonate-service-account=infrastructure-admin@{GCP_PROJECT_ID}.iam.gserviceaccount.com
 ```
 
 ### Access Patterns
@@ -164,11 +164,11 @@ gcloud resource-manager org-policies set-policy policy.yaml \
 ```bash
 # Generate temporary key for admin service account
 gcloud iam service-accounts keys create temp-key.json \
-  --iam-account=infrastructure-admin@{PROJECT_ID}.iam.gserviceaccount.com
+  --iam-account=infrastructure-admin@{GCP_PROJECT_ID}.iam.gserviceaccount.com
 
 # Revoke immediately after use
 gcloud iam service-accounts keys delete KEY_ID \
-  --iam-account=infrastructure-admin@{PROJECT_ID}.iam.gserviceaccount.com
+  --iam-account=infrastructure-admin@{GCP_PROJECT_ID}.iam.gserviceaccount.com
 ```
 
 ## Compliance Considerations

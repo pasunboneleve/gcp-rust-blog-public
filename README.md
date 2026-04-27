@@ -35,32 +35,28 @@ The focus is not the technology itself, but the shape of the system: making corr
 - Docker for containerization
 - `gcloud` CLI configured with your GCP project
 - OpenTofu/Terraform for infrastructure management
+- [`dress-rehearsal`](https://github.com/pasunboneleve/dress-rehearsal)
+  if you want to run isolated infrastructure create/destroy rehearsals
 
 ### Configuration Setup
 
 1. **Prepare deployment variables if you need them locally**:
    ```bash
    cp .env.template .env
-   # Edit .env with your actual GCP project values
+   direnv allow
    ```
-   The checked-in `.envrc` does not automatically load `.env`. Use this
-   file as a template for manual exports or extend your local `direnv`
-   setup if you want it loaded automatically.
+   Edit `.env` with your actual GCP project values. The checked-in
+   `.envrc` loads `.env`, exports Terraform inputs as `TF_VAR_*`, and
+   renders backend config for `infra/immutable` and `infra/testable`.
 
-2. **Configure infrastructure variables**:
-   ```bash
-   cp infra/prod.tfvars.template infra/prod.tfvars
-   # Edit infra/prod.tfvars with your GCP project details
-   ```
-   📝 **Template file**: [`infra/prod.tfvars.template`](infra/prod.tfvars.template)
-
-3. **Create GitHub Personal Access Token**:
+2. **Create GitHub Personal Access Token**:
    - Go to [GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens)
    - Click **"Generate new token (classic)"**
    - Set **Expiration** as needed (e.g., 90 days)
    - Select **repo** scope (full control of private repositories)
    - Click **"Generate token"** and copy the token
-   - Add the token to your `infra/prod.tfvars` file as `github_token`
+   - Add the token to your `.env` file as `GITHUB_TOKEN`, or authenticate
+     with `gh auth login` and let `.envrc` refresh it
 
    ⚠️ **Important**: Store this token securely - GitHub won't show it again!
 
@@ -114,7 +110,14 @@ cargo clippy
 │   ├── home.md              # Home page content
 │   └── posts/
 │       └── <slug>.md        # Blog post content
-├── infra/                   # OpenTofu/Terraform infrastructure
+├── docs/                    # Architecture, security, and infrastructure docs
+├── infra/
+│   ├── immutable/           # State for resources unsafe to recreate
+│   ├── testable/            # State for rehearseable infrastructure
+│   └── README.md            # Infrastructure workflow notes
+├── scripts/
+│   ├── dress-testable.sh    # Isolated dress rehearsal wrapper
+│   └── render-backend-config.sh
 ├── .github/workflows/       # CI/CD automation
 └── Dockerfile               # Multi-stage container build
 ```
@@ -126,7 +129,10 @@ This project implements a **cloud-native, security-first architecture**:
 - **Application**: Modular Rust web server using Axum
 - **Content**: File-based blog posts in Markdown format
 - **Rendering**: Markdown, KaTeX math, Mermaid diagrams, and social metadata
-- **Infrastructure**: Fully managed with OpenTofu/Terraform
+- **Infrastructure**: Managed with two OpenTofu/Terraform roots:
+  `infra/immutable` for resources that must not be destroyed and recreated,
+  and `infra/testable` for resources that can be rehearsed with alternate
+  names
 - **Deployment**: Automated CI/CD with GitHub Actions and Workload Identity
   Federation
 - **Security**: Least-privilege service accounts and non-root containers
@@ -137,6 +143,13 @@ page, the 404 page, and post Markdown from `content/`. Requests are
 served from that loaded content plus static assets under
 `content/static/`.
 
+Infrastructure rehearsals use
+[`dress-rehearsal`](https://github.com/pasunboneleve/dress-rehearsal), a tool
+that applies and destroys a deployment root in isolated local state. In this
+repo, run it through `scripts/dress-testable.sh`; the wrapper points dress at
+`infra/testable` and replaces production resource names with run-scoped names.
+Do not run dress against `infra/immutable`.
+
 ## Getting Started
 
 To deploy your own instance:
@@ -144,19 +157,22 @@ To deploy your own instance:
 1. **Fork this repository**
 2. **Configure infrastructure**:
    ```bash
-   cp infra/prod.tfvars.template infra/prod.tfvars
-   # Edit infra/prod.tfvars with your GCP project details and GitHub token
+   cp .env.template .env
+   direnv allow
    ```
 3. **Deploy infrastructure**:
    ```bash
-   cd infra
-   tofu init
-   tofu apply -var-file="prod.tfvars"
+   tofu -chdir=infra/testable init -backend-config=backend.auto.hcl
+   tofu -chdir=infra/immutable init -backend-config=backend.auto.hcl
+   tofu -chdir=infra/testable plan
+   tofu -chdir=infra/immutable plan
    ```
-   This automatically:
-   - Sets up GCP Workload Identity Federation
-   - Configures all required GitHub repository secrets
-   - Provisions infrastructure components
+   For this production project, import existing resources into the matching
+   root before applying. `infra/immutable` owns service accounts, WIF, DNS,
+   GitHub secrets, IAM grants, and other resources that should not be
+   destroyed and recreated. `infra/testable` owns Artifact Registry and load
+   balancer resources that can be rehearsed with alternate names through
+   `scripts/dress-testable.sh`.
 4. **Deploy**: Push to main branch triggers automatic deployment
 
 ### CI/CD Build Modes

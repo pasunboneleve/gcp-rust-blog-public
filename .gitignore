@@ -8,13 +8,18 @@ Cargo.lock
 
 # Terraform/OpenTofu
 infra/.terraform/
+infra/**/.terraform/
 infra/*.tfstate
 infra/*.tfstate.*
 infra/.terraform.lock.hcl
+infra/**/.terraform.lock.hcl
+**/.dress-runs/
 infra/terraform.tfvars
 infra/prod.tfvars
 infra/dev.tfvars
 infra/*.auto.tfvars
+infra/backend.auto.hcl
+infra/**/backend.auto.hcl
 
 # Service account keys (if any)
 *.json
@@ -39,6 +44,12 @@ infra/*.auto.tfvars
 .codex
 .beads/
 docs/DRIFT_REPORT.md
+docs/INFRA_REFACTOR.md
 
 # Node
 node_modules/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
