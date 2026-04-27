@@ -35,6 +35,8 @@ The focus is not the technology itself, but the shape of the system: making corr
 - Docker for containerization
 - `gcloud` CLI configured with your GCP project
 - OpenTofu/Terraform for infrastructure management
+- [`dress-rehearsal`](https://github.com/pasunboneleve/dress-rehearsal)
+  if you want to run isolated infrastructure create/destroy rehearsals
 
 ### Configuration Setup
 
@@ -108,7 +110,14 @@ cargo clippy
 │   ├── home.md              # Home page content
 │   └── posts/
 │       └── <slug>.md        # Blog post content
-├── infra/                   # OpenTofu/Terraform infrastructure
+├── docs/                    # Architecture, security, and infrastructure docs
+├── infra/
+│   ├── immutable/           # State for resources unsafe to recreate
+│   ├── testable/            # State for rehearseable infrastructure
+│   └── README.md            # Infrastructure workflow notes
+├── scripts/
+│   ├── dress-testable.sh    # Isolated dress rehearsal wrapper
+│   └── render-backend-config.sh
 ├── .github/workflows/       # CI/CD automation
 └── Dockerfile               # Multi-stage container build
 ```
@@ -120,7 +129,10 @@ This project implements a **cloud-native, security-first architecture**:
 - **Application**: Modular Rust web server using Axum
 - **Content**: File-based blog posts in Markdown format
 - **Rendering**: Markdown, KaTeX math, Mermaid diagrams, and social metadata
-- **Infrastructure**: Fully managed with OpenTofu/Terraform
+- **Infrastructure**: Managed with two OpenTofu/Terraform roots:
+  `infra/immutable` for resources that must not be destroyed and recreated,
+  and `infra/testable` for resources that can be rehearsed with alternate
+  names
 - **Deployment**: Automated CI/CD with GitHub Actions and Workload Identity
   Federation
 - **Security**: Least-privilege service accounts and non-root containers
@@ -130,6 +142,13 @@ At startup, the app loads site configuration, HTML templates, the home
 page, the 404 page, and post Markdown from `content/`. Requests are
 served from that loaded content plus static assets under
 `content/static/`.
+
+Infrastructure rehearsals use
+[`dress-rehearsal`](https://github.com/pasunboneleve/dress-rehearsal), a tool
+that applies and destroys a deployment root in isolated local state. In this
+repo, run it through `scripts/dress-testable.sh`; the wrapper points dress at
+`infra/testable` and replaces production resource names with run-scoped names.
+Do not run dress against `infra/immutable`.
 
 ## Getting Started
 
@@ -149,9 +168,11 @@ To deploy your own instance:
    tofu -chdir=infra/immutable plan
    ```
    For this production project, import existing resources into the matching
-   root before applying. `infra/immutable` owns resources that must not be
-   destroyed and recreated. `infra/testable` owns resources that can be
-   rehearsed with alternate names through `scripts/dress-testable.sh`.
+   root before applying. `infra/immutable` owns service accounts, WIF, DNS,
+   GitHub secrets, IAM grants, and other resources that should not be
+   destroyed and recreated. `infra/testable` owns Artifact Registry and load
+   balancer resources that can be rehearsed with alternate names through
+   `scripts/dress-testable.sh`.
 4. **Deploy**: Push to main branch triggers automatic deployment
 
 ### CI/CD Build Modes

@@ -120,12 +120,12 @@ graph TB
 
 ```bash
 infra/
-├── immutable/           # Non-rehearseable production resources
+├── immutable/           # Resources unsafe to destroy and recreate
 │   ├── backend.tf
 │   ├── main.tf
 │   ├── variables.tf
 │   └── ...
-├── testable/            # Rehearseable production resources and dress template
+├── testable/            # Rehearseable resources with variable names
 │   ├── backend.tf
 │   ├── main.tf
 │   ├── variables.tf
@@ -137,8 +137,9 @@ infra/
 - **Backend**: Google Cloud Storage
 - **Bucket**: Configured when bootstrapping the backend
 - **Paths**:
-  - `gcp-rust-blog/immutable` for non-rehearseable production resources
-  - `gcp-rust-blog/testable` for production resources that can be rehearsed
+  - `gcp-rust-blog/immutable` for resources unsafe to destroy and recreate
+  - `gcp-rust-blog/testable` for resources that can be rehearsed with
+    alternate names
 - **Consistency**: Managed by the GCS backend; no separate lock resource is defined in this repo
 - **Versioning**: Enabled with 30-day retention
 
@@ -195,11 +196,13 @@ graph TD
 
 Infrastructure rehearsals use
 [`dress-rehearsal`](https://github.com/pasunboneleve/dress-rehearsal) in
-isolated mode. Run them through `scripts/dress-testable.sh`, not raw `dress`.
-The wrapper points `dress` at `infra/testable`, exports alternate
-`TF_VAR_*` names, and then lets `dress` copy the root, force local state,
-apply, collect outputs, and destroy the alternate-named resources. It does not
-touch the remote production `infra/testable` state.
+isolated mode. Dress applies a deployment root, records outputs, and destroys
+the same root while using local run state instead of the production backend.
+Run it through `scripts/dress-testable.sh`, not raw `dress`. The wrapper points
+dress at `infra/testable`, exports alternate `TF_VAR_*` names, and then lets
+dress copy the root, force local state, apply, collect outputs, and destroy the
+alternate-named resources. It does not touch the remote production
+`infra/testable` state.
 
 The HCL does not branch on rehearsal flags. The safety boundary is the root
 split: a resource belongs to either `immutable/` or `testable/`, never both.
@@ -240,8 +243,8 @@ apply:
 - `infra/testable`: Artifact Registry and load-balancer scaffolding whose
   names are explicit variables and can be replaced for rehearsals.
 
-The old `gcp-rust-blog/infra` state is a migration source only after the split.
-Do not use it for new applies.
+The old `gcp-rust-blog/infra` state has been retired. Do not use it for new
+applies.
 
 `LOAD_BALANCER_IP` is required. Immutable DNS records should not appear or
 disappear based on an empty string. During migration, import the existing

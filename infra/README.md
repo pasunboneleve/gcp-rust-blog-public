@@ -3,13 +3,17 @@
 This folder has two Terraform/OpenTofu roots:
 
 - `immutable/` owns production resources that are not safe to create and
-  destroy in rehearsals.
+  destroy in rehearsals. This includes service accounts, WIF, GitHub secrets,
+  IAM grants, public DNS, and managed certificates.
 - `testable/` owns the production instances of resources that can be
-  rehearsed with alternate names in isolated `dress` runs.
+  rehearsed with alternate names in isolated `dress` runs. This includes the
+  Artifact Registry repository and load-balancer scaffolding.
 
-Run rehearsals through `scripts/dress-testable.sh`. The wrapper points `dress`
-at `infra/testable` and gives every create/destroy resource an alternate name.
-Do not use `dress --disable-isolation` for this repository.
+[`dress-rehearsal`](https://github.com/pasunboneleve/dress-rehearsal) applies
+and destroys a deployment root with isolated local state. Run it through
+`scripts/dress-testable.sh`; the wrapper points dress at `infra/testable` and
+gives every create/destroy resource an alternate name. Do not use
+`dress --disable-isolation` for this repository.
 
 ## Prereqs
 - gcloud (authenticated to the target project)
@@ -44,8 +48,9 @@ tofu -chdir=infra/testable init -backend-config=backend.auto.hcl
 ```
 
 ## 4) Apply production state
-Import existing production resources before the first apply. Then apply each
-root only after its state matches the resources it owns.
+For an existing project, import production resources into the matching root
+before the first apply. Then apply each root only after its state matches the
+resources it owns.
 
 Notes:
 - `domain_name` is the public domain (e.g., `boneleve.blog`).
@@ -88,15 +93,19 @@ destroy:
 The `infra/testable` remote state still owns the production instances of those
 resources. The isolated `dress` run does not touch that remote state.
 
-## State migration
+## State layout
 
 This split uses two remote backend prefixes:
 
 - `gcp-rust-blog/immutable`
 - `gcp-rust-blog/testable`
 
-Import existing production resources into the matching root. Do not apply the
-new roots against empty remote state until imports have been reviewed.
+The previous monolithic `gcp-rust-blog/infra` state has been retired for this
+project. Do not reintroduce it for new applies.
+
+When migrating another project, import existing production resources into the
+matching root. Do not apply the split roots against empty remote state until
+imports have been reviewed.
 
 `LOAD_BALANCER_IP` is required because immutable DNS records must not appear or
 disappear based on an empty string. During migration, import the existing
