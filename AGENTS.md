@@ -126,6 +126,21 @@ The `infra/` directory contains Terraform configuration for:
 - DNS zone and records for domain management
 - Network Endpoint Group (NEG) connecting load balancer to Cloud Run
 
+### Infrastructure ownership split
+
+Before changing infrastructure, read `docs/INFRASTRUCTURE.md` and
+`infra/README.md`. Those documents define the immutable/testable split,
+state layout, dress-rehearsal workflow, import expectations, and edge cases.
+
+Preserve the core invariant: infrastructure is split by recreate safety, not
+by production versus test. A resource belongs to exactly one root. Do not
+duplicate resources across `infra/immutable/` and `infra/testable/`, and do
+not add rehearsal-only conditionals to switch ownership.
+
+Use `scripts/dress-testable.sh` for rehearsals. Do not run dress against
+`infra/immutable/`, and do not use `dress --disable-isolation` in this
+repository.
+
 ### Content Structure
 ```
 content/
