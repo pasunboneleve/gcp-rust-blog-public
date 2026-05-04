@@ -42,6 +42,28 @@ key = "tunnel_url"
 interval_ms = 250
 timeout_ms = 30000
 
+[process.chromium-mcp]
+command = [
+  "chromium-browser",
+  "--remote-debugging-port=9222",
+  "--user-data-dir=.devloop/chromium-mcp-profile",
+  "--new-window",
+  "--disable-gpu",
+  "--disable-background-networking",
+  "--disable-sync",
+  "http://localhost:8080",
+]
+cwd = "."
+autostart = false
+restart = "never"
+output = { inherit = true, body_style = "dim" }
+
+[process.chromium-mcp.readiness]
+kind = "http"
+url = "http://127.0.0.1:9222/json/version"
+interval_ms = 500
+timeout_ms = 30000
+
 [hook.build_css]
 command = ["./scripts/build-css.sh"]
 cwd = "."
@@ -73,6 +95,8 @@ steps = [
   { action = "run_hook", hook = "current_browser_path" },
   { action = "start_process", process = "tunnel" },
   { action = "run_workflow", workflow = "publish_post_url" },
+  { action = "start_process", process = "chromium-mcp" },
+  { action = "wait_for_process", process = "chromium-mcp" },
 ]
 
 [workflow.rust]
