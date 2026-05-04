@@ -54,6 +54,7 @@ command = [
   "--disable-session-crashed-bubble",
   "--no-first-run",
   "--no-default-browser-check",
+  "--log-level=3",
   "http://localhost:$CONTAINER_PORT",
 ]
 cwd = "."
