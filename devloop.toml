@@ -51,6 +51,9 @@ command = [
   "--disable-gpu",
   "--disable-background-networking",
   "--disable-sync",
+  "--disable-session-crashed-bubble",
+  "--no-first-run",
+  "--no-default-browser-check",
   "http://localhost:$CONTAINER_PORT",
 ]
 cwd = "."
