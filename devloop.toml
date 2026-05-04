@@ -19,18 +19,18 @@ workflow = "css_source"
 command = ["cargo", "run"]
 cwd = "."
 autostart = false
-env = { PORT = "8080" }
+env = { PORT = "$CONTAINER_PORT" }
 restart = "always"
 output = { inherit = false }
 
 [process.server.readiness]
 kind = "http"
-url = "http://127.0.0.1:8080/"
+url = "http://127.0.0.1:$CONTAINER_PORT/"
 interval_ms = 500
 timeout_ms = 30000
 
 [process.tunnel]
-command = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:8080"]
+command = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:$CONTAINER_PORT"]
 cwd = "."
 autostart = false
 restart = "always"
@@ -51,7 +51,7 @@ command = [
   "--disable-gpu",
   "--disable-background-networking",
   "--disable-sync",
-  "http://localhost:8080",
+  "http://localhost:$CONTAINER_PORT",
 ]
 cwd = "."
 autostart = false
@@ -71,7 +71,7 @@ cwd = "."
 [hook.current_browser_path]
 command = ["./scripts/current-browser-path.sh"]
 cwd = "."
-env = { PORT = "8080" }
+env = { PORT = "$CONTAINER_PORT" }
 capture = "text"
 state_key = "current_browser_path"
 
