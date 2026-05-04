@@ -19,18 +19,18 @@ workflow = "css_source"
 command = ["cargo", "run"]
 cwd = "."
 autostart = false
-env = { PORT = "8080" }
+env = { PORT = "$CONTAINER_PORT" }
 restart = "always"
 output = { inherit = false }
 
 [process.server.readiness]
 kind = "http"
-url = "http://127.0.0.1:8080/"
+url = "http://127.0.0.1:$CONTAINER_PORT/"
 interval_ms = 500
 timeout_ms = 30000
 
 [process.tunnel]
-command = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:8080"]
+command = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:$CONTAINER_PORT"]
 cwd = "."
 autostart = false
 restart = "always"
@@ -42,6 +42,32 @@ key = "tunnel_url"
 interval_ms = 250
 timeout_ms = 30000
 
+[process.chromium-mcp]
+command = [
+  "chromium-browser",
+  "--remote-debugging-port=9222",
+  "--user-data-dir=.devloop/chromium-mcp-profile",
+  "--new-window",
+  "--incognito",
+  "--disable-gpu",
+  "--disable-background-networking",
+  "--disable-sync",
+  "--no-first-run",
+  "--no-default-browser-check",
+  "--log-level=3",
+  "http://localhost:$CONTAINER_PORT",
+]
+cwd = "."
+autostart = false
+restart = "never"
+output = { inherit = true, body_style = "dim" }
+
+[process.chromium-mcp.readiness]
+kind = "http"
+url = "http://127.0.0.1:9222/json/version"
+interval_ms = 500
+timeout_ms = 30000
+
 [hook.build_css]
 command = ["./scripts/build-css.sh"]
 cwd = "."
@@ -49,7 +75,7 @@ cwd = "."
 [hook.current_browser_path]
 command = ["./scripts/current-browser-path.sh"]
 cwd = "."
-env = { PORT = "8080" }
+env = { PORT = "$CONTAINER_PORT" }
 capture = "text"
 state_key = "current_browser_path"
 
@@ -73,6 +99,8 @@ steps = [
   { action = "run_hook", hook = "current_browser_path" },
   { action = "start_process", process = "tunnel" },
   { action = "run_workflow", workflow = "publish_post_url" },
+  { action = "start_process", process = "chromium-mcp" },
+  { action = "wait_for_process", process = "chromium-mcp" },
 ]
 
 [workflow.rust]

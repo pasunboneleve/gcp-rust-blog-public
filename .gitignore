@@ -42,6 +42,7 @@ infra/**/backend.auto.hcl
 # AI droppings
 .aider*
 .codex
+.devloop/
 .beads/
 docs/DRIFT_REPORT.md
 docs/INFRA_REFACTOR.md

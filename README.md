@@ -26,6 +26,9 @@ The focus is not the technology itself, but the shape of the system: making corr
 - [Tailwind CLI](https://tailwindcss.com/docs/installation/tailwind-cli)
   for CSS compilation during local development. Install with
   `npm install -g @tailwindcss/cli` or the equivalent Bun workflow.
+- [Chrome DevTools MCP](https://www.npmjs.com/package/chrome-devtools-mcp)
+  if you want an MCP client to inspect the devloop-managed Chromium
+  instance. It runs through `npx` and requires Node.js 22.12 or newer.
 - [direnv](https://direnv.net/) to auto-load repo environment variables.
   Install it from your system package manager and run `direnv allow` in
   the repo.
@@ -80,6 +83,35 @@ devloop run
 That gives you one supervised loop for Rust rebuilds, content-triggered
 server restarts, CSS recompilation, browser refresh notifications, and
 copy/paste-ready public post URLs for card validation.
+
+Devloop also starts a visible Chromium instance with Chrome DevTools
+remote debugging on `http://127.0.0.1:9222`. To let an MCP client use
+that browser, add the Chrome DevTools MCP server to the client and point
+it at the running Chromium instance:
+
+```bash
+codex mcp add chrome-devtools -- npx chrome-devtools-mcp@latest --browser-url=http://127.0.0.1:9222
+```
+
+For clients configured with JSON, use the same command and arguments:
+
+```json
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest",
+        "--browser-url=http://127.0.0.1:9222"
+      ]
+    }
+  }
+}
+```
+
+Run `devloop run` before asking the MCP client to inspect the page. The
+debugging port is local but powerful; do not browse sensitive sites in
+that Chromium window while MCP access is enabled.
 
 Fallback direct-repo workflow:
 

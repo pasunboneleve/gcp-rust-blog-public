@@ -27,12 +27,47 @@ What you get:
   so the browser sees the same state as a fresh startup
 - the current browsed post URL is printed in a copy/paste-friendly form
   for LinkedIn, Slack, or X card validation
+- a visible Chromium instance is started with Chrome DevTools remote
+  debugging on `http://127.0.0.1:9222` for MCP-assisted inspection
 
 Repo-owned helper files:
 
 - [`devloop.toml`](devloop.toml)
 - [`scripts/build-css.sh`](scripts/build-css.sh)
 - [`scripts/current-browser-path.sh`](scripts/current-browser-path.sh)
+
+Chrome DevTools MCP
+===================
+
+The primary workflow includes a devloop-managed Chromium process named
+`chromium-mcp`. It opens the local blog page after the Rust server is
+ready and exposes Chrome DevTools on `http://127.0.0.1:9222`.
+
+Configure your MCP client once so it connects to that running browser:
+
+```bash
+codex mcp add chrome-devtools -- npx chrome-devtools-mcp@latest --browser-url=http://127.0.0.1:9222
+```
+
+Equivalent JSON configuration:
+
+```json
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest",
+        "--browser-url=http://127.0.0.1:9222"
+      ]
+    }
+  }
+}
+```
+
+Start `devloop run` before using MCP tools. The remote debugging port
+lets local tools inspect and control the Chromium window, so keep that
+window for development pages and avoid sensitive browsing in it.
 
 Fallback direct repo workflow
 =============================
@@ -57,6 +92,8 @@ See the local development prerequisites in
 
 - `devloop`, `cloudflared`, Node or Bun, Tailwind CLI, and `direnv` are
   part of the primary workflow
+- `chrome-devtools-mcp` is part of the MCP-assisted primary workflow and
+  runs through `npx` from the MCP client
 - `bacon` is fallback-only
 
 CSS Architecture
