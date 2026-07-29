@@ -181,7 +181,7 @@ defined component classes.
 
 ## Aesthetic rules for adding content
 - Read the recent posts before changing a new one so the new piece matches the established visual and editorial pattern.
-- Track the work in `bd` as small tasks before editing: image selection/preparation first, then post updates, then any documentation follow-up.
+- Track the work in Kata as small tasks before editing: image selection/preparation first, then post updates, then any documentation follow-up.
 - Prefer public-domain or equivalently reusable images from Wikimedia Commons when adding artwork to posts.
 - Verify that the exact Wikimedia asset exists before committing to it. Open the Commons page, resolve the direct file URL, and confirm the image returns successfully instead of assuming the filename is correct.
 - Choose images that are consonant with the argument of the post, look old or classical, and are recognisable as belonging to a distinct cultural tradition.
@@ -195,13 +195,13 @@ defined component classes.
 
 **MANDATORY WORKFLOW:**
 
-Use 'bd' for task tracking.
+Use `$kata` for task tracking.
 Use $roborev:review after committing code changes and before rebasing.
 
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
+1. **File tasks for remaining work** - Create Kata tasks for anything that needs follow-up
 2. **Run quality gates** (if code changed) - Tests, linters, builds
 3. **Commit work** - Always commit so roborev can check quality of
    work; commit --amend until the functionality is implemented
    correctly as verified by human and roborev.
-3. **Update issue status** - Close finished work, update in-progress items
-4. **Hand off** - Provide context for next session
+4. **Update task status** - Close finished Kata tasks, update in-progress items
+5. **Hand off** - Provide context for next session
