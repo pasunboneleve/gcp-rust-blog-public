@@ -7,7 +7,7 @@
         "w-16 h-16 rounded-md object-cover"></a>
         <div>
           <a href="/" class="no-underline">
-          <h1 class="m-0 text-xl">{{ site_title }}</h1></a>
+          <h1 class="m-0 text-xl whitespace-nowrap">{{ site_title }}</h1></a>
         </div>
       </div>
       <nav>
@@ -37,5 +37,18 @@
           </li>
         </ul>
       </nav>
+      <details class="mobile-posts-menu">
+        <summary aria-label="Browse articles">
+          <svg aria-hidden="true" class="fill-current" viewBox="0 0 24 24">
+            <path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path>
+          </svg>
+        </summary>
+        <nav class="mobile-posts-menu-panel" aria-label="Articles">
+          <h2>Browse articles</h2>
+          <ul>
+            {{ posts }}
+          </ul>
+        </nav>
+      </details>
     </div>
   </header>
