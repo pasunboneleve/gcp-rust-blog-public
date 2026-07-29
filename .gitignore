@@ -49,6 +49,7 @@ docs/INFRA_REFACTOR.md
 
 # Node
 node_modules/
+bun.lock
 
 # Beads / Dolt files (added by bd init)
 .dolt/
