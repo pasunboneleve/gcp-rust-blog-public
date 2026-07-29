@@ -15,17 +15,19 @@ The focus is not the technology itself, but the shape of the system: making corr
   running the app locally. Install with `rustup`, which provides
   `cargo` and `rustc`.
 - [devloop](https://github.com/pasunboneleve/devloop) for the primary
-  local development workflow. Install with
-  `cargo install --git https://github.com/pasunboneleve/devloop.git`.
+  local development workflow. Install the latest platform-specific binary
+  artifact from the [devloop releases](https://github.com/pasunboneleve/devloop/releases).
 - [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
   for the shareable public tunnel used to validate social cards during
   local development. Install it from Cloudflare's package or binary
   distribution for your platform.
-- [Node.js](https://nodejs.org/) or [Bun](https://bun.com/) to install
-  the Tailwind CLI.
+- [Node.js](https://nodejs.org/) or [Bun](https://bun.com/) to install the
+  Tailwind CLI.
 - [Tailwind CLI](https://tailwindcss.com/docs/installation/tailwind-cli)
-  for CSS compilation during local development. Install with
-  `npm install -g @tailwindcss/cli` or the equivalent Bun workflow.
+  for CSS compilation during local development. Tailwind v4 distributes its
+  CLI separately from this project's `tailwindcss` package; install it before
+  running `devloop run` with either `npm install -g @tailwindcss/cli` or
+  `bun add -g @tailwindcss/cli`.
 - [Chrome DevTools MCP](https://www.npmjs.com/package/chrome-devtools-mcp)
   if you want an MCP client to inspect the devloop-managed Chromium
   instance. It runs through `npx` and requires Node.js 22.12 or newer.
