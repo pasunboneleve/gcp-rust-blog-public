@@ -447,6 +447,7 @@ fn setup_router(router_state: RouterState) -> Router {
     let static_dir = get_service(ServeDir::new("content/static"));
     let favicon_ico = get_service(ServeFile::new("content/static/favicon.ico"));
     let favicon_png = get_service(ServeFile::new("content/static/favicon.png"));
+    let robots_txt = get_service(ServeFile::new("content/robots.txt"));
 
     Router::new()
         .route("/", get(homepage))
@@ -458,6 +459,7 @@ fn setup_router(router_state: RouterState) -> Router {
         .nest_service("/static", static_dir)
         .route_service("/favicon.ico", favicon_ico)
         .route_service("/favicon.png", favicon_png)
+        .route_service("/robots.txt", robots_txt)
         .fallback(fallback_not_found)
         .with_state(router_state)
 }
@@ -931,6 +933,26 @@ mod tests {
         let body = String::from_utf8(body.to_vec()).expect("utf8 body");
         assert!(body.contains("Terra incognita"));
         assert!(body.contains("This path is not mapped."));
+    }
+
+    #[tokio::test]
+    async fn robots_txt_allows_all_crawlers() {
+        let app = setup_router(test_router_state());
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/robots.txt")
+                    .body(Body::empty())
+                    .expect("build request"),
+            )
+            .await
+            .expect("serve request");
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("read body");
+        assert_eq!(body.as_ref(), b"User-agent: *\nAllow: /\n");
     }
 
     #[tokio::test]
