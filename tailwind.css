@@ -70,6 +70,32 @@
     color: var(--color-cyan);
 }
 
+.prose .post-figure-caption {
+    margin: 0.5rem auto 0;
+    text-align: center;
+}
+
+.prose .comparison-table th,
+.prose .comparison-table td {
+    border-bottom-color: color-mix(in oklab, var(--color-base0) 42%, transparent);
+}
+
+.prose .comparison-table th {
+    color: var(--color-base1);
+}
+
+.prose .decision-table th:nth-child(2),
+.prose .decision-table td:nth-child(2),
+.prose .evidence-table th:first-child,
+.prose .evidence-table td:first-child {
+    color: color-mix(in oklab, var(--color-orange) 82%, var(--color-base2));
+}
+
+.prose .post-answer {
+    margin-inline: clamp(1rem, 4vw, 2.5rem);
+    color: var(--color-base1);
+}
+
 .prose .patent-drawing-figure {
     margin: 0;
 }
